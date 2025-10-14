@@ -1,0 +1,37 @@
+{% extends 'master.html' %}
+{% block title %}patient-dashboard{% endblock %}
+{% block content %}
+{% load static %}
+
+   
+
+    <header>
+        <div class="navbar">
+            <h2 class="logo">LifeDrop</h2>
+            <nav>
+                <ul>
+                    <li><a href="#">Home</a></li>
+                    <li><a href="#">About us</a></li>
+                    <!-- <li><a href="#">Patients</a></li> -->
+                    <!-- <li><a href="#">Hospitals</a></li> -->
+                    <li><a href="#">Contact</a></li>
+                </ul>
+            </nav>
+            <button><a href="{% url 'login' %}">Login</a></button>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="hero-content">
+            <h1>Welcome to LifeDrop</h1>
+            <p>Connecting blood donors with those in need. Every drop counts!</p>
+            <a href="{% url 'login' %}" class="btn">Donate Now</a>
+        </div>
+    </section>
+
+    <footer>
+        <p>&copy; 2025 LifeDrop Blood Bank | All Rights Reserved</p>
+    </footer>
+
+
+{% endblock %}

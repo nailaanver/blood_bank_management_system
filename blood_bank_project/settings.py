@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'blood_bank_app',
+    'temp_app',
 ]
 
 MIDDLEWARE = [

@@ -54,4 +54,4 @@ def admin_dashboard(request):
 def donor_dashboard(request):
     return render(request, 'patient_dashboard.html')
 def index(request):
-    return render(request,'index.html', Name='index')
+    return render(request,'index.html')
