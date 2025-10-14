@@ -14,19 +14,33 @@ def login_View(request):
             password = form.cleaned_data['password']
             user = authenticate(request, username=username, password=password)
             if user is not None:
+                # ✅ Log the user in
                 login(request, user)
-                if user.profile.role == 'patient':
+
+                # ✅ Ensure profile exists (auto-create if missing)
+                profile, created = Profile.objects.get_or_create(
+                    user=user,
+                    defaults={'role': 'admin' if user.is_superuser else 'donor'}
+                )
+
+                # ✅ Redirect based on role
+                if profile.role == 'patient':
                     return redirect('patient_dashboard')
-                elif user.profile.role == 'donor':
+                elif profile.role == 'donor':
                     return redirect('donor_dashboard')
-                elif user.profile.role == 'hospital':
+                elif profile.role == 'hospital':
                     return redirect('hospital_dashboard')
-                elif user.profile.role == 'admin':
+                elif profile.role == 'admin':
                     return redirect('admin_dashboard')
+
+                # ✅ fallback redirect (in case role is blank)
+                return redirect('admin_dashboard')
+
             else:
                 return render(request, 'login.html', {'form': form, 'error': 'Invalid credentials'})
     else:
         form = LoginForm()
+
     return render(request, 'login.html', {'form': form})
 
 # register
@@ -48,10 +62,10 @@ def register(request):
 def patient_dashboard(request):
     return render(request, 'patient_dashboard.html')
 def hospital_dashboard(request):
-    return render(request, 'patient_dashboard.html')
+    return render(request, 'hospital_dashboard.html')
 def admin_dashboard(request):
-    return render(request, 'patient_dashboard.html')
+    return render(request, 'admin_dashboard.html')
 def donor_dashboard(request):
-    return render(request, 'patient_dashboard.html')
+    return render(request, 'donor_dashboard.html')
 def index(request):
     return render(request,'index.html')

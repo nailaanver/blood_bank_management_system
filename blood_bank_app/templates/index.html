@@ -1,7 +1,8 @@
-{% extends 'master.html' %}
-{% block title %}patient-dashboard{% endblock %}
-{% block content %}
 {% load static %}
+
+{% extends 'master.html' %}
+{% block title %}index{% endblock %}
+{% block content %}
 
    
 
@@ -28,6 +29,103 @@
             <a href="{% url 'login' %}" class="btn">Donate Now</a>
         </div>
     </section>
+
+    <!-- donation process -->
+     <section class="donation-section">
+    <h2>DONATION PROCESS</h2>
+    <p class="donation-subtitle">
+        The donation process from the time you arrive at the center until the time you leave
+    </p>
+
+    <div class="donation-container">
+
+        <div class="donation-card">
+            <div class="donation-image">
+                <img src="{% static 'images/registration.jpg' %}" alt="Registration">
+                <span class="donation-number">1</span>
+            </div>
+            <h3 class="donation-title">REGISTRATION</h3>
+            <p class="donation-text">
+                You need to complete a very simple registration form that contains all required contact information to enter the donation process.
+            </p>
+        </div>
+
+        <div class="donation-card">
+            <div class="donation-image">
+                <img src="{% static 'images/screening.jpg' %}" alt="Screening">
+                <span class="donation-number">2</span>
+            </div>
+            <h3 class="donation-title">SCREENING</h3>
+            <p class="donation-text">
+                A drop of blood from your finger will be taken for a simple test to ensure your iron levels are proper enough for donation.
+            </p>
+        </div>
+
+        <div class="donation-card">
+            <div class="donation-image">
+                <img src="{% static 'images/blood_donation.jpg' %}" alt="Donation">
+                <span class="donation-number">3</span>
+            </div>
+            <h3 class="donation-title">DONATION</h3>
+            <p class="donation-text">
+                After passing screening successfully, you will be directed to a donor bed for donation. It usually takes only 6–10 minutes.
+            </p>
+        </div>
+
+    </div>
+</section>
+
+<!-- our companies -->
+
+<section class="campaigns-section">
+  <div class="container">
+    <h2 class="section-title">OUR CAMPAIGNS</h2>
+    <p class="section-subtitle">
+      Encourage new donors to join and continue to give blood. We have total sixty thousand donor centers
+      and visit thousands of other venues on various occasions.
+    </p>
+
+    <div class="campaigns">
+      <!-- Campaign 1 -->
+      <div class="campaign-card">
+        <img src="https://via.placeholder.com/400x250" alt="Free Group Checking">
+        <div class="campaign-content">
+          <div class="campaign-date">
+            <i class="fa fa-calendar"></i> 14 January, 2018
+          </div>
+          <h3>Free Group Checking</h3>
+          <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus nec iaculis mauris.</p>
+          <div class="campaign-footer">
+            <span><i class="fa fa-clock"></i> 10.00 – 3.00</span>
+            <span><i class="fa fa-map-marker"></i> California, USA</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Campaign 2 -->
+      <div class="campaign-card">
+        <img src="https://via.placeholder.com/400x250" alt="Blood Group Collection">
+        <div class="campaign-content">
+          <div class="campaign-date">
+            <i class="fa fa-calendar"></i> 14 January, 2018
+          </div>
+          <h3>Blood Group Collection</h3>
+          <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus nec iaculis mauris.</p>
+          <div class="campaign-footer">
+            <span><i class="fa fa-clock"></i> 10.00 – 3.00</span>
+            <span><i class="fa fa-map-marker"></i> California, USA</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="campaign-btn">
+      <button class="load-btn">LOAD ALL CAMPAIGNS</button>
+    </div>
+  </div>
+</section>
+
+
 
     <footer>
         <p>&copy; 2025 LifeDrop Blood Bank | All Rights Reserved</p>
