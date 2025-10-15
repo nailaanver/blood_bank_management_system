@@ -149,103 +149,335 @@ footer {
     padding: 0 15px 20px;
 }
 
+/* ============================= */
+/* OUR CAMPAIGNS SECTION */
+/* ============================= */
 
-/* OUR Camoaigns */
-
-/* Campaigns Section */
-.campaigns-section {
-  background: #fff;
-  padding: 60px 0;
-  text-align: center;
-  font-family: 'Poppins', sans-serif;
+.campaign-section {
+    background-color: #fff;
+    padding: 80px 20px;
+    text-align: center;
 }
 
-.section-title {
-  font-size: 32px;
-  font-weight: 700;
-  color: #333;
+.campaign-header h2 {
+    color: #b30000;
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+    position: relative;
+    display: inline-block;
 }
 
-.section-subtitle {
-  max-width: 700px;
-  margin: 10px auto 40px;
-  color: #666;
-  line-height: 1.6;
+.campaign-header h2::after {
+    content: "";
+    display: block;
+    width: 60px;
+    height: 3px;
+    background-color: #b30000;
+    margin: 10px auto 0;
 }
 
-.campaigns {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 30px;
+.campaign-header p {
+    color: #555;
+    max-width: 700px;
+    margin: 0 auto 40px;
+    font-size: 1rem;
+}
+
+.campaign-carousel {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.campaign-container {
+    display: flex;
+    gap: 25px;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    padding: 10px;
 }
 
 .campaign-card {
-  background: #fff;
-  border-radius: 10px;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-  overflow: hidden;
-  max-width: 350px;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+    background: #fff5f5;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    width: 300px;
+    flex-shrink: 0;
+    overflow: hidden;
+    transition: transform 0.3s ease;
 }
 
 .campaign-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    transform: translateY(-8px);
 }
 
 .campaign-card img {
-  width: 100%;
-  height: 220px;
-  object-fit: cover;
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
 }
 
-.campaign-content {
-  padding: 20px;
-  text-align: left;
+.campaign-info {
+    padding: 15px;
+    text-align: left;
+}
+
+.campaign-info h3 {
+    color: #b30000;
+    margin: 8px 0;
+    font-size: 1.2rem;
 }
 
 .campaign-date {
-  color: #e74c3c;
-  font-size: 14px;
-  margin-bottom: 8px;
+    font-size: 0.9rem;
+    color: #888;
 }
 
-.campaign-content h3 {
-  font-size: 20px;
-  color: #333;
-  margin-bottom: 10px;
+.campaign-desc {
+    color: #444;
+    font-size: 0.95rem;
+    margin-bottom: 10px;
 }
 
-.campaign-content p {
-  color: #777;
-  font-size: 15px;
-  line-height: 1.6;
-  margin-bottom: 15px;
-}
-
-.campaign-footer {
-  display: flex;
-  justify-content: space-between;
-  font-size: 14px;
-  color: #999;
+.campaign-meta {
+    display: flex;
+    justify-content: space-between;
+    color: #666;
+    font-size: 0.85rem;
 }
 
 .campaign-btn {
-  margin-top: 40px;
+    background-color: #b30000;
+    color: white;
+    border: none;
+    font-size: 1.8rem;
+    padding: 10px 15px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
 }
 
-.load-btn {
-  background: #e74c3c;
-  color: #fff;
-  border: none;
-  padding: 12px 30px;
-  font-size: 15px;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background 0.3s ease;
+.campaign-btn:hover {
+    background-color: #ff4d4d;
 }
 
-.load-btn:hover {
-  background: #c0392b;
+.campaign-load-btn {
+    margin-top: 40px;
 }
+
+
+/* ============================= */
+/* REQUEST APPOINTMENT & INFO SECTION STYLES */
+/* ============================= */
+
+.appointment-info-section {
+    padding: 80px 20px;
+    background-color: #f7f7f7;
+}
+
+.appointment-info-container {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start; /* Align columns at the top */
+    max-width: 1200px;
+    margin: 0 auto;
+    flex-wrap: wrap; /* Allow columns to wrap on smaller screens */
+    margin-bottom: 50px;
+}
+
+/* --- Info Column Styles --- */
+.info-column {
+    flex: 1 1 500px; /* Flex-grow, flex-shrink, basis */
+    padding: 20px;
+}
+
+.main-image-heart img {
+    width: 100%;
+    max-width: 500px; /* Adjust max width as needed */
+    height: auto;
+    display: block;
+    margin: 0 auto 30px;
+}
+
+.helpful-info {
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+}
+
+.info-header {
+    text-align: center;
+    color: #b30000;
+    font-size: 1.5rem;
+    margin-bottom: 5px;
+}
+
+.info-subheader {
+    text-align: center;
+    color: #333;
+    font-size: 1.2rem;
+    font-weight: normal;
+    margin-bottom: 20px;
+}
+
+.helpful-info ul {
+    list-style: none;
+    padding: 0;
+}
+
+.helpful-info ul li {
+    font-size: 0.95rem;
+    color: #555;
+    margin-bottom: 12px;
+    padding-left: 25px;
+    position: relative;
+}
+
+.helpful-info ul li::before {
+    content: "•"; /* Custom bullet point */
+    color: #ff4d4d;
+    font-weight: bold;
+    display: inline-block;
+    width: 1em;
+    margin-left: -1em;
+    position: absolute;
+    left: 0;
+}
+
+/* --- Form Column Styles --- */
+.form-column {
+    flex: 1 1 450px; /* Flex-grow, flex-shrink, basis */
+    padding: 20px;
+}
+
+.appointment-form-box {
+    background-color: #fff;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    max-width: 450px;
+    margin: 0 auto;
+}
+
+.form-header {
+    text-align: center;
+    background-color: #b30000;
+    color: white;
+    padding: 15px 0;
+    margin: -30px -30px 30px -30px; /* Extend background to edges */
+    font-size: 1.3rem;
+    font-weight: 600;
+}
+
+.appointment-form input,
+.appointment-form select,
+.appointment-form textarea {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box; /* Include padding/border in element's total width/height */
+    font-size: 1rem;
+    color: #333;
+}
+
+.form-row {
+    display: flex;
+    gap: 15px;
+}
+
+.form-row input,
+.form-row select {
+    flex: 1; /* Make inputs/selects take equal space in the row */
+    margin-bottom: 15px;
+}
+
+.appointment-form textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+.get-appointment-btn {
+    width: 100%;
+    border: none;
+    cursor: pointer;
+    text-transform: uppercase;
+    font-size: 1.1rem;
+}
+
+/* --- Stats Section Styles --- */
+.stats-container {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    padding: 0 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+    flex-wrap: wrap;
+}
+
+.stat-card {
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+    flex: 1 1 200px; /* Ensure cards are responsive but don't get too small */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.stat-icon {
+    color: #ff4d4d;
+    font-size: 2.5rem;
+    margin-bottom: 5px;
+}
+
+.stat-number {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #b30000;
+    margin: 5px 0;
+}
+
+.stat-label {
+    font-size: 1rem;
+    color: #555;
+    margin: 0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 992px) {
+    .appointment-info-container {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .form-column {
+        order: -1; /* Move the form above the image on mobile */
+        margin-bottom: 30px;
+    }
+
+    .main-image-heart img {
+        margin: 0 auto 10px;
+    }
+
+    .stats-container {
+        justify-content: space-around;
+    }
+}
+
+@media (max-width: 576px) {
+    .form-row {
+        flex-direction: column;
+        gap: 0;
+    }
+}
+
+
+
+

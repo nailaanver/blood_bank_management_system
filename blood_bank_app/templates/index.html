@@ -1,8 +1,8 @@
-{% load static %}
 
 {% extends 'master.html' %}
 {% block title %}index{% endblock %}
 {% block content %}
+{% load static %}
 
    
 
@@ -75,61 +75,178 @@
     </div>
 </section>
 
-<!-- our companies -->
 
-<section class="campaigns-section">
-  <div class="container">
-    <h2 class="section-title">OUR CAMPAIGNS</h2>
-    <p class="section-subtitle">
-      Encourage new donors to join and continue to give blood. We have total sixty thousand donor centers
-      and visit thousands of other venues on various occasions.
+<!-- ============================= -->
+<!-- OUR CAMPAIGNS SECTION -->
+<!-- ============================= -->
+<section class="campaign-section">
+  <div class="campaign-header">
+    <h2>OUR CAMPAIGNS</h2>
+    <p>
+      Encourage new donors to join and continue to give blood. We have total sixty thousand donor centers and visit thousands of other venues on various occasions.
     </p>
+  </div>
 
-    <div class="campaigns">
-      <!-- Campaign 1 -->
+  <div class="campaign-carousel">
+    <button class="campaign-btn prev">&#10094;</button>
+
+    <div class="campaign-container">
       <div class="campaign-card">
-        <img src="https://via.placeholder.com/400x250" alt="Free Group Checking">
-        <div class="campaign-content">
-          <div class="campaign-date">
-            <i class="fa fa-calendar"></i> 14 January, 2018
+        <img src="{% static 'images/opening-blood.jpg' %}" alt="Opening Donation Day">
+        <div class="campaign-info">
+          <p class="campaign-date"><i class="fa fa-calendar"></i> 14 January, 2025</p>
+          <h3>Opening Donation Day</h3>
+          <p class="campaign-desc">Join us to help others and make a difference through your valuable contribution.</p>
+          <div class="campaign-meta">
+            <span><i class="fa fa-clock-o"></i> 10.00 – 3.00</span>
+            <span><i class="fa fa-map-marker"></i> Calicut, India</span>
           </div>
+        </div>
+      </div>
+
+      <div class="campaign-card">
+        <img src="{% static 'images/group-blood-checking.jpg' %}" alt="Free Group Checking">
+        <div class="campaign-info">
+          <p class="campaign-date"><i class="fa fa-calendar"></i> 20 January, 2025</p>
           <h3>Free Group Checking</h3>
-          <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus nec iaculis mauris.</p>
-          <div class="campaign-footer">
-            <span><i class="fa fa-clock"></i> 10.00 – 3.00</span>
-            <span><i class="fa fa-map-marker"></i> California, USA</span>
+          <p class="campaign-desc">Get your blood group checked for free. Encourage your friends and family to join.</p>
+          <div class="campaign-meta">
+            <span><i class="fa fa-clock-o"></i> 9.00 – 2.00</span>
+            <span><i class="fa fa-map-marker"></i> Kozhikode, India</span>
           </div>
         </div>
       </div>
 
-      <!-- Campaign 2 -->
       <div class="campaign-card">
-        <img src="https://via.placeholder.com/400x250" alt="Blood Group Collection">
-        <div class="campaign-content">
-          <div class="campaign-date">
-            <i class="fa fa-calendar"></i> 14 January, 2018
-          </div>
-          <h3>Blood Group Collection</h3>
-          <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus nec iaculis mauris.</p>
-          <div class="campaign-footer">
-            <span><i class="fa fa-clock"></i> 10.00 – 3.00</span>
-            <span><i class="fa fa-map-marker"></i> California, USA</span>
+        <img src="{% static 'images/hospital-drive.png' %}" alt="Hospital Blood Drive">
+        <div class="campaign-info">
+          <p class="campaign-date"><i class="fa fa-calendar"></i> 28 January, 2025</p>
+          <h3>Hospital Blood Drive</h3>
+          <p class="campaign-desc">Join our hospital drive to support emergency blood needs across multiple wards.</p>
+          <div class="campaign-meta">
+            <span><i class="fa fa-clock-o"></i> 11.00 – 4.00</span>
+            <span><i class="fa fa-map-marker"></i> Vatakara, India</span>
           </div>
         </div>
       </div>
+      <div class="campaign-card">
+        <img src="{% static 'images/hospital-drive.png' %}" alt="Hospital Blood Drive">
+        <div class="campaign-info">
+          <p class="campaign-date"><i class="fa fa-calendar"></i> 28 January, 2025</p>
+          <h3>Hospital Blood Drive</h3>
+          <p class="campaign-desc">Join our hospital drive to support emergency blood needs across multiple wards.</p>
+          <div class="campaign-meta">
+            <span><i class="fa fa-clock-o"></i> 11.00 – 4.00</span>
+            <span><i class="fa fa-map-marker"></i> Vatakara, India</span>
+          </div>
+        </div>
+      </div>
+     
+
     </div>
 
-    <div class="campaign-btn">
-      <button class="load-btn">LOAD ALL CAMPAIGNS</button>
-    </div>
+    <button class="campaign-btn next">&#10095;</button>
+  </div>
+
+  <div class="campaign-load-btn">
+    <a href="#" class="btn">LOAD ALL CAMPAIGNS</a>
   </div>
 </section>
+
+<section class="appointment-info-section">
+    <div class="appointment-info-container">
+
+        <div class="info-column">
+            <div class="main-image-heart">
+                <img src="{% static 'images/blood-donor-heart.jpg' %}" alt="Blood donor holding a heart">
+            </div>
+
+            <div class="helpful-info">
+                <h3 class="info-header">Good To Know</h3>
+                <h4 class="info-subheader">Helpful Information</h4>
+                <ul>
+                    <li>Maintain a healthy iron level by eating iron-rich foods.</li>
+                    <li>Drink an extra 16 oz. of water prior to your donation.</li>
+                    <li>Avoid alcohol consumption before your blood donation.</li>
+                    <li>Remember to bring the donor card or national ID/Passport.</li>
+                    <li>Finally, try to get a good night sleep after donation.</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="form-column">
+            <div class="appointment-form-box">
+                <h3 class="form-header">REQUEST APPOINTMENT</h3>
+                <form action="#" method="POST" class="appointment-form">
+                    <div class="form-row">
+                        <input type="text" name="name" placeholder="Name" required>
+                        <input type="email" name="email" placeholder="Email" required>
+                    </div>
+                    <div class="form-row">
+                        <input type="tel" name="phone" placeholder="Phone" required>
+                        <select name="donation_center" required>
+                            <option value="" disabled selected>Donation Center</option>
+                            <option value="center1">Calicut Center</option>
+                            <option value="center2">Kozhikode Branch</option>
+                            <option value="center3">Vatakara Clinic</option>
+                        </select>
+                    </div>
+                    <div class="form-row">
+                        <input type="date" name="date" required>
+                        <input type="time" name="time" required>
+                    </div>
+                    <textarea name="message" placeholder="Your Message..."></textarea>
+                    <button type="submit" class="btn get-appointment-btn">GET APPOINTMENT</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="stats-container">
+        <div class="stat-card">
+            <i class="fa fa-heart stat-icon"></i>
+            <p class="stat-number">2578</p>
+            <p class="stat-label">Success Smile</p>
+        </div>
+        <div class="stat-card">
+            <i class="fa fa-stethoscope stat-icon"></i>
+            <p class="stat-number">3235</p>
+            <p class="stat-label">Happy Donors</p>
+        </div>
+        <div class="stat-card">
+            <i class="fa fa-users stat-icon"></i>
+            <p class="stat-number">3568</p>
+            <p class="stat-label">Happy Recipient</p>
+        </div>
+        <div class="stat-card">
+            <i class="fa fa-trophy stat-icon"></i>
+            <p class="stat-number">1364</p>
+            <p class="stat-label">Total Awards</p>
+        </div>
+    </div>
+</section>
+
+
+
+
 
 
 
     <footer>
         <p>&copy; 2025 LifeDrop Blood Bank | All Rights Reserved</p>
     </footer>
+
+<script>
+const campaignContainer = document.querySelector('.campaign-container');
+document.querySelector('.campaign-btn.next').addEventListener('click', () => {
+  campaignContainer.scrollBy({ left: 100, behavior: 'smooth' });
+});
+document.querySelector('.campaign-btn.prev').addEventListener('click', () => {
+  campaignContainer.scrollBy({ left: -100, behavior: 'smooth' });
+});
+</script>
+
+
 
 
 {% endblock %}
