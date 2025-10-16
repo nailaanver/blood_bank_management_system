@@ -8,13 +8,136 @@
 
     <form method="post">
         {% csrf_token %}
+
+        <!-- Unique Role Selection -->
+        <div class="role-select">
+            <h4>Select Your Role</h4>
+            <div class="role-options">
+                <label class="role-card">
+                    <input type="radio" name="role" value="patient" required>
+                    <div class="role-content">
+                        <i class="fa fa-user-md"></i>
+                        <span>Patient</span>
+                    </div>
+                </label>
+
+                <label class="role-card">
+                    <input type="radio" name="role" value="donor" required>
+                    <div class="role-content">
+                        <i class="fa fa-tint"></i>
+                        <span>Donor</span>
+                    </div>
+                </label>
+
+                <label class="role-card">
+                    <input type="radio" name="role" value="hospital" required>
+                    <div class="role-content">
+                        <i class="fa fa-hospital"></i>
+                        <span>Hospital</span>
+                    </div>
+                </label>
+                <label class="role-card">
+                    <input type="radio" name="role" value="admin" required>
+                    <div class="role-content">
+                        <i class="fa fa-cog"></i>
+                        <span>Admin</span>
+                    </div>
+                </label>
+            </div>
+        </div>
+
+        <!-- Django Form -->
         {{ form.as_p }}
+
         <button type="submit">Log In</button>
     </form>
 
     <div class="links">
-            <a href="{% url 'forgot_password' %}">Forgot Password?</a>
-            <p>Don't have an account? <a href="{% url 'register' %}">Sign up</a></p>
+        <a href="{% url 'forgot_password' %}">Forgot Password?</a>
+        <p>Don't have an account? <a href="{% url 'register' %}">Sign up</a></p>
     </div>
 </div>
+
+<!-- FontAwesome for icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<!-- Add this CSS -->
+<style>
+.login-container {
+    width: 420px;
+    margin: 60px auto;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    background: #fff;
+    text-align: center;
+    font-family: "Poppins", sans-serif;
+}
+
+.role-select {
+    margin-bottom: 25px;
+}
+
+.role-options {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 10px;
+}
+
+.role-card {
+    cursor: pointer;
+}
+
+.role-card input[type="radio"] {
+    display: none;
+}
+
+.role-content {
+    border: 2px solid #ddd;
+    border-radius: 10px;
+    padding: 15px 25px;
+    transition: all 0.3s ease;
+    background-color: #fafafa;
+}
+
+.role-content i {
+    font-size: 28px;
+    color: #ff4d4d;
+    display: block;
+    margin-bottom: 5px;
+}
+
+.role-card input[type="radio"]:checked + .role-content {
+    border-color: #ff4d4d;
+    background-color: #fff5f5;
+    box-shadow: 0 0 10px rgba(255, 77, 77, 0.3);
+    transform: scale(1.05);
+}
+
+.login-container button {
+    width: 100%;
+    padding: 10px;
+    border: none;
+    background: #ff4d4d;
+    color: white;
+    font-size: 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.login-container button:hover {
+    background: #ff3333;
+}
+
+.links {
+    margin-top: 15px;
+}
+
+.links a {
+    color: #ff4d4d;
+    text-decoration: none;
+}
+</style>
 {% endblock %}

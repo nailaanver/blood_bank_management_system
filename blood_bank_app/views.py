@@ -12,39 +12,30 @@ from blood_bank_app.forms import LoginForm,UserForm
 # Create your views here.
 def login_View(request):
     if request.method == 'POST':
+        role = request.POST.get('role')
         form = LoginForm(request.POST)
         if form.is_valid():
             username = form.cleaned_data['username']
             password = form.cleaned_data['password']
             user = authenticate(request, username=username, password=password)
             if user is not None:
-                # ✅ Log the user in
-                login(request, user)
-
-                # ✅ Ensure profile exists (auto-create if missing)
-                profile, created = Profile.objects.get_or_create(
-                    user=user,
-                    defaults={'role': 'admin' if user.is_superuser else 'donor'}
-                )
-
-                # ✅ Redirect based on role
-                if profile.role == 'patient':
-                    return redirect('patient_dashboard')
-                elif profile.role == 'donor':
-                    return redirect('donor_dashboard')
-                elif profile.role == 'hospital':
-                    return redirect('hospital_dashboard')
-                elif profile.role == 'admin':
-                    return redirect('admin_dashboard')
-
-                # ✅ fallback redirect (in case role is blank)
-                return redirect('admin_dashboard')
-
+                if user.profile.role == role:  # ensure role matches
+                    login(request, user)
+                    if role == 'patient':
+                        return redirect('patient_dashboard')
+                    elif role == 'donor':
+                        return redirect('donor_dashboard')
+                    elif role == 'admin':
+                        return redirect('admin_dashboard')
+                else:
+                    error = "Role does not match your account."
             else:
-                return render(request, 'login.html', {'form': form, 'error': 'Invalid credentials'})
+                error = "Invalid username or password."
+        else:
+            error = "Form is invalid."
+        return render(request, 'login.html', {'form': form, 'error': error})
     else:
         form = LoginForm()
-
     return render(request, 'login.html', {'form': form})
 
 # register
