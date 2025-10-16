@@ -1,4 +1,4 @@
-
+ 
 {% extends 'master.html' %}
 {% block title %}index{% endblock %}
 {% block content %}
@@ -74,6 +74,51 @@
 
     </div>
 </section>
+
+<!-- ============================= -->
+<!-- ABOUT US SECTION -->
+<!-- ============================= -->
+<section class="about-section" id="about">
+  <div class="container">
+    <div class="about-header">
+      <h2>ABOUT US</h2>
+      <p>Learn more about who we are and our mission to connect donors with those in need.</p>
+    </div>
+
+    <div class="about-content">
+      <div class="about-text">
+        <h3>Who We Are</h3>
+        <p>
+          LifeDrop is a non-profit initiative dedicated to bridging the gap between voluntary
+          blood donors and patients in need. We work with hospitals, communities, and healthcare
+          providers to ensure timely and safe blood donations.
+        </p>
+        <ul>
+          <li>Expert team with medical supervision.</li>
+          <li>Transparent and quick donor-matching process.</li>
+          <li>Partnerships with trusted hospitals and clinics.</li>
+          <li>Community-driven donation campaigns.</li>
+        </ul>
+        <a href="{% url 'login' %}" class="btn about-btn">Join as a Donor</a>
+      </div>
+
+      <!-- Video Popup Overlay -->
+<div class="about-image">
+  <iframe
+    width="100%"
+    height="315"
+    src="https://www.youtube.com/embed/dPl4lDyipgs"
+    title="LifeDrop About Us Video"
+    frameborder="0"
+    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+    allowfullscreen
+  ></iframe>
+</div>
+
+    </div>
+  </div>
+</section>
+
 
 
 <!-- ============================= -->
@@ -226,15 +271,102 @@
     </div>
 </section>
 
+<!-- ============================= -->
+<!-- CAMPAIGN GALLERY SECTION -->
+<!-- ============================= -->
+<!-- CAMPAIGN GALLERY SECTION -->
+<section class="gallery-section">
+  <div class="gallery-header">
+    <h2>CAMPAIGN GALLERY</h2>
+    <p>our prestigious voluntary work on campaigns by the team</p>
+  </div>
+
+  <div class="gallery-wrapper">
+    <div class="gallery-container">
+      <div class="gallery-item">
+        <img src="{% static 'images/gallery_1.jpg' %}" alt="Campaign 1">
+        <div class="gallery-overlay"><i class="fa fa-image"></i></div>
+      </div>
+
+      <div class="gallery-item">
+        <img src="{% static 'images/gallery_2.jpg' %}" alt="Campaign 2">
+        <div class="gallery-overlay"><i class="fa fa-image"></i></div>
+      </div>
+
+      <div class="gallery-item">
+        <img src="{% static 'images/gallery_3.jpg' %}" alt="Campaign 3">
+        <div class="gallery-overlay"><i class="fa fa-image"></i></div>
+      </div>
+      <div class="gallery-item">
+        <img src="{% static 'images/gallery_4.jpg' %}" alt="Campaign 3">
+        <div class="gallery-overlay"><i class="fa fa-image"></i></div>
+      </div>
+      <div class="gallery-item">
+        <img src="{% static 'images/gallery_5.jpg' %}" alt="Campaign 3">
+        <div class="gallery-overlay"><i class="fa fa-image"></i></div>
+      </div>
+      <div class="gallery-item">
+        <img src="{% static 'images/gallery_6.jpg' %}" alt="Campaign 3">
+        <div class="gallery-overlay"><i class="fa fa-image"></i></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="gallery-dots" role="tablist" aria-label="Gallery navigation">
+    <button class="dot active" data-index="0" aria-label="Show image 1"></button>
+    <button class="dot" data-index="1" aria-label="Show image 2"></button>
+    <button class="dot" data-index="2" aria-label="Show image 3"></button>
+  </div>
+</section>
+
+
+
+
+<!-- ============================= -->
+<!-- FOOTER SECTION -->
+<!-- ============================= -->
+<footer class="footer-section">
+  <div class="footer-container">
+    <!-- About -->
+    <div class="footer-about">
+      <h2 class="footer-logo"><span style="color:#ff4d4d;">Life</span>Drops</h2>
+      <p>
+        We are the world’s largest and most trusted blood donation center. Since 1973, we’ve
+        worked globally to connect donors and patients through awareness and donation campaigns.
+      </p>
+    </div>
+
+    <!-- Contact Info -->
+    <div class="footer-contact">
+      <h3>CONTACT US</h3>
+      <p><i class="fa fa-envelope"></i> support@donation.com</p>
+      <p><i class="fa fa-envelope"></i> helpme@donation.com</p>
+      <p><i class="fa fa-map-marker"></i> Road-2,3/A East Shibgonj, Sylhet-3100, Bangladesh</p>
+      <p><i class="fa fa-phone"></i> Office: (+880) 0823 560 433</p>
+      <p><i class="fa fa-mobile"></i> Cell: (+880) 0723 161 343</p>
+    </div>
+
+
+    <!-- Subscribe -->
+    <div class="footer-subscribe">
+      <h3>SUBSCRIBE US</h3>
+      <p>Signup for regular newsletters and stay up to date with our latest news.</p>
+      <form>
+        <input type="email" placeholder="Enter Your Email" required>
+        <button type="submit">SUBSCRIBE NOW</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="footer-bottom">
+    <p>Copyright © 2018 - Blood Buddies by BlueWindLab. All Rights Reserved.</p>
+  </div>
+</footer>
 
 
 
 
 
-
-    <footer>
-        <p>&copy; 2025 LifeDrop Blood Bank | All Rights Reserved</p>
-    </footer>
 
 <script>
 const campaignContainer = document.querySelector('.campaign-container');
@@ -244,7 +376,57 @@ document.querySelector('.campaign-btn.next').addEventListener('click', () => {
 document.querySelector('.campaign-btn.prev').addEventListener('click', () => {
   campaignContainer.scrollBy({ left: -100, behavior: 'smooth' });
 });
+
+
+
+const dots = document.querySelectorAll('.gallery-dots .dot');
+const galleryContainer = document.querySelector('.gallery-container');
+
+dots.forEach(dot => {
+  dot.addEventListener('click', () => {
+    // Remove active from all dots
+    dots.forEach(d => d.classList.remove('active'));
+    dot.classList.add('active');
+
+    // Get index and move container
+    const index = dot.getAttribute('data-index');
+    const offset = -index * 320; // 320px = image width
+    galleryContainer.style.transform = `translateX(${offset}px)`;
+  });
+});
+
+// youtube video
+
+const playButton = document.querySelector('.play-button');
+const popup = document.getElementById('videoPopup');
+const closeBtn = document.getElementById('closePopup');
+const videoFrame = document.getElementById('youtubeVideo');
+
+// Replace with your YouTube video ID
+const videoURL = "https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1";
+
+playButton.addEventListener('click', () => {
+  popup.style.display = 'flex';
+  videoFrame.src = videoURL;
+});
+
+closeBtn.addEventListener('click', () => {
+  popup.style.display = 'none';
+  videoFrame.src = ""; // stop video when closed
+});
+
+window.addEventListener('click', (e) => {
+  if (e.target === popup) {
+    popup.style.display = 'none';
+    videoFrame.src = "";
+  }
+});
+
+
+
+
 </script>
+
 
 
 
