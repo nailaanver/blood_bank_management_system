@@ -1,6 +1,10 @@
 from .models import Profile
-from django.shortcuts import render, redirect
+from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib.auth import authenticate, login, logout
+from .models import User
+from django.contrib import messages
+from django.contrib.auth.hashers import make_password
+
 
 
 from blood_bank_app.forms import LoginForm,UserForm
@@ -69,3 +73,36 @@ def donor_dashboard(request):
     return render(request, 'donor_dashboard.html')
 def index(request):
     return render(request,'index.html')
+
+def logout_view(request):
+    logout(request)
+    return redirect('index')
+
+def forgot_password(request):
+    if request.method == 'POST':
+        email = request.POST.get('email')
+        try:
+            user = User.objects.get(email=email)
+            # ✅ Redirect to reset-password page with username
+            return redirect('reset_password', username=user.username)
+        except User.DoesNotExist:
+            messages.error(request, "No account found with that email.")
+    return render(request, 'forgot_password.html')
+
+
+def reset_password(request, username):
+    user = get_object_or_404(User, username=username)
+
+    if request.method == 'POST':
+        password = request.POST.get('password')
+        confirm_password = request.POST.get('confirm_password')
+
+        if password == confirm_password:
+            user.password = make_password(password)
+            user.save()
+            messages.success(request, "Password reset successfully! You can now log in.")
+            return redirect('login')
+        else:
+            messages.error(request, "Passwords do not match.")
+
+    return render(request, 'reset_password.html', {'username': username})

@@ -12,10 +12,9 @@
         <button type="submit">Log In</button>
     </form>
 
-    <p>
-        Don't have an account?
-        <a href="{% url 'register' %}">Sign up</a>
-        <button><a href="{% url 'index' %}">Cancel</a></button>
-    </p>
+    <div class="links">
+            <a href="{% url 'forgot_password' %}">Forgot Password?</a>
+            <p>Don't have an account? <a href="{% url 'register' %}">Sign up</a></p>
+    </div>
 </div>
 {% endblock %}

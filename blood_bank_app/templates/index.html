@@ -12,10 +12,10 @@
             <nav>
                 <ul>
                     <li><a href="#">Home</a></li>
-                    <li><a href="#">About us</a></li>
+                    <li><a href="#about">About us</a></li>
                     <!-- <li><a href="#">Patients</a></li> -->
                     <!-- <li><a href="#">Hospitals</a></li> -->
-                    <li><a href="#">Contact</a></li>
+                    <li><a href="#contact">Contact</a></li>
                 </ul>
             </nav>
             <button><a href="{% url 'login' %}">Login</a></button>
@@ -102,18 +102,33 @@
         <a href="{% url 'login' %}" class="btn about-btn">Join as a Donor</a>
       </div>
 
-      <!-- Video Popup Overlay -->
+     <!-- Video Thumbnail with Play Button -->
 <div class="about-image">
-  <iframe
-    width="100%"
-    height="315"
-    src="https://www.youtube.com/embed/dPl4lDyipgs"
-    title="LifeDrop About Us Video"
-    frameborder="0"
-    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-    allowfullscreen
-  ></iframe>
+  <img
+    src="{% static 'images/thumbnail.jpg' %}"
+    alt="About LifeDrop Video Thumbnail"
+    class="video-thumbnail"
+  />
+  <div class="play-button" id="playButton">
+    <i class="fa fa-play"></i>
+  </div>
 </div>
+
+<!-- Video Popup Modal -->
+<div class="video-modal" id="videoModal">
+  <div class="video-content">
+    <span class="close-modal">&times;</span>
+    <iframe
+      id="youtubeFrame"
+      width="100%"
+      height="400"
+      frameborder="0"
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+      allowfullscreen
+    ></iframe>
+  </div>
+</div>
+
 
     </div>
   </div>
@@ -319,6 +334,52 @@
   </div>
 </section>
 
+<!-- ================== CONTACT SECTION ================== -->
+<section class="contact-section" id="contact">
+  <div class="contact-container">
+    <div class="contact-info">
+      <h2>Contact Us</h2>
+      <p>
+        Have questions or want to join our life-saving mission?  
+        Get in touch with <strong>LifeDrop</strong> — we’d love to hear from you.
+      </p>
+
+      <div class="info-item">
+        <i class="fa fa-location-dot"></i>
+        <span>LifeDrop Blood Bank, City Hospital Road, Kochi, Kerala</span>
+      </div>
+
+      <div class="info-item">
+        <i class="fa fa-phone"></i>
+        <span>+91 98765 43210</span>
+      </div>
+
+      <div class="info-item">
+        <i class="fa fa-envelope"></i>
+        <span>lifedrop.bloodbank@gmail.com</span>
+      </div>
+
+      <div class="social-links">
+        <a href="#"><i class="fab fa-facebook-f"></i></a>
+        <a href="#"><i class="fab fa-instagram"></i></a>
+        <a href="#"><i class="fab fa-twitter"></i></a>
+      </div>
+    </div>
+
+    <div class="contact-form">
+      <form method="post" action="#">
+        {% csrf_token %}
+        <h3>Send us a message</h3>
+        <input type="text" name="name" placeholder="Your Name" required />
+        <input type="email" name="email" placeholder="Your Email" required />
+        <textarea name="message" rows="5" placeholder="Your Message" required></textarea>
+        <button type="submit">Send Message</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+
 
 
 
@@ -395,32 +456,32 @@ dots.forEach(dot => {
   });
 });
 
-// youtube video
+ // Get elements
+const playButton = document.getElementById('playButton');
+const videoModal = document.getElementById('videoModal');
+const youtubeFrame = document.getElementById('youtubeFrame');
+const closeModal = document.querySelector('.close-modal');
 
-const playButton = document.querySelector('.play-button');
-const popup = document.getElementById('videoPopup');
-const closeBtn = document.getElementById('closePopup');
-const videoFrame = document.getElementById('youtubeVideo');
-
-// Replace with your YouTube video ID
-const videoURL = "https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1";
-
+// Open modal and play video
 playButton.addEventListener('click', () => {
-  popup.style.display = 'flex';
-  videoFrame.src = videoURL;
+  videoModal.style.display = 'flex';
+  youtubeFrame.src = 'https://www.youtube.com/embed/dPl4lDyipgs?autoplay=1';
 });
 
-closeBtn.addEventListener('click', () => {
-  popup.style.display = 'none';
-  videoFrame.src = ""; // stop video when closed
+// Close modal
+closeModal.addEventListener('click', () => {
+  videoModal.style.display = 'none';
+  youtubeFrame.src = ''; // stop the video
 });
 
+// Close when clicking outside
 window.addEventListener('click', (e) => {
-  if (e.target === popup) {
-    popup.style.display = 'none';
-    videoFrame.src = "";
+  if (e.target === videoModal) {
+    videoModal.style.display = 'none';
+    youtubeFrame.src = '';
   }
 });
+
 
 
 
