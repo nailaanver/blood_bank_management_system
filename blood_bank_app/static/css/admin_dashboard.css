@@ -1,0 +1,240 @@
+/* ------------------------------
+   BLOOD BANK ADMIN DASHBOARD STYLE
+   Modern, Premium, Clean Design
+------------------------------ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+    --primary: #e63946;
+    --primary-dark: #b91c1c;
+    --background: #f8f9fa;
+    --surface: #ffffff;
+    --text-dark: #1f2937;
+    --text-light: #6b7280;
+    --border: #e5e7eb;
+    --shadow: rgba(0, 0, 0, 0.08);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', sans-serif;
+}
+
+body {
+    background-color: var(--background);
+    color: var(--text-dark);
+    overflow-x: hidden;
+}
+
+/* ===== HEADER ===== */
+.header {
+    background: linear-gradient(90deg, var(--primary) 0%, #ef4444 100%);
+    height: 70px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 2rem;
+    position: fixed;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 3px 10px var(--shadow);
+    color: #fff;
+}
+
+.logo {
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.welcome-admin {
+    font-weight: 500;
+    font-size: 1.1rem;
+}
+
+/* ===== SIDEBAR ===== */
+.navcontainer {
+    width: 250px;
+    position: fixed;
+    top: 70px;
+    left: 0;
+    height: calc(100vh - 70px);
+    background: var(--surface);
+    box-shadow: 2px 0 10px var(--shadow);
+    transition: all 0.3s ease-in-out;
+    z-index: 10;
+    padding-top: 20px;
+}
+
+.nav-upper-options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 0 10px;
+}
+
+.nav-option {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 14px 18px;
+    border-radius: 10px;
+    font-weight: 500;
+    font-size: 0.95rem;
+    color: var(--text-dark);
+    cursor: pointer;
+    transition: all 0.25s ease-in-out;
+}
+
+.nav-option i {
+    font-size: 1.2rem;
+    color: var(--primary);
+}
+
+.nav-option:hover {
+    background: #ffe5e5;
+    color: var(--primary-dark);
+    transform: translateX(4px);
+}
+
+.nav-option.active {
+    background: var(--primary);
+    color: #fff;
+    box-shadow: 0 4px 10px rgba(230, 57, 70, 0.4);
+}
+
+.nav-option.active i {
+    color: #fff;
+}
+
+/* ===== MAIN CONTENT ===== */
+.main {
+    margin-left: 250px;
+    padding: 100px 40px 40px;
+    min-height: 100vh;
+    transition: all 0.3s ease-in-out;
+}
+
+/* ===== DASHBOARD BOXES ===== */
+.box-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 25px;
+    margin-top: 20px;
+}
+
+.box {
+    background: var(--surface);
+    border-radius: 16px;
+    padding: 25px;
+    box-shadow: 0 4px 15px var(--shadow);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.25s ease-in-out;
+    border-left: 6px solid var(--primary);
+}
+
+.box:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 18px rgba(230, 57, 70, 0.25);
+}
+
+.box1 { border-left-color: #e63946; }
+.box2 { border-left-color: #ef4444; }
+.box3 { border-left-color: #dc2626; }
+
+.text .topic-heading {
+    font-size: 1.1rem;
+    color: var(--text-light);
+    margin-bottom: 5px;
+}
+
+.text .count {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-dark);
+}
+
+/* ===== TABLE STYLING ===== */
+.report-container {
+    margin-top: 40px;
+    background: var(--surface);
+    border-radius: 14px;
+    box-shadow: 0 3px 12px var(--shadow);
+    overflow-x: auto;
+}
+
+.report-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 2px solid var(--border);
+}
+
+.report-header .recent-Articles {
+    font-size: 1.5rem;
+    color: var(--primary);
+    font-weight: 600;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table th, .table td {
+    text-align: left;
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-dark);
+}
+
+.table th {
+    background: #f9fafb;
+    color: var(--text-light);
+    text-transform: uppercase;
+    font-size: 0.9rem;
+}
+
+.table tr:hover {
+    background-color: #fff5f5;
+}
+
+/* ===== ALERT ===== */
+.alert-success {
+    position: fixed;
+    top: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--primary);
+    color: #fff;
+    padding: 12px 25px;
+    border-radius: 8px;
+    font-weight: 500;
+    box-shadow: 0 4px 10px rgba(230, 57, 70, 0.4);
+    animation: fadeInOut 3s ease-in-out forwards;
+}
+
+@keyframes fadeInOut {
+    0% { opacity: 0; transform: translate(-50%, -10px); }
+    10%, 90% { opacity: 1; transform: translate(-50%, 0); }
+    100% { opacity: 0; transform: translate(-50%, -10px); }
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+    .navcontainer {
+        width: 80px;
+    }
+    .main {
+        margin-left: 80px;
+    }
+    .nav-option h3 {
+        display: none;
+    }
+}

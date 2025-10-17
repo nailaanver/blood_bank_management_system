@@ -4,6 +4,7 @@ from django.contrib.auth import authenticate, login, logout
 from .models import User
 from django.contrib import messages
 from django.contrib.auth.hashers import make_password
+from .forms import ContactForm
 
 
 
@@ -97,3 +98,31 @@ def reset_password(request, username):
             messages.error(request, "Passwords do not match.")
 
     return render(request, 'reset_password.html', {'username': username})
+
+def contact_view(request):
+    if request.method == "POST":
+        form = ContactForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Your message has been sent successfully!")
+            return redirect('contact')
+    else:
+        form = ContactForm()
+    return render(request, 'contact.html', {'form': form})
+def admin_dashboard_content(request):
+    # total_users = User.objects.count()
+    # total_contacts = Contact.objects.count()
+
+    # context = {
+    #     'total_users': total_users,
+    #     'total_contacts': total_contacts
+    # }
+    return render(request, 'partials/admin_dashboard_content.html')
+def manage_users(request):
+    return render(request, 'partials/manage_users.html')
+def manage_bloodstock(request):
+    return render(request, 'partials/manage_bloodstock.html')
+def manage_requests(request):
+    return render(request, 'partials/manage_requests.html')
+def view_reports(request):
+    return render(request, 'partials/view_reports.html')

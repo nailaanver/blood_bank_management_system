@@ -15,6 +15,13 @@ urlpatterns = [
     
     path('forgot-password/', views.forgot_password, name='forgot_password'),
     path('reset-password/<str:username>/', views.reset_password, name='reset_password'),
+    path('contact/', views.contact_view, name='contact'),
+    path('admin_dashboard_content/', views.admin_dashboard_content, name='admin_dashboard_content'),
+    path('manage_users/', views.manage_users, name='manage_users'),
+    path('manage_bloodstock/', views.manage_bloodstock, name='manage_bloodstock'),
+    path('manage_requests/', views.manage_requests, name='manage_requests'),
+    path('view_reports/', views.view_reports, name='view_reports'),
+
 
     
 
