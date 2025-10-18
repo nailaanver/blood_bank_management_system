@@ -5,7 +5,12 @@ from .models import User
 from django.contrib import messages
 from django.contrib.auth.hashers import make_password
 from .forms import ContactForm
+from django.contrib.auth.decorators import login_required
 
+
+
+from .models import Profile, DonorDetail, PatientDetail, HospitalDetail, User, ContactMessage
+from .forms import LoginForm, UserForm, ContactForm, DonorDetailForm, PatientDetailForm, HospitalDetailForm
 
 
 from blood_bank_app.forms import LoginForm,UserForm
@@ -20,13 +25,24 @@ def login_View(request):
             user = authenticate(request, username=username, password=password)
             if user is not None:
                 login(request, user)
-                if user.profile.role == 'patient':
-                    return redirect('patient_dashboard')
-                elif user.profile.role == 'donor':
-                    return redirect('donor_dashboard')
-                elif user.profile.role == 'hospital':
-                    return redirect('hospital_dashboard')
-                elif user.profile.role == 'admin':
+                # Check if the user already filled details
+                role = user.profile.role
+                if role == 'donor':
+                    if hasattr(user, 'donordetail'):
+                        return redirect('donor_dashboard')
+                    else:
+                        return redirect('donor_detail_form')
+                elif role == 'patient':
+                    if hasattr(user, 'patientdetail'):
+                        return redirect('patient_dashboard')
+                    else:
+                        return redirect('patient_detail_form')
+                elif role == 'hospital':
+                    if hasattr(user, 'hospitaldetail'):
+                        return redirect('hospital_dashboard')
+                    else:
+                        return redirect('hospital_detail_form')
+                elif role == 'admin':
                     return redirect('admin_dashboard')
             else:
                 return render(request, 'login.html', {'form': form, 'error': 'Invalid credentials'})
@@ -121,3 +137,35 @@ def manage_requests(request):
     return render(request, 'partials/manage_requests.html')
 def view_reports(request):
     return render(request, 'partials/view_reports.html')
+
+
+
+@login_required
+def donor_detail_form_view(request):
+    form = DonorDetailForm(request.POST or None, request.FILES or None, instance=getattr(request.user, 'donordetail', None))
+    if form.is_valid():
+        donor = form.save(commit=False)
+        donor.user = request.user
+        donor.save()
+        return redirect('donor_dashboard')
+    return render(request, 'donor_detail_form.html', {'form': form})
+
+@login_required
+def patient_detail_form_view(request):
+    form = PatientDetailForm(request.POST or None, request.FILES or None, instance=getattr(request.user, 'patientdetail', None))
+    if form.is_valid():
+        patient = form.save(commit=False)
+        patient.user = request.user
+        patient.save()
+        return redirect('patient_dashboard')
+    return render(request, 'patient_detail_form.html', {'form': form})
+
+@login_required
+def hospital_detail_form_view(request):
+    form = HospitalDetailForm(request.POST or None, request.FILES or None, instance=getattr(request.user, 'hospitaldetail', None))
+    if form.is_valid():
+        hospital = form.save(commit=False)
+        hospital.user = request.user
+        hospital.save()
+        return redirect('hospital_dashboard')
+    return render(request, 'hospital_detail_form.html', {'form': form})

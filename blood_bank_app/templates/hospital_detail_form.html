@@ -1,0 +1,16 @@
+{% extends 'master.html' %}
+{% load static %}
+
+{% block title %}Hospital Details{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 600px; margin: 50px auto;">
+    <h2 class="text-center mb-4">Complete Your Hospital Profile</h2>
+    
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">Save</button>
+    </form>
+</div>
+{% endblock %}

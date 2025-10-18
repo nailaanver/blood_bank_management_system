@@ -2,6 +2,10 @@ from django.urls import path
 from . import views
 from blood_bank_app import views
 
+# For serving media files in development
+from django.conf import settings
+from django.conf.urls.static import static
+
 
 urlpatterns = [
     path('',views.index,name='index'),
@@ -21,8 +25,13 @@ urlpatterns = [
     path('manage_bloodstock/', views.manage_bloodstock, name='manage_bloodstock'),
     path('manage_requests/', views.manage_requests, name='manage_requests'),
     path('view_reports/', views.view_reports, name='view_reports'),
-
-
     
+    path('donor_detail_form/',views.donor_detail_form_view,name='donor_detail_form'),
+    path('patient_detail_form/',views.patient_detail_form_view,name='patient_detail_form'),
+    path('hospital_detail_form/',views.hospital_detail_form_view,name='hospital_detail_form')
+
 
 ]
+# ✅ Add this at the end to serve media files
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

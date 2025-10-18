@@ -87,6 +87,7 @@ body {
     color: var(--text-dark);
     cursor: pointer;
     transition: all 0.25s ease-in-out;
+    text-decoration: none;
 }
 
 .nav-option i {
@@ -108,6 +109,9 @@ body {
 
 .nav-option.active i {
     color: #fff;
+}
+.logout-line{
+    text-decoration: none;
 }
 
 /* ===== MAIN CONTENT ===== */
