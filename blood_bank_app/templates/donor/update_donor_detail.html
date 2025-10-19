@@ -4,39 +4,198 @@
 {% block title %}Update Donor Details{% endblock %}
 
 {% block content %}
-<div class="container mt-5" style="max-width: 600px;">
-    <div class="card shadow p-4" style="border-radius: 15px;">
-        <h2 class="text-center mb-4">Update Your Details</h2>
+<div class="bloodbank-container">
 
-        {% if messages %}
-            {% for message in messages %}
-                <div class="alert alert-success">{{ message }}</div>
-            {% endfor %}
-        {% endif %}
+    <!-- Messages -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert {{ message.tags }}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="bloodbank-card">
+        <h2>Update Your Details</h2>
 
         {% if form.errors %}
-            <div class="alert alert-danger">
-                {{ form.errors }}
+            <div class="alert alert-error">
+                <ul>
+                {% for field in form %}
+                    {% for error in field.errors %}
+                        <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+                    {% endfor %}
+                {% endfor %}
+                {% for error in form.non_field_errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+                </ul>
             </div>
         {% endif %}
 
-        <form method="POST" enctype="multipart/form-data">
+        <form method="POST" action="{% url 'update_donor_detail' %}" enctype="multipart/form-data">
             {% csrf_token %}
-            {{ form.as_p }}
 
-            {% if form.instance.profile_photo %}
-                <div class="text-center mb-3">
+            {% for field in form %}
+                <div class="form-group">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.help_text %}
+                        <small class="help-text">{{ field.help_text }}</small>
+                    {% endif %}
+                </div>
+            {% endfor %}
+
+            {% if form.profile_photo.value %}
+                <div class="form-group photo-preview">
                     <p>Current Photo:</p>
-                    <img src="{{ form.instance.profile_photo.url }}" 
-                         alt="Profile Photo" width="120" height="120" 
-                         style="border-radius: 50%; object-fit: cover;">
+                    <img src="{{ form.profile_photo.value.url }}" alt="Profile Photo">
                 </div>
             {% endif %}
 
-            <div class="text-center">
-                <button type="submit" class="btn btn-primary px-4">Update</button>
-            </div>
+            <button type="submit" class="btn-update">Update Details</button>
         </form>
     </div>
 </div>
+<style>
+    /* Container to center the form */
+/* --- Container --- */
+.bloodbank-container {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 60px 20px;
+    background: linear-gradient(120deg, #f7f1f1, #ffe6e6);
+    min-height: 90vh;
+}
+
+/* --- Card --- */
+.bloodbank-card {
+    background: #fff;
+    padding: 45px 35px;
+    border-radius: 20px;
+    box-shadow: 0 12px 25px rgba(0,0,0,0.15);
+    width: 100%;
+    max-width: 600px;
+    border-top: 5px solid #d32f2f;
+    transition: transform 0.3s;
+}
+
+.bloodbank-card:hover {
+    transform: translateY(-5px);
+}
+
+/* --- Heading --- */
+.bloodbank-card h2 {
+    text-align: center;
+    margin-bottom: 30px;
+    font-size: 30px;
+    color: #d32f2f;
+    font-weight: 700;
+}
+
+/* --- Form Fields --- */
+.form-group {
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #555;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    padding: 12px 15px;
+    border-radius: 10px;
+    border: 1px solid #ccc;
+    font-size: 16px;
+    transition: all 0.3s;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    border-color: #d32f2f;
+    outline: none;
+    box-shadow: 0 0 8px rgba(211, 47, 47, 0.3);
+}
+
+/* --- Help text --- */
+.help-text {
+    font-size: 12px;
+    color: #999;
+}
+
+/* --- Profile Photo --- */
+.photo-preview {
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+.photo-preview img {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    border: 2px solid #d32f2f;
+    object-fit: cover;
+}
+
+/* --- Button --- */
+.btn-update {
+    width: 100%;
+    padding: 14px;
+    background-color: #d32f2f;
+    color: #fff;
+    font-size: 18px;
+    font-weight: 600;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: background 0.3s, transform 0.2s;
+}
+
+.btn-update:hover {
+    background-color: #b71c1c;
+    transform: translateY(-2px);
+}
+
+/* --- Alerts --- */
+.alert {
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    text-align: center;
+    font-weight: 500;
+}
+
+.alert-success {
+    background-color: #ffebee;
+    color: #c62828;
+    border: 1px solid #f44336;
+}
+
+.alert-error {
+    background-color: #fdecea;
+    color: #d32f2f;
+    border: 1px solid #f44336;
+}
+
+/* --- Responsive --- */
+@media screen and (max-width: 768px) {
+    .bloodbank-card {
+        padding: 35px 20px;
+    }
+
+    .btn-update {
+        font-size: 16px;
+        padding: 12px;
+    }
+}
+
+</style>
 {% endblock %}

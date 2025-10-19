@@ -170,23 +170,19 @@ def donor_detail_form_view(request):
 
 @login_required
 def update_donor_detail_view(request):
-    donor_instance = get_object_or_404(DonorDetail, user=request.user)
+    donor_detail, created = DonorDetail.objects.get_or_create(user=request.user)
 
     if request.method == 'POST':
-        form = DonorDetailForm(request.POST, request.FILES, instance=donor_instance)
+        form = DonorDetailForm(request.POST, request.FILES, instance=donor_detail)
         if form.is_valid():
-            donor = form.save(commit=False)
-            donor.user = request.user  # make sure it's linked
-            donor.save()
-            messages.success(request, "✅ Your details have been updated successfully!")
-            return redirect('update_donor_detail')  # stay on same page
-        else:
-            messages.error(request, "⚠️ Please correct the errors below.")
-            print("Form errors:", form.errors)
+            form.save()
+            messages.success(request, "Your donor details have been updated successfully!")
+            return redirect('donor_dashboard')  # 👈 Redirect to dashboard after success
     else:
-        form = DonorDetailForm(instance=donor_instance)
+        form = DonorDetailForm(instance=donor_detail)
 
     return render(request, 'donor/update_donor_detail.html', {'form': form})
+
 
 
 
