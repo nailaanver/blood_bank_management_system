@@ -6,12 +6,15 @@
 {% block content %}
 <header class="header">
     <div class="logosec">
-        <div class="logo">Admin Dashboard</div>
-        <h2 class="welcome-admin">Welcome, {{ user.username }}</h2>
+        <div class="logo">Donor Dashboard</div>
     </div>
 
-   
+    <div class="welcome-admin">
+        <span>Welcome, {{ user.username }}</span>
+        <img src="{{ user.donordetail.profile_photo.url }}" alt="Profile Photo">
+    </div>
 </header>
+
 
 <div class="main-container">
     <div class="navcontainer">
@@ -23,20 +26,20 @@
                     <h3>Dashboard</h3>
                 </div>
 
-                <div class="nav-option option2" data-page="{% url 'manage_users' %}">
+                <div class="nav-option option2" data-page="{% url 'update_donor_detail' %}">
                     <i class="fas fa-user-cog"></i>
                     <h3>Update Details</h3>
                 </div>
 
-                <div class="nav-option option3" data-page="{% url 'manage_bloodstock' %}">
+                <div class="nav-option option3" data-page="{% url 'view_donation_history' %}">
                     <i class="fa fa-users"></i>
                     <h3>View Donation History</h3>
                 </div>
-                <div class="nav-option option4" data-page="{% url 'manage_requests' %}">
-                    <i class="fa fa-users"></i>
+                <div class="nav-option option4" data-page="{% url 'check_eligibility' %}">
+                    <i class="fa fa-heartbeat"></i>
                     <h3>Check Eligibility</h3>
                 </div>
-                <div class="nav-option option5" data-page="{% url 'view_reports' %}">
+                <div class="nav-option option5" data-page="{% url 'request_appoiments' %}">
                     <i class="fa fa-users"></i>
                     <h3>Request Appoiments</h3>
                 </div>
@@ -58,7 +61,7 @@
 </div>
 
  <!-- ================== JS Script ==================  -->
- <script> 
+<script>
 document.addEventListener('DOMContentLoaded', function() {
     const mainContent = document.getElementById('main-content');
     const params = new URLSearchParams(window.location.search);
@@ -71,61 +74,118 @@ document.addEventListener('DOMContentLoaded', function() {
         alertBox.classList.add('alert-success');
         alertBox.textContent = decodeURIComponent(message);
         document.body.prepend(alertBox);
-        setTimeout(() => alertBox.remove(), 3000);
+        setTimeout(() => alertBox.remove(), 4000);
     }
 
-    // ✅ Decide which section to show first
-    let defaultPageUrl = "{% url 'admin_dashboard_content' %}";
-    if (section === 'manage_bloodstock') {
-        defaultPageUrl = "{% url 'manage_bloodstock' %}";
-        setActiveOption('option3');
-    } else if (section === 'manage_users') {
-        defaultPageUrl = "{% url 'manage_users' %}";
-        setActiveOption('option2');
-    } else if (section === 'manage_requests') {
-        defaultPageUrl = "{% url 'manage_requests' %}";
-        setActiveOption('option4');
-    } else if (section === 'view_reports') {
-        defaultPageUrl = "{% url 'view_reports' %}";
-        setActiveOption('option5');
-    } else {
-        setActiveOption('option1');
+    // Determine default section page
+    let defaultPageUrl = "{% url 'admin_dashboard_content' %}";  // fallback
+    let activeOptionClass = 'option1';  // default
+
+    if (section === 'update_details') {
+        defaultPageUrl = "{% url 'update_donor_detail' %}";
+        activeOptionClass = 'option2';
+    } else if (section === 'view_donation_history') {
+        defaultPageUrl = "{% url 'view_donation_history' %}";
+        activeOptionClass = 'option3';
+    } else if (section === 'check_eligibility') {
+        defaultPageUrl = "{% url 'check_eligibility' %}";
+        activeOptionClass = 'option4';
+    } else if (section === 'request_appoiments') {
+        defaultPageUrl = "{% url 'request_appoiments' %}";
+        activeOptionClass = 'option5';
     }
 
-    // ✅ Load the correct section
-    fetch(defaultPageUrl)
-        .then(response => response.text())
-        .then(html => mainContent.innerHTML = html)
-        .catch(err => console.error('Error loading content:', err));
+    // ✅ Load the correct page in main-content
+    loadPage(defaultPageUrl);
+    setActiveOption(activeOptionClass);
 
-    // ✅ Sidebar click handling
-    document.querySelectorAll('.nav-option').forEach(item => {
-        item.addEventListener('click', function(e) {
-            // Don't block logout link
-            if (this.classList.contains('option4')) return;
+    // Sidebar click handling
+    document.querySelector('.navcontainer').addEventListener('click', function(e) {
+        const target = e.target.closest('.nav-option');
+        if (!target) return;
+        e.preventDefault();
 
-            e.preventDefault();
-            const pageUrl = this.getAttribute('data-page');
-            if (!pageUrl) return;
+        const pageUrl = target.getAttribute('data-page');
+        if (!pageUrl) return;
 
-            document.querySelectorAll('.nav-option').forEach(opt => opt.classList.remove('active'));
-            this.classList.add('active');
-
-            fetch(pageUrl)
-                .then(response => response.text())
-                .then(html => mainContent.innerHTML = html)
-                .catch(err => console.error('Error loading page:', err));
-        });
+        setActiveOption(target.classList[1]);
+        loadPage(pageUrl);
     });
 
-    // Helper for active state
+    // Load a page into main-content
+    function loadPage(url) {
+        fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+            .then(res => res.text())
+            .then(html => mainContent.innerHTML = html)
+            .catch(err => console.error('Error loading content:', err));
+    }
+
+    // Highlight sidebar active item
     function setActiveOption(className) {
         document.querySelectorAll('.nav-option').forEach(opt => opt.classList.remove('active'));
         const target = document.querySelector('.' + className);
         if (target) target.classList.add('active');
     }
 });
-</script> 
+
+document.querySelector('.option2').addEventListener('click', function(e){
+    e.preventDefault();
+
+    fetch("{% url 'update_donor_detail' %}", {headers: {'X-Requested-With': 'XMLHttpRequest'}})
+        .then(res => res.text())
+        .then(html => {
+            document.getElementById('main-content').innerHTML = html;
+        });
+});
+</script>
+
+ <style>
+    .welcome-admin img {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #c82333; /* optional border */
+    margin-right: 10px;
+}
+
+header.header {
+    background-color: #f8f9fa; /* light gray background */
+    padding: 10px 20px;
+    display: flex;
+    justify-content: space-between; /* logo left, profile right */
+    align-items: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.logosec .logo {
+    font-size: 24px;
+    font-weight: bold;
+    color: #c82333; /* optional color */
+}
+
+.welcome-admin {
+    display: flex;
+    align-items: center;
+}
+
+.welcome-admin img {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #c82333; /* optional border */
+    margin-right: 10px;
+}
+
+.welcome-admin span {
+    font-weight: 500;
+    color: #333;
+}
+</style>
+
+
+
 
 
 {% endblock %}

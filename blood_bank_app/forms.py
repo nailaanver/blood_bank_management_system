@@ -54,5 +54,9 @@ class HospitalDetailForm(forms.ModelForm):
         model = HospitalDetail
         fields = ['hospital_name', 'address', 'phone_number', 'hospital_code']
         
-        
+class EligibilityForm(forms.Form):
+    age = forms.IntegerField(min_value=18, max_value=65, label='Age')
+    weight = forms.FloatField(min_value=40, label='weight (kg)')
+    last_donation_date = forms.DateField(label = 'Last Donation Date',required=False,widget=forms.DateInput(attrs={'type':'date'}))
+    hemoglobin = forms.FloatField(min_value=12.0, max_value=18.0, label="Hemoglobin Level (g/dL)", required=False)
 

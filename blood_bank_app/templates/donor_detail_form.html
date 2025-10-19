@@ -4,6 +4,12 @@
 {% block title %}Donor Details{% endblock %}
 
 {% block content %}
+{% if messages %}
+  {% for message in messages %}
+    <div class="alert alert-success">{{ message }}</div>
+  {% endfor %}
+{% endif %}
+
 <div class="container" style="max-width: 600px; margin: 50px auto;">
      <h2>{{ user.get_full_name|default:user.username|default:"Anonymous" }},Complete Your Profile</h2>
 

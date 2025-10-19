@@ -38,18 +38,22 @@ class DonorDetail(models.Model):
     weight = models.FloatField()
     address = models.TextField()
     phone_number = models.CharField(max_length=15)
-    profile_photo = models.ImageField(upload_to='donor_photos/', default='default.jpg')
+    profile_photo = models.ImageField(upload_to='donor_photos/', default='donor_photos/default.jpg')
 
     def __str__(self):
         return self.user.username
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
-        img = Image.open(self.profile_photo.path)
-        if img.height > 400 or img.width > 400:
-            output_size = (400, 400)
-            img.thumbnail(output_size)
-            img.save(self.profile_photo.path)
+        try:
+            img = Image.open(self.profile_photo.path)
+            if img.height > 400 or img.width > 400:
+                output_size = (400, 400)
+                img.thumbnail(output_size)
+                img.save(self.profile_photo.path)
+        except Exception as e:
+            print("Image processing error:", e)
+
             
             
 class PatientDetail(models.Model):
@@ -94,3 +98,37 @@ class HospitalDetail(models.Model):
     #         output_size = (400, 400)
     #         img.thumbnail(output_size)
     #         img.save(self.hospital_photo.path)
+    
+class Donation(models.Model):
+    donor =  models.ForeignKey(User,on_delete=models.CASCADE)
+    hospital_name = models.CharField(max_length=255)
+    date = models.DateField()
+    units = models.DecimalField(max_digits=3,decimal_places=1)
+    status = models.CharField(max_length=50,choices=[('Pending','Pending'),('Approved','Approved')])
+    certificate = models.FileField(upload_to='certificates/',null=True,blank=True) 
+    
+class Branch(models.Model):
+    name = models.CharField(max_length=100)
+    address = models.TextField()
+    city = models.CharField(max_length=100)
+    contact_number = models.CharField(max_length=15)
+
+    def __str__(self):
+        return self.name
+
+
+class Appointment(models.Model):
+    donor = models.ForeignKey(User, on_delete=models.CASCADE)
+    branch = models.ForeignKey(Branch, on_delete=models.CASCADE)
+    appointment_date = models.DateField()
+    appointment_time = models.TimeField()
+    notes = models.TextField(blank=True, null=True)
+    status = models.CharField(
+        max_length=20,
+        choices=[('Pending', 'Pending'), ('Approved', 'Approved'), ('Rejected', 'Rejected')],
+        default='Pending'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.donor.username} - {self.appointment_date}"

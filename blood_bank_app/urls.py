@@ -28,7 +28,12 @@ urlpatterns = [
     
     path('donor_detail_form/',views.donor_detail_form_view,name='donor_detail_form'),
     path('patient_detail_form/',views.patient_detail_form_view,name='patient_detail_form'),
-    path('hospital_detail_form/',views.hospital_detail_form_view,name='hospital_detail_form')
+    path('hospital_detail_form/',views.hospital_detail_form_view,name='hospital_detail_form'),
+    
+    path('donor/view_donation_history/',views.view_donation_history,name = 'view_donation_history'),
+    path('donor/check_eligibility/',views.check_eligibility,name = 'check_eligibility'),
+    path('donor/request_appoiments/',views.request_appoiments,name = 'request_appoiments'),
+    path('donor/update_donor_detail/', views.update_donor_detail_view, name='update_donor_detail'),
 
 
 ]
