@@ -38,6 +38,7 @@ urlpatterns = [
     path('request_status/', views.request_status, name='request_status'),
     path('received_history/', views.received_history, name='received_history'),
     path('search_blood/', views.search_blood, name='search_blood'),
+    path('edit_patient_profile/', views.edit_patient_profile, name='edit_patient_profile'),
 
 
 

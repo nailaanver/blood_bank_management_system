@@ -5,8 +5,24 @@
 {% block content %}
 <div class="dashboard-container">
     <div class="dashboard-card">
+
+    <!-- Dashboard header with profile photo -->
+    <div class="dashboard-header">
         <h2>Welcome, {{ user.username }} 🩸</h2>
-        <p class="subtitle">Manage your blood requests and information easily.</p>
+        <div class="profile-dropdown">
+            {% if user.patientdetail.profile_photo %}
+                <img src="{{ user.patientdetail.profile_photo.url }}" alt="Profile Photo" class="profile-photo">
+            {% else %}
+                <img src="{% static 'default_profile.png' %}" alt="Profile Photo" class="profile-photo">
+            {% endif %}
+            <div class="dropdown-content">
+                <a href="{% url 'edit_patient_profile' %}"><i class="fas fa-edit"></i> Edit Profile</a>
+                <a href="{% url 'logout' %}"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            </div>
+        </div>
+    </div>
+
+    <p class="subtitle">Manage your blood requests and information easily.</p>
 
         <div class="dashboard-grid">
             <div class="dash-item">
@@ -127,5 +143,59 @@ body {
 .dash-item p {
     font-size: 14px;
 }
+
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.profile-photo {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #b30000;
+    cursor: pointer;
+}
+
+.profile-dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 60px; /* below the profile photo */
+    background-color: #fff;
+    min-width: 160px;
+    border: 1px solid #b30000;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    z-index: 1;
+}
+
+.dropdown-content a {
+    color: #b30000;
+    padding: 10px 15px;
+    text-decoration: none;
+    display: block;
+    font-weight: 500;
+}
+
+.dropdown-content a:hover {
+    background-color: #b30000;
+    color: white;
+    border-radius: 10px;
+}
+
+/* Show dropdown on hover */
+.profile-dropdown:hover .dropdown-content {
+    display: block;
+}
+
 </style>
 {% endblock %}

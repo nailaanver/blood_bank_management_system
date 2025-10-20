@@ -149,24 +149,27 @@ from django.shortcuts import redirect, render, get_object_or_404
 
 @login_required
 def donor_detail_form_view(request):
-    # Get the donor detail instance for logged-in user
-    donor_instance, created = DonorDetail.objects.get_or_create(user=request.user)
+    try:
+        donor_instance = DonorDetail.objects.get(user=request.user)
+    except DonorDetail.DoesNotExist:
+        donor_instance = None  # Don’t create yet
 
     if request.method == 'POST':
         form = DonorDetailForm(request.POST, request.FILES, instance=donor_instance)
         if form.is_valid():
             donor = form.save(commit=False)
-            donor.user = request.user  # ensure the user is set
-            donor.save()  # save model including file
+            donor.user = request.user  # ensure user is set
+            donor.save()
             messages.success(request, "Your details have been updated successfully!")
-            return redirect('donor_detail_form')  # reload the form with updated data
+            return redirect('donor_dashboard')
         else:
             messages.error(request, "Please fix the errors below.")
-            print(form.errors)  # debug: check for validation errors
+            print(form.errors)  # debug
     else:
         form = DonorDetailForm(instance=donor_instance)
 
     return render(request, 'donor_detail_form.html', {'form': form})
+
 
 @login_required
 def update_donor_detail_view(request):
@@ -299,6 +302,25 @@ def received_history(request):
 def search_blood(request):
     # Placeholder page for now
     return render(request, 'patient/search_blood.html')
+@login_required
+def edit_patient_profile(request):
+    # Get existing patient details if they exist
+    patient_instance = getattr(request.user, 'patientdetail', None)
+
+    if request.method == 'POST':
+        form = PatientDetailForm(request.POST, request.FILES, instance=patient_instance)
+        if form.is_valid():
+            patient = form.save(commit=False)
+            patient.user = request.user
+            patient.save()
+            messages.success(request, "Your profile has been updated successfully!")
+            return redirect('patient_dashboard')
+        else:
+            messages.error(request, "Please correct the errors below.")
+    else:
+        form = PatientDetailForm(instance=patient_instance)
+
+    return render(request, 'patient/edit_patient_profile.html', {'form': form})
 
 
 
