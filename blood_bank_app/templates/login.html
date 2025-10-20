@@ -1,20 +1,169 @@
+{% extends 'master.html' %}
+{% load static %}
+
+{% block title %}Login - Blood Bank{% endblock %}
+
 {% block content %}
 <div class="login-container">
-    <h2>Login</h2>
+    <div class="login-card">
+        <h2>Blood Bank Login</h2>
 
-    {% if error %}
-        <p style="color: red;">{{ error }}</p>
-    {% endif %}
+        {% if error %}
+            <p class="error">{{ error }}</p>
+        {% endif %}
 
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Log In</button>
-    </form>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="login-btn">Log In</button>
+        </form>
 
-    <div class="links">
+        <div class="links">
             <a href="{% url 'forgot_password' %}">Forgot Password?</a>
-            <p>Don't have an account? <a href="{% url 'register' %}">Sign up</a></p>
+            <p>Don’t have an account? <a href="{% url 'register' %}">Sign Up</a></p>
+        </div>
+
+        <div class="admin-info">
+            <h3>Admin Credentials (Demo)</h3>
+            <p><strong>Username:</strong> Naila_Anver</p>
+            <p><strong>Password:</strong> naila@123</p>
+        </div>
     </div>
 </div>
+<style>
+    /* --- Blood Bank Login Page Styling --- */
+body {
+    font-family: 'Poppins', sans-serif;
+    /* background: linear-gradient(135deg, #b30000, #ff4d4d); */
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+}
+
+.login-card {
+    background: #ffffff;
+    padding: 40px;
+    border-radius: 20px;
+    box-shadow: 0 10px 25px rgba(179, 0, 0, 0.3);
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+    animation: fadeIn 0.6s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.login-card h2 {
+    color: #b30000;
+    margin-bottom: 20px;
+    font-weight: 600;
+}
+
+form p {
+    text-align: left;
+    margin-bottom: 15px;
+}
+
+input[type="text"],
+input[type="password"],
+input[type="email"] {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    outline: none;
+    transition: 0.2s ease;
+}
+
+input:focus {
+    border-color: #b30000;
+    box-shadow: 0 0 4px rgba(179, 0, 0, 0.3);
+}
+
+.login-btn {
+    background-color: #b30000;
+    color: white;
+    border: none;
+    padding: 12px 0;
+    width: 100%;
+    border-radius: 8px;
+    font-size: 16px;
+    text-transform: uppercase;
+    margin-top: 10px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.login-btn:hover {
+    background-color: #e60000;
+}
+
+.links {
+    margin-top: 20px;
+}
+
+.links a {
+    color: #b30000;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.links a:hover {
+    text-decoration: underline;
+}
+
+.error {
+    color: red;
+    font-weight: 500;
+    margin-bottom: 10px;
+}
+
+/* Admin Info Box */
+.admin-info {
+    background-color: #fff5f5;
+    padding: 15px;
+    border-radius: 10px;
+    margin-top: 25px;
+    border-left: 4px solid #b30000;
+}
+
+.admin-info h3 {
+    margin-bottom: 10px;
+    color: #b30000;
+    font-size: 18px;
+}
+
+.admin-info p {
+    margin: 5px 0;
+    color: #333;
+}
+
+/* Responsive Design */
+@media (max-width: 600px) {
+    .login-card {
+        width: 90%;
+        padding: 30px;
+    }
+
+    .login-card h2 {
+        font-size: 22px;
+    }
+
+    .login-btn {
+        font-size: 14px;
+    }
+}
+
+</style>
 {% endblock %}

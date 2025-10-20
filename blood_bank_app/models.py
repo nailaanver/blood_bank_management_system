@@ -132,3 +132,5 @@ class Appointment(models.Model):
 
     def __str__(self):
         return f"{self.donor.username} - {self.appointment_date}"
+    
+

@@ -5,13 +5,38 @@
 
 {% block content %}
 <header class="header">
-    <div class="logosec">
-        <div class="logo">Admin Dashboard</div>
-        <h2 class="welcome-admin">Welcome, {{ user.username }}</h2>
+  <div class="logosec">
+    <div class="logo">
+      <img src="{% static 'images/blood-logo.png' %}" alt="Logo" class="logo-img">
+      <h2>Blood Bank Admin</h2>
+    </div>
+  </div>
+
+  <div class="header-right">
+    <div class="date-time">
+      <span id="current-date"></span>
     </div>
 
-   
+    <div class="notifications">
+      <i class="fa fa-bell"></i>
+      <span class="badge">3</span>
+    </div>
+
+    <!-- <div class="admin-info">
+      <img src="{% static 'images/admin-avatar.png' %}" alt="Admin Avatar" class="avatar">
+      <div class="dropdown">
+        <button class="dropdown-toggle">
+          {{ user.username }} <i class="fa fa-caret-down"></i>
+        </button>
+        <div class="dropdown-menu">
+    
+          <a href="{% url 'logout' %}"><i class="fa fa-sign-out-alt"></i> Logout</a>
+        </div>
+      </div>
+    </div> -->
+  </div>
 </header>
+
 
 <div class="main-container">
     <div class="navcontainer">
@@ -124,6 +149,15 @@ document.addEventListener('DOMContentLoaded', function() {
         if (target) target.classList.add('active');
     }
 });
+
+document.addEventListener("DOMContentLoaded", function() {
+    const dateElement = document.getElementById("current-date");
+    const now = new Date();
+    const options = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
+    dateElement.textContent = now.toLocaleDateString('en-US', options);
+});
+
+
 </script> 
 
 

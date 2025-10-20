@@ -287,3 +287,20 @@ def hospital_detail_form_view(request):
         hospital.save()
         return redirect('hospital_dashboard')
     return render(request, 'hospital_detail_form.html', {'form': form})
+
+def blood_request(request):
+    return render(request, 'patient/blood_request.html')
+def request_status(request):
+    # For now, just a placeholder template
+    return render(request, 'patient/request_status.html')
+def received_history(request):
+    # For now, a placeholder template
+    return render(request, 'patient/received_history.html')
+def search_blood(request):
+    # Placeholder page for now
+    return render(request, 'patient/search_blood.html')
+
+
+
+
+

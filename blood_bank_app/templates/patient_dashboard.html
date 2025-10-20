@@ -1,7 +1,131 @@
 {% extends 'master.html' %}
-{% block title %}patient-dashboard{% endblock %}
-{% block content %}
-<h2>hjsnkdfkskfv</h2>
-<button><a href="{% url 'logout' %}">Logout</a></button>
+{% load static %}
+{% block title %}Patient Dashboard{% endblock %}
 
+{% block content %}
+<div class="dashboard-container">
+    <div class="dashboard-card">
+        <h2>Welcome, {{ user.username }} 🩸</h2>
+        <p class="subtitle">Manage your blood requests and information easily.</p>
+
+        <div class="dashboard-grid">
+            <div class="dash-item">
+                <a href="{% url 'blood_request' %}">
+                    <i class="fas fa-hand-holding-medical"></i>
+                    <h3>Request Blood</h3>
+                    <p>Submit a request for blood donation.</p>
+                </a>
+            </div>
+
+            <div class="dash-item">
+                <a href="{% url 'request_status' %}">
+                    <i class="fas fa-clipboard-list"></i>
+                    <h3>Track Request Status</h3>
+                    <p>Check approval and progress of your requests.</p>
+                </a>
+            </div>
+
+            <div class="dash-item">
+                <a href="{% url 'received_history' %}">
+                    <i class="fas fa-history"></i>
+                    <h3>Received History</h3>
+                    <p>View your previous blood received records.</p>
+                </a>
+            </div>
+
+            <div class="dash-item">
+                <a href="{% url 'search_blood' %}">
+                    <i class="fas fa-search"></i>
+                    <h3>Search Blood Availability</h3>
+                    <p>Find available donors by group or location.</p>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Font Awesome -->
+<script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+
+<style>
+/* Blood Bank Dashboard Styling */
+body {
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #ffcccc, #ffe6e6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+}
+
+.dashboard-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+}
+
+.dashboard-card {
+    background: #fff;
+    padding: 40px;
+    border-radius: 20px;
+    box-shadow: 0 10px 25px rgba(179, 0, 0, 0.3);
+    width: 90%;
+    max-width: 900px;
+    text-align: center;
+}
+
+.dashboard-card h2 {
+    color: #b30000;
+    margin-bottom: 10px;
+}
+
+.subtitle {
+    color: #666;
+    margin-bottom: 30px;
+}
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+}
+
+.dash-item {
+    background-color: #fff5f5;
+    border: 2px solid #b30000;
+    border-radius: 15px;
+    padding: 25px 10px;
+    transition: 0.3s;
+}
+
+.dash-item:hover {
+    background-color: #b30000;
+    transform: translateY(-5px);
+}
+
+.dash-item a {
+    text-decoration: none;
+    color: #b30000;
+    display: block;
+}
+
+.dash-item:hover a {
+    color: white;
+}
+
+.dash-item i {
+    font-size: 40px;
+    margin-bottom: 10px;
+}
+
+.dash-item h3 {
+    margin: 10px 0 5px 0;
+    font-size: 18px;
+}
+
+.dash-item p {
+    font-size: 14px;
+}
+</style>
 {% endblock %}

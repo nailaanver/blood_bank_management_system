@@ -60,3 +60,5 @@ class EligibilityForm(forms.Form):
     last_donation_date = forms.DateField(label = 'Last Donation Date',required=False,widget=forms.DateInput(attrs={'type':'date'}))
     hemoglobin = forms.FloatField(min_value=12.0, max_value=18.0, label="Hemoglobin Level (g/dL)", required=False)
 
+
+

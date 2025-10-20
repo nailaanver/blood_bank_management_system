@@ -34,6 +34,12 @@ urlpatterns = [
     path('donor/check_eligibility/',views.check_eligibility,name = 'check_eligibility'),
     path('donor/request_appoiments/',views.request_appoiments,name = 'request_appoiments'),
     path('donor/update_donor_detail/', views.update_donor_detail_view, name='update_donor_detail'),
+    path('blood_request/', views.blood_request, name='blood_request'),
+    path('request_status/', views.request_status, name='request_status'),
+    path('received_history/', views.received_history, name='received_history'),
+    path('search_blood/', views.search_blood, name='search_blood'),
+
+
 
 
 ]

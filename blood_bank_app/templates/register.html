@@ -1,17 +1,162 @@
 {% extends 'master.html' %}
 {% load static %}
-{% block title %} Register {% endblock %}
 
-
+{% block title %}Register - Blood Bank{% endblock %}
 
 {% block content %}
-    <div class="container">
-        <h2>Register</h2>
+<div class="register-container">
+    <div class="register-card">
+        <h2>Registration</h2>
+
+        {% if messages %}
+            {% for message in messages %}
+                <p class="message {{ message.tags }}">{{ message }}</p>
+            {% endfor %}
+        {% endif %}
+
         <form method="POST">
             {% csrf_token %}
             {{ form.as_p }}
-            <button type="submit">Register</button>
+            <button type="submit" class="register-btn">Register</button>
         </form>
-        <p>Already have an account? <a href="{% url 'login' %}">Login here</a></p>
+
+        <div class="links">
+            <p>Already have an account? <a href="{% url 'login' %}">Login here</a></p>
+        </div>
     </div>
+</div>
+
+<style>
+/* --- Blood Bank Register Page Styling --- */
+body {
+    font-family: 'Poppins', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* background: linear-gradient(135deg, #b30000, #ff4d4d); */
+    background: #fff5f5;
+}
+
+.register-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+}
+
+.register-card {
+    background: #ffffff;
+    padding: 40px;
+    border-radius: 20px;
+    box-shadow: 0 10px 25px rgba(179, 0, 0, 0.3);
+    width: 100%;
+    max-width: 420px;
+    text-align: center;
+    animation: fadeIn 0.6s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.register-card h2 {
+    color: #b30000;
+    margin-bottom: 20px;
+    font-weight: 600;
+}
+
+form p {
+    text-align: left;
+    margin-bottom: 15px;
+}
+
+input[type="text"],
+input[type="password"],
+input[type="email"],
+select,
+textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    outline: none;
+    transition: 0.2s ease;
+    font-size: 15px;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    border-color: #b30000;
+    box-shadow: 0 0 4px rgba(179, 0, 0, 0.3);
+}
+
+.register-btn {
+    background-color: #b30000;
+    color: white;
+    border: none;
+    padding: 12px 0;
+    width: 100%;
+    border-radius: 8px;
+    font-size: 16px;
+    text-transform: uppercase;
+    margin-top: 10px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.register-btn:hover {
+    background-color: #e60000;
+}
+
+.links {
+    margin-top: 20px;
+}
+
+.links a {
+    color: #b30000;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.links a:hover {
+    text-decoration: underline;
+}
+
+/* Message Styling */
+.message {
+    padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    font-weight: 500;
+}
+
+.message.success {
+    background-color: #e6ffed;
+    color: #2e7d32;
+}
+
+.message.error {
+    background-color: #ffeaea;
+    color: #b30000;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+    .register-card {
+        width: 90%;
+        padding: 30px;
+    }
+
+    .register-card h2 {
+        font-size: 22px;
+    }
+
+    .register-btn {
+        font-size: 14px;
+    }
+}
+</style>
 {% endblock %}
