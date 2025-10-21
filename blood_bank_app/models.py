@@ -133,4 +133,31 @@ class Appointment(models.Model):
     def __str__(self):
         return f"{self.donor.username} - {self.appointment_date}"
     
+class BloodRequest(models.Model):
+    BLOOD_GROUPS = [
+        ('A+', 'A+'), ('A-', 'A-'),
+        ('B+', 'B+'), ('B-', 'B-'),
+        ('O+', 'O+'), ('O-', 'O-'),
+        ('AB+', 'AB+'), ('AB-', 'AB-'),
+    ]
+    URGENCY_CHOICES = [
+        ('Normal', 'Normal'),
+        ('Urgent', 'Urgent'),
+        ('Emergency', 'Emergency'),
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    full_name = models.CharField(max_length=100)
+    blood_group = models.CharField(max_length=3, choices=BLOOD_GROUPS)
+    units_required = models.PositiveIntegerField()
+    hospital_name = models.CharField(max_length=150)
+    hospital_address = models.TextField()
+    required_date = models.DateField()
+    urgency = models.CharField(max_length=20, choices=URGENCY_CHOICES)
+    reason = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.full_name} - {self.blood_group}"
+    
 

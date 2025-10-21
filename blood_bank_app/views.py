@@ -5,7 +5,8 @@ from .models import User
 from .models import Donation
 from django.contrib import messages
 from django.contrib.auth.hashers import make_password
-from .forms import ContactForm
+from .forms import ContactForm,BloodRequest
+from .forms import BloodRequestForm
 from django.contrib.auth.decorators import login_required
 from datetime import date, timedelta
 from django.urls import reverse
@@ -291,11 +292,26 @@ def hospital_detail_form_view(request):
         return redirect('hospital_dashboard')
     return render(request, 'hospital_detail_form.html', {'form': form})
 
-def blood_request(request):
-    return render(request, 'patient/blood_request.html')
+def request_blood(request):
+    if request.method == 'POST':
+        form = BloodRequestForm(request.POST)
+        if form.is_valid():
+            blood_request = form.save(commit=False)
+            blood_request.user = request.user  # ✅ assign logged-in user here
+            blood_request.save()
+            messages.success(request, 'Your blood request has been submitted successfully!')
+            return redirect('request_status')  # redirect to status page
+    else:
+        form = BloodRequestForm()
+
+    return render(request, 'patient/blood_request.html', {'form': form})
+@login_required
 def request_status(request):
-    # For now, just a placeholder template
-    return render(request, 'patient/request_status.html')
+    # Fetch blood requests of the logged-in user
+    blood_requests = BloodRequest.objects.filter(user=request.user).order_by('-created_at')
+    
+    return render(request, 'patient/request_status.html', {'blood_requests': blood_requests})
+
 def received_history(request):
     # For now, a placeholder template
     return render(request, 'patient/received_history.html')

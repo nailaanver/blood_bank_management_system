@@ -60,5 +60,24 @@ class EligibilityForm(forms.Form):
     last_donation_date = forms.DateField(label = 'Last Donation Date',required=False,widget=forms.DateInput(attrs={'type':'date'}))
     hemoglobin = forms.FloatField(min_value=12.0, max_value=18.0, label="Hemoglobin Level (g/dL)", required=False)
 
+from .models import BloodRequest
 
+class BloodRequestForm(forms.ModelForm):
+    class Meta:
+        model = BloodRequest
+        fields = [
+            'full_name', 'blood_group', 'units_required',
+            'hospital_name', 'hospital_address', 'required_date',
+            'urgency', 'reason'
+        ]
+        widgets = {
+            'full_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter your full name'}),
+            'blood_group': forms.Select(attrs={'class': 'form-control'}),
+            'units_required': forms.NumberInput(attrs={'class': 'form-control', 'min': '1'}),
+            'hospital_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter hospital name'}),
+            'hospital_address': forms.Textarea(attrs={'class': 'form-control', 'rows': 2, 'placeholder': 'Enter hospital address'}),
+            'required_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'urgency': forms.Select(attrs={'class': 'form-control'}),
+            'reason': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Enter reason (optional)'}),
+        }
 
