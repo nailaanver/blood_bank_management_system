@@ -13,7 +13,7 @@ from django.urls import reverse
 from .models import Branch, Appointment
 
 
-from .models import Profile, DonorDetail, PatientDetail, HospitalDetail, User, ContactMessage
+from .models import Profile, DonorDetail, PatientDetail, HospitalDetail, User, ContactMessage,Notification
 from .forms import LoginForm, UserForm, ContactForm, DonorDetailForm, PatientDetailForm, HospitalDetailForm,EligibilityForm
 
 
@@ -72,8 +72,10 @@ def register(request):
     else:
         form = UserForm()
     return render(request, 'register.html', {'form': form})
+@login_required
 def patient_dashboard(request):
-    return render(request, 'patient_dashboard.html')
+    unread_count = Notification.objects.filter(user=request.user, is_read=False).count()
+    return render(request, 'patient_dashboard.html', {'unread_count': unread_count})
 def hospital_dashboard(request):
     return render(request, 'hospital_dashboard.html')
 @login_required
@@ -144,7 +146,9 @@ def manage_users(request):
 def manage_bloodstock(request):
     return render(request, 'partials/manage_bloodstock.html')
 def manage_requests(request):
-    return render(request, 'partials/manage_requests.html')
+    # Get all requests ordered by latest first
+    blood_requests = BloodRequest.objects.all().order_by('-id')
+    return render(request, 'partials/manage_requests.html', {'blood_requests': blood_requests})
 def view_reports(request):
     return render(request, 'partials/view_reports.html')
 
@@ -355,19 +359,47 @@ def admin_manage_requests(request):
 @user_passes_test(is_admin)
 def update_request_status(request, request_id, action):
     blood_request = get_object_or_404(BloodRequest, id=request_id)
-    
+
     if action == 'approve':
         blood_request.status = 'Approved'
-        messages.success(request, f"Request from {blood_request.full_name} has been approved.")
+        blood_request.save()
+
+        Notification.objects.create(
+            user=blood_request.user,
+            message=f"✅ Your blood request (for {blood_request.blood_group}) has been approved."
+        )
+        messages.success(request, "Request approved successfully.")
+
     elif action == 'reject':
         blood_request.status = 'Rejected'
-        messages.error(request, f"Request from {blood_request.full_name} has been rejected.")
+        blood_request.save()
+
+        Notification.objects.create(
+            user=blood_request.user,
+            message=f"❌ Your blood request (for {blood_request.blood_group}) has been rejected."
+        )
+        messages.error(request, "Request rejected successfully.")
+
+    return redirect('manage_requests')
+
+
+@login_required
+def view_notifications(request):
+    notifications = Notification.objects.filter(user=request.user).order_by('-created_at')
+
+    # mark all as read when opened
+    notifications.update(is_read=True)
+
+    return render(request, 'patient/notification.html', {'notifications': notifications})
+
+@login_required
+def view_notifications(request):
+    notifications = Notification.objects.filter(user=request.user).order_by('-created_at')
     
-    blood_request.save()
-    return redirect('admin_manage_requests')
+    # mark all as read when opened
+    notifications.update(is_read=True)
 
-
-
+    return render(request, 'patient/notification.html', {'notifications': notifications})
 
 
 
