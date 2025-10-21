@@ -1,4 +1,58 @@
 {% extends 'master.html' %}
+{% load static %}
+
 {% block content %}
-<h2>manage users</h2>
-{% end block %}
+<div class="container mt-5">
+    <h2 class="text-center mb-4 text-danger">🩸 Blood Requests</h2>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-info text-center">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+
+    <table class="table table-bordered text-center shadow-sm">
+        <thead class="table-danger">
+            <tr>
+                <th>#</th>
+                <th>Patient</th>
+                <th>Blood Group</th>
+                <th>Units</th>
+                <th>Hospital</th>
+                <th>Urgency</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for req in blood_requests %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ req.full_name }}</td>
+                <td>{{ req.blood_group }}</td>
+                <td>{{ req.units_required }}</td>
+                <td>{{ req.hospital_name }}</td>
+                <td>{{ req.urgency }}</td>
+                <td>
+                    {% if req.status == "Pending" %}
+                        <span class="badge bg-warning text-dark">Pending</span>
+                    {% elif req.status == "Approved" %}
+                        <span class="badge bg-success">Approved</span>
+                    {% else %}
+                        <span class="badge bg-danger">Rejected</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if req.status == "Pending" %}
+                        <a href="{% url 'update_request_status' req.id 'approve' %}" class="btn btn-success btn-sm">Approve</a>
+                        <a href="{% url 'update_request_status' req.id 'reject' %}" class="btn btn-danger btn-sm">Reject</a>
+                    {% else %}
+                        <span class="text-muted">No actions</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

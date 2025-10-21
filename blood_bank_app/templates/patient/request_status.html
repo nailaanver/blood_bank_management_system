@@ -1,48 +1,169 @@
-<div class="container mt-5">
-    <h2 class="text-center mb-4 text-danger">🩸 Track Your Blood Requests</h2>
+{% extends 'master.html' %}
+{% load static %}
 
-    {% if messages %}
-        {% for message in messages %}
-            <div class="alert alert-success text-center">{{ message }}</div>
-        {% endfor %}
-    {% endif %}
+{% block title %}Track Blood Requests{% endblock %}
 
-    {% if blood_requests %}
-        <table class="table table-bordered table-hover text-center shadow-sm">
-            <thead class="table-danger">
-                <tr>
-                    <th>#</th>
-                    <th>Blood Group</th>
-                    <th>Units</th>
-                    <th>Hospital</th>
-                    <th>Status</th>
-                    <th>Requested On</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for req in blood_requests %}
-                <tr>
-                    <td>{{ forloop.counter }}</td>
-                    <td>{{ req.blood_group }}</td>
-                    <td>{{ req.units_required }}</td>
-                    <td>{{ req.hospital_name }}</td>
-                    <td>{{ req.urgency }}</td>
+{% block content %}
+<div class="track-container">
+    <div class="card shadow-lg p-5">
+        <h2 class="text-center mb-4 title">🩸 Track Your Blood Requests</h2>
+        <p class="text-center subtitle">View the status of your submitted blood requests below.</p>
 
-                    <!-- <td>
-                        {% if req.status == "Pending" %}
-                            <span class="badge bg-warning text-dark">Pending</span>
-                        {% elif req.status == "Approved" %}
-                            <span class="badge bg-success">Approved</span>
-                        {% elif req.status == "Rejected" %}
-                            <span class="badge bg-danger">Rejected</span>
-                        {% endif %}
-                    </td> -->
-                    <td>{{ req.created_at|date:"M d, Y" }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    {% else %}
-        <p class="text-center text-muted">No blood requests found.</p>
-    {% endif %}
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-success text-center mb-3 result-box">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        {% if blood_requests %}
+            <div class="table-responsive mt-4">
+                <table class="table table-bordered table-hover text-center align-middle shadow-sm">
+                    <thead class="table-danger">
+                        <tr>
+                            <th>#</th>
+                            <th>Blood Group</th>
+                            <th>Units</th>
+                            <th>Hospital</th>
+                            <th>Urgency</th>
+                            <th>Requested On</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for req in blood_requests %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ req.blood_group }}</td>
+                            <td>{{ req.units_required }}</td>
+                            <td>{{ req.hospital_name }}</td>
+                            <td>
+                                {% if req.urgency == "High" %}
+                                    <span class="badge bg-danger">High</span>
+                                {% elif req.urgency == "Medium" %}
+                                    <span class="badge bg-warning text-dark">Medium</span>
+                                {% else %}
+                                    <span class="badge bg-success">Low</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ req.created_at|date:"M d, Y" }}</td>
+                            <td>
+                                {% if req.status == "Pending" %}
+                                    <span class="badge bg-warning text-dark">Pending</span>
+                                {% elif req.status == "Approved" %}
+                                    <span class="badge bg-success">Approved</span>
+                                {% elif req.status == "Rejected" %}
+                                    <span class="badge bg-danger">Rejected</span>
+                                {% endif %}
+                            </td>
+
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p class="text-center text-muted mt-4">No blood requests found.</p>
+        {% endif %}
+
+        <div class="text-center mt-4">
+            <a href="{% url 'patient_dashboard' %}" class="btn btn-outline-danger back-btn">
+                ← Back to Dashboard
+            </a>
+        </div>
+    </div>
 </div>
+
+<style>
+/* Background */
+body {
+    background: linear-gradient(135deg, #ffcccc, #ffe6e6);
+    min-height: 100vh;
+    font-family: 'Poppins', sans-serif;
+}
+
+/* Center container */
+.track-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 50px 15px;
+}
+
+/* Card design */
+.card {
+    background-color: #fff;
+    border-radius: 20px;
+    max-width: 900px;
+    width: 100%;
+    border: none;
+    line-height: 2.5;
+    transition: all 0.3s ease;
+    padding: 30px;
+}
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+
+/* Title and subtitle */
+.title {
+    color: #c82333;
+    font-weight: 700;
+}
+.subtitle {
+    color: #555;
+    font-size: 0.95rem;
+}
+
+/* Table styling */
+.table {
+    background-color: #fff;
+    border-radius: 10px;
+    overflow: hidden;
+}
+.table th {
+    background-color: #f8d7da !important;
+    color: #721c24;
+    font-weight: 600;
+}
+.table td {
+    font-size: 0.95rem;
+}
+.table-hover tbody tr:hover {
+    background-color: #fff0f0;
+    transition: 0.3s ease;
+}
+
+/* Button */
+.back-btn {
+    border-radius: 8px;
+    font-weight: 600;
+    padding: 10px 20px;
+    transition: all 0.3s ease;
+}
+.back-btn:hover {
+    background-color: #c82333;
+    color: #fff;
+}
+
+/* Alert Box */
+.result-box {
+    border-radius: 10px;
+    font-weight: 500;
+    width: 80%;
+    margin: 0 auto;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .card {
+        padding: 30px 20px;
+    }
+    .table th, .table td {
+        font-size: 0.85rem;
+    }
+}
+</style>
+{% endblock %}

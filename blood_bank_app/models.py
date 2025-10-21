@@ -7,7 +7,6 @@ from django.contrib.auth.models import User
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     ROLE_CHOICES = (
-        ('admin', 'Admin'),
         ('donor', 'Donor'),
         ('patient', 'Patient'),
         ('hospital','Hospital'),
@@ -145,6 +144,11 @@ class BloodRequest(models.Model):
         ('Urgent', 'Urgent'),
         ('Emergency', 'Emergency'),
     ]
+    STATUS_CHOICES = [
+        ('Pending', 'Pending'),
+        ('Approved', 'Approved'),
+        ('Rejected', 'Rejected'),
+    ]
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     full_name = models.CharField(max_length=100)
@@ -155,9 +159,8 @@ class BloodRequest(models.Model):
     required_date = models.DateField()
     urgency = models.CharField(max_length=20, choices=URGENCY_CHOICES)
     reason = models.TextField(blank=True, null=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending')
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"{self.full_name} - {self.blood_group}"
-    
-

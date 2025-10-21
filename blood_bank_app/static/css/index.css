@@ -51,6 +51,7 @@ html {
 
 .hero p {
     font-size: 1.2rem;
+    margin-bottom: 20px;
 }
 
 .btn {
@@ -63,6 +64,19 @@ html {
 }
 
 .btn:hover {
+    background-color: #cc0000;
+}
+.btn-log {
+    background-color: #ff4d4d;
+    color: white;
+    padding: 10px 25px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: bold;
+    border: none;
+}
+
+.btn-log:hover {
     background-color: #cc0000;
 }
 

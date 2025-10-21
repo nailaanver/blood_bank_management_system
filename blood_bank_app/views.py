@@ -18,6 +18,8 @@ from .forms import LoginForm, UserForm, ContactForm, DonorDetailForm, PatientDet
 
 
 from blood_bank_app.forms import LoginForm,UserForm
+from django.contrib.auth.decorators import user_passes_test
+
 
 # Create your views here.
 def login_View(request):
@@ -74,8 +76,10 @@ def patient_dashboard(request):
     return render(request, 'patient_dashboard.html')
 def hospital_dashboard(request):
     return render(request, 'hospital_dashboard.html')
+@login_required
 def admin_dashboard(request):
-    return render(request, 'admin_dashboard.html')
+    pending_count = BloodRequest.objects.filter(status='Pending').count()
+    return render(request, 'admin_dashboard.html', {'pending_count': pending_count})
 @login_required
 def donor_dashboard(request):
     donor = DonorDetail.objects.filter(user=request.user).first()  # get latest donor details
@@ -337,6 +341,32 @@ def edit_patient_profile(request):
         form = PatientDetailForm(instance=patient_instance)
 
     return render(request, 'patient/edit_patient_profile.html', {'form': form})
+
+
+def is_admin(user):
+    return hasattr(user, 'profile') and user.profile.role == 'admin'
+
+@user_passes_test(is_admin)
+def admin_manage_requests(request):
+    blood_requests = BloodRequest.objects.all().order_by('-created_at')
+    return render(request, 'admin/manage_requests.html', {'blood_requests': blood_requests})
+
+@login_required
+@user_passes_test(is_admin)
+def update_request_status(request, request_id, action):
+    blood_request = get_object_or_404(BloodRequest, id=request_id)
+    
+    if action == 'approve':
+        blood_request.status = 'Approved'
+        messages.success(request, f"Request from {blood_request.full_name} has been approved.")
+    elif action == 'reject':
+        blood_request.status = 'Rejected'
+        messages.error(request, f"Request from {blood_request.full_name} has been rejected.")
+    
+    blood_request.save()
+    return redirect('admin_manage_requests')
+
+
 
 
 

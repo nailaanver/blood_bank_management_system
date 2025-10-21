@@ -4,43 +4,132 @@
 {% block title %}Request Blood{% endblock %}
 
 {% block content %}
-<div class="card shadow p-4" style="max-width: 650px; margin: 50px auto; border-radius: 20px;">
-    <h2 class="text-center mb-3" style="color: #c82333;">🩸 Request Blood</h2>
-    <p class="text-center text-muted mb-4">Fill out the form below to request blood. Our team will contact you soon.</p>
+<div class="request-container">
+    <div class="card shadow-lg p-5">
+        <h2 class="text-center mb-4 title">🩸 Request Blood</h2>
+        <p class="text-center subtitle">
+            Fill in the form below to request blood. Our team will contact you shortly.
+        </p>
 
-    <form method="POST">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit" class="btn btn-danger mt-3 w-100">Submit Request</button>
-    </form>
-
-    {% if messages %}
-        {% for message in messages %}
-            <div class="alert alert-success mt-4 text-center">
-                {{ message }}
+        <form method="POST">
+            {% csrf_token %}
+            <div class="form-section">
+                {{ form.as_p }}
             </div>
-        {% endfor %}
-    {% endif %}
+
+            <button type="submit" class="btn btn-danger w-100 mt-3">
+                Submit Request
+            </button>
+        </form>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-success mt-4 text-center result-box">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
 </div>
 
 <style>
-.form-control {
-    border-radius: 10px;
-    padding: 10px 15px;
+/* Background setup */
+body {
+    background: linear-gradient(135deg, #ffcccc, #ffe6e6);
+    min-height: 100vh;
+    font-family: 'Poppins', sans-serif;
 }
-.btn-danger {
-    background-color: #d32f2f;
+
+/* Container setup */
+.request-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 50px 15px;
+}
+
+/* Card design */
+.card {
+    background-color: #fff;
+    border-radius: 20px;
+    max-width: 600px;
+    width: 100%;
     border: none;
-    border-radius: 10px;
+    padding: 40px;
+    line-height: 1.5;
+    transition: all 0.3s ease;
+}
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+
+/* Title and subtitle */
+.title {
+    color: #c82333;
+    font-weight: 700;
+}
+.subtitle {
+    color: #555;
+    font-size: 0.95rem;
+    margin-bottom: 20px;
+}
+
+/* Form styling */
+form p label {
+    font-weight: 500;
+    color: #333;
+}
+form p input,
+form p select,
+form p textarea {
+    width: 100%;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    margin-top: 5px;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+}
+form p input:focus,
+form p select:focus,
+form p textarea:focus {
+    border-color: #c82333;
+    box-shadow: 0 0 5px rgba(200,35,51,0.3);
+    outline: none;
+}
+
+/* Button styling */
+.btn-danger {
+    background-color: #c82333;
+    border: none;
     font-weight: 600;
+    border-radius: 8px;
+    padding: 12px;
+    transition: all 0.3s ease;
 }
 .btn-danger:hover {
-    background-color: #b71c1c;
+    background-color: #a71d2a;
+}
+
+/* Message box */
+.result-box {
+    font-size: 1.05rem;
+    font-weight: 500;
+    border-radius: 10px;
+    padding: 15px 20px;
+    width: 80%;
+    margin: 0 auto;
 }
 .alert-success {
     background-color: #d4edda;
     color: #155724;
-    border-radius: 10px;
+    border: 1px solid #c3e6cb;
+}
+.alert-danger {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
 }
 </style>
 {% endblock %}
