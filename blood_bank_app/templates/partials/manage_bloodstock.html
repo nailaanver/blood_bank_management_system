@@ -1,4 +1,145 @@
 {% extends 'master.html' %}
+{% load static %}
+
 {% block content %}
-<h2>manage users</h2>
+<div class="login-container">
+    <div class="login-card w-100">
+        <h2 class="text-center mb-4">🩸 Manage Blood Stock</h2>
+
+        <div class="d-flex justify-content-between mb-3">
+            <a href="{% url 'add_blood_stock' %}" class="btn btn-success">➕ Add Blood Stock</a>
+            <a href="{% url 'admin_dashboard' %}" class="btn btn-secondary">⏪ Cancel</a>
+        </div>
+
+        <!-- Filters -->
+        <form method="get" class="mb-4 d-flex gap-2">
+            <select name="blood_group" class="form-control">
+                <option value="">All Blood Groups</option>
+                {% for bg in blood_groups %}
+                    <option value="{{ bg.0 }}" {% if request.GET.blood_group == bg.0 %}selected{% endif %}>
+                        {{ bg.0 }}
+                    </option>
+                {% endfor %}
+            </select>
+            <button type="submit" class="btn btn-primary">Filter</button>
+        </form>
+
+        <div class="table-responsive">
+            <table class="table table-hover text-center">
+                <thead>
+                    <tr>
+                        <th>Blood Group</th>
+                        <th>Hospital</th>
+                        <th>Units Available</th>
+                        <th>Updated At</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in blood_stock %}
+                        <tr>
+                            <td>{{ item.blood_group }}</td>
+                            <td>{{ item.hospital.hospital_name }}</td>
+                            <td>{{ item.units_available }}</td>
+                            <td>{{ item.updated_at|date:"d M Y H:i" }}</td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="4">No blood stock available.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Total Units per Blood Group -->
+        <div class="mt-4">
+            <h5>Total Units by Blood Group:</h5>
+            <ul class="list-group list-group-horizontal flex-wrap">
+                {% for item in total_units %}
+                    <li class="list-group-item flex-fill text-center">
+                        {{ item.blood_group }}: {{ item.total }} units
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+
+<style>
+body {
+    background-color: #f4f4f4;
+}
+
+.login-container {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 90vh;
+    padding-top: 30px;
+    line-height: 3;
+}
+
+.login-card {
+    background-color: white;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0px 0px 20px rgba(0,0,0,0.1);
+    max-width: 900px;
+}
+
+h2 {
+    color: #dc3545;
+    font-weight: bold;
+}
+
+.btn-primary {
+    background-color: #dc3545;
+    border: none;
+    padding: 10px 20px;
+}
+
+.btn-primary:hover {
+    background-color: #c82333;
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+    border: none;
+    padding: 10px 20px;
+}
+
+.btn-secondary:hover {
+    background-color: #5a6268;
+}
+
+.btn-success {
+    background-color: #28a745;
+    border: none;
+    padding: 10px 20px;
+}
+
+.btn-success:hover {
+    background-color: #218838;
+}
+
+.table {
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.table thead {
+    background-color: #dc3545 !important;
+    color: white;
+}
+
+.table-hover tbody tr:hover {
+    background-color: #ffe6e6;
+}
+
+.form-control {
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+</style>
 {% endblock %}

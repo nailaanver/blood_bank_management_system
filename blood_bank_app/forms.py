@@ -81,3 +81,17 @@ class BloodRequestForm(forms.ModelForm):
             'reason': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Enter reason (optional)'}),
         }
 
+# forms.py
+from django import forms
+from .models import BloodStock
+
+class BloodStockForm(forms.ModelForm):
+    class Meta:
+        model = BloodStock
+        fields = ['hospital', 'blood_group', 'units_available']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Make sure all hospitals are included
+        self.fields['hospital'].queryset = HospitalDetail.objects.all()
+

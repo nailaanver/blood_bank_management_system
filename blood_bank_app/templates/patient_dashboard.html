@@ -201,14 +201,36 @@ body {
     color: white;
     border-radius: 10px;
 }
-
-/* Show dropdown on hover */
-.profile-dropdown:hover .dropdown-content {
-    display: block;
+.dropdown-content.show {
+  display: block;
 }
+/* Show dropdown on hover */
+/* .profile-dropdown:hover .dropdown-content {
+    display: block;
+} */
 .text-white i {
     color: #b30000;
 }
 
+
+
 </style>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const profileDropdown = document.querySelector('.profile-dropdown');
+    const dropdownContent = profileDropdown.querySelector('.dropdown-content');
+
+    // Toggle dropdown on click
+    profileDropdown.addEventListener('click', function(e) {
+      e.stopPropagation(); // Prevent closing immediately
+      dropdownContent.classList.toggle('show');
+    });
+
+    // Close dropdown if clicked outside
+    document.addEventListener('click', function() {
+      dropdownContent.classList.remove('show');
+    });
+  });
+</script>
+
 {% endblock %}

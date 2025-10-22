@@ -42,6 +42,7 @@ urlpatterns = [
     path('partials/update_request_status/<int:request_id>/<str:action>/', views.update_request_status, name='update_request_status'),
     path('notifications/', views.view_notifications, name='view_notifications'),
     path('profile/', views.view_profile, name='view_profile'),
+    path('add-blood-stock/', views.add_blood_stock, name='add_blood_stock'),
 
 
 

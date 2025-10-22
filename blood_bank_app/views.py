@@ -13,8 +13,8 @@ from django.urls import reverse
 from .models import Branch, Appointment
 
 
-from .models import Profile, DonorDetail, PatientDetail, HospitalDetail, User, ContactMessage,Notification
-from .forms import LoginForm, UserForm, ContactForm, DonorDetailForm, PatientDetailForm, HospitalDetailForm,EligibilityForm
+from .models import Profile, DonorDetail, PatientDetail, HospitalDetail, User, ContactMessage,Notification,BloodStock
+from .forms import LoginForm, UserForm, ContactForm, DonorDetailForm, PatientDetailForm, HospitalDetailForm,EligibilityForm,BloodStockForm
 
 
 from blood_bank_app.forms import LoginForm,UserForm
@@ -142,9 +142,38 @@ def admin_dashboard_content(request):
     # }
     return render(request, 'partials/admin_dashboard_content.html')
 def manage_users(request):
-    return render(request, 'partials/manage_users.html')
+    users = User.objects.all().select_related('profile')  # if you have a Profile model linked to User
+    return render(request, 'partials/manage_users.html', {'users': users})
+
+def is_admin(user):
+    return hasattr(user, 'profile') and user.profile.role == 'admin'
+from django.db.models import Sum, Q
+
+@login_required
+@user_passes_test(is_admin)
 def manage_bloodstock(request):
-    return render(request, 'partials/manage_bloodstock.html')
+    stock = BloodStock.objects.all()
+
+    blood_group = request.GET.get('blood_group')
+    if blood_group:
+        stock = stock.filter(blood_group=blood_group)
+
+    hospital = request.GET.get('hospital')
+    if hospital:
+        stock = stock.filter(hospital_id=hospital)
+
+    hospitals = HospitalDetail.objects.all()
+
+    total_units = stock.values('blood_group').annotate(total=Sum('units_available'))
+
+    return render(request, 'partials/manage_bloodstock.html', {
+        'blood_stock': stock,
+        'hospitals': hospitals,
+        'blood_groups': BloodStock.BLOOD_GROUPS,  # pass this for filter dropdown
+        'total_units': total_units
+    })
+
+
 def manage_requests(request):
     # Get all requests ordered by latest first
     blood_requests = BloodRequest.objects.all().order_by('-id')
@@ -416,5 +445,19 @@ def view_profile(request):
     return render(request, 'view_profile.html', context)
 
 
+
+# views.py
+@login_required
+@user_passes_test(is_admin)
+def add_blood_stock(request):
+    if request.method == "POST":
+        form = BloodStockForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Blood stock added successfully!")
+            return redirect('manage_bloodstock')
+    else:
+        form = BloodStockForm()
+    return render(request, 'partials/add_blood_stock.html', {'form': form})
 
 

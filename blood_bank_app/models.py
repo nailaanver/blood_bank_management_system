@@ -175,3 +175,14 @@ class Notification(models.Model):
         return f"Notification for {self.user.username}"
 
 
+# models.py
+class BloodStock(models.Model):
+    BLOOD_GROUPS = [('A+','A+'),('A-','A-'),('B+','B+'),('B-','B-'),('AB+','AB+'),('AB-','AB-'),('O+','O+'),('O-','O-')]
+
+    blood_group = models.CharField(max_length=3, choices=BLOOD_GROUPS)
+    hospital = models.ForeignKey(HospitalDetail, on_delete=models.CASCADE)
+    units_available = models.PositiveIntegerField(default=0)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.blood_group} - {self.hospital.hospital_name}"

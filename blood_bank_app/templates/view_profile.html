@@ -4,19 +4,118 @@
 {% block title %}Profile{% endblock %}
 
 {% block content %}
-<div class="profile-page">
-    <h2>{{ user.username }}'s Profile</h2>
-    
+<div class="profile-container">
+
+  <div class="profile-card shadow-lg">
+    <div class="profile-header text-center">
+      <img src="{{ donor.profile_photo.url }}" alt="Profile Photo" class="profile-img mb-3">
+      <h3 class="fw-bold text-danger mb-1">{{ user.first_name }} {{ user.last_name }}</h3>
+      <p class="text-muted">@{{ user.username }}</p>
+      <hr>
+    </div>
+
     {% if donor %}
-        <img src="{{ donor.profile_photo.url }}" alt="Profile Photo" width="150">
-        <p><strong>Blood Group:</strong> {{ donor.blood_group }}</p>
-        <p><strong>Gender:</strong> {{ donor.gender }}</p>
-        <p><strong>Age:</strong> {{ donor.age }}</p>
-        <p><strong>Weight:</strong> {{ donor.weight }} kg</p>
-        <p><strong>Phone:</strong> {{ donor.phone_number }}</p>
-        <p><strong>Address:</strong> {{ donor.address }}</p>
+    <div class="profile-info text-start px-4">
+      <p><strong>Blood Group:</strong> <span>{{ donor.blood_group }}</span></p>
+      <p><strong>Gender:</strong> <span>{{ donor.gender }}</span></p>
+      <p><strong>Age:</strong> <span>{{ donor.age }}</span></p>
+      <p><strong>Weight:</strong> <span>{{ donor.weight }} kg</span></p>
+      <p><strong>Phone:</strong> <span>{{ donor.phone_number }}</span></p>
+      <p><strong>Address:</strong> <span>{{ donor.address }}</span></p>
+    </div>
     {% else %}
-        <p>No donor profile available.</p>
+      <p class="text-center text-muted mt-3">No donor profile available.</p>
     {% endif %}
+
+    <div class="text-center mt-4">
+      <a href="{% url 'update_donor_detail' %}" class="btn btn-danger w-75">Edit Profile</a>
+    <a href="{% url 'donor_dashboard' %}" class="btn btn-danger w-75">Cancel</a>    
+
+    </div>
+  </div>
 </div>
+
+<style>
+/* Background similar to login page */
+body {
+  background: linear-gradient(135deg, #ffb3b3, #ffeaea);
+  font-family: 'Poppins', sans-serif;
+  min-height: 100vh;
+}
+
+/* Centered container */
+.profile-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 60px 20px;
+}
+
+/* Card box */
+.profile-card {
+  background: #fff;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 420px;
+  padding: 30px ;
+  line-height: 2.5;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  animation: fadeIn 0.8s ease-in-out;
+}
+
+/* Profile image */
+.profile-img {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid #c82333;
+  box-shadow: 0 0 15px rgba(200, 35, 51, 0.4);
+  transition: transform 0.3s ease;
+}
+.profile-img:hover {
+  transform: scale(1.08);
+}
+
+/* Text styles */
+.profile-header h3 {
+  font-size: 1.5rem;
+}
+.profile-header p {
+  font-size: 0.9rem;
+  color: #666;
+}
+.profile-info p {
+  font-size: 1rem;
+  color: #333;
+  margin-bottom: 10px;
+}
+.profile-info strong {
+  color: #c82333;
+}
+.profile-info span {
+  color: #555;
+}
+
+/* Button style */
+.btn-danger {
+  background-color: #c82333;
+  border: none;
+  border-radius: 10px;
+  padding: 10px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+.btn-danger:hover {
+  background-color: #a71d2a;
+  transform: scale(1.05);
+}
+
+/* Animation */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+</style>
+
 {% endblock %}

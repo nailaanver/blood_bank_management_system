@@ -46,7 +46,10 @@
                 </div>
             {% endfor %}
 
-            <button type="submit" class="btn-update">Check Eligibility</button>
+            <div class="button-group">
+                <button type="submit" class="btn-update"> Save Changes</button>
+                <a href="{% url 'donor_dashboard' %}" class="btn-update"> Cancel</a>
+            </div>
         </form>
 
         {% if result %}
@@ -78,7 +81,6 @@
     max-width: 600px;
     border-top: 5px solid #d32f2f;
     transition: transform 0.3s;
-    padding: 30px;
 }
 
 .bloodbank-card:hover {
@@ -131,22 +133,44 @@
     color: #999;
 }
 
-/* --- Button --- */
-.btn-update {
-    width: 100%;
+/* --- Buttons --- */
+.button-group {
+    display: flex;
+    justify-content: space-between;
+    gap: 15px;
+    margin-top: 25px;
+}
+
+.btn-update, .btn-cancel {
+    flex: 1;
     padding: 14px;
-    background-color: #d32f2f;
-    color: #fff;
     font-size: 18px;
     font-weight: 600;
     border: none;
     border-radius: 12px;
     cursor: pointer;
-    transition: background 0.3s, transform 0.2s;
+    transition: all 0.3s ease;
+    text-align: center;
 }
 
+/* Save Button */
+.btn-update {
+    background-color: #d32f2f;
+    color: #fff;
+}
 .btn-update:hover {
     background-color: #b71c1c;
+    transform: translateY(-2px);
+}
+
+/* Cancel Button */
+.btn-cancel {
+    background-color: #6c757d;
+    color: #fff;
+    text-decoration: none;
+}
+.btn-cancel:hover {
+    background-color: #565e64;
     transform: translateY(-2px);
 }
 
@@ -177,9 +201,13 @@
         padding: 35px 20px;
     }
 
-    .btn-update {
+    .btn-update, .btn-cancel {
         font-size: 16px;
         padding: 12px;
+    }
+
+    .button-group {
+        flex-direction: column;
     }
 }
 </style>
