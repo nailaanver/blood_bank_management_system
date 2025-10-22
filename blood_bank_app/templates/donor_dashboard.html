@@ -1,195 +1,484 @@
 {% extends 'master.html' %}
 {% load static %}
 
-{% block title %}Admin Dashboard{% endblock %}
+{% block title %}Donor Home{% endblock %}
 
 {% block content %}
-{% if messages %}
-  {% for message in messages %}
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-      {{ message }}
-      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-  {% endfor %}
-{% endif %}
-<header class="header">
-    <div class="logosec">
-        <div class="logo">Donor Dashboard</div>
+<div class="donor-home-container">
+
+  <!-- ===== HEADER ===== -->
+  <header class="dashboard-header shadow-sm">
+    <div class="left-section d-flex align-items-center gap-3">
+      <img src="{% static 'images/blood-logo.png' %}" alt="Logo" class="logo">
+      <h2 class="fw-bold text-danger m-0">LifeDrop</h2>
     </div>
 
-    <div class="welcome-admin">
-        <span>Welcome, {{ user.username }}</span>
-        <img src="{{ user.donordetail.profile_photo.url }}" alt="Profile Photo">
+    <div class="center-section">
+      <h4 class="welcome-text">Welcome, <span>{{ user.username }}</span> 🩸</h4>
     </div>
-</header>
+
+    <div class="right-section d-flex align-items-center gap-4">
+
+      <!-- Notification -->
+      <div class="notification-icon position-relative">
+        <a href="{% url 'view_notifications' %}" class="text-decoration-none">
+          <i class="fas fa-bell fa-lg text-dark"></i>
+          {% if unread_count > 0 %}
+          <span class="badge bg-danger rounded-circle position-absolute top-0 start-100 translate-middle">
+            {{ unread_count }}
+          </span>
+          {% endif %}
+        </a>
+      </div>
+
+      <!-- Profile Dropdown -->
+      <div class="profile-dropdown">
+        {% with donor=user.donordetail %}
+    {% if donor and donor.profile_photo %}
+        <img src="{{ donor.profile_photo.url }}" alt="Profile Photo" class="profile-photo">
+    {% else %}
+        <img src="{% static 'default_profile.png' %}" alt="Profile Photo" class="profile-photo">
+    {% endif %}
+{% endwith %}
 
 
-<div class="main-container">
-    <div class="navcontainer">
-        <nav class="nav">
-            <div class="nav-upper-options">
-
-                <div class="nav-option option1 " data-page="{% url 'admin_dashboard_content' %}">
-                    <i class="fas fa-tachometer-alt"></i>
-                    <h3>Dashboard</h3>
-                </div>
-
-                <div class="nav-option option2" data-page="{% url 'update_donor_detail' %}">
-                    <i class="fas fa-user-cog"></i>
-                    <h3>Update Details</h3>
-                </div>
-
-                <div class="nav-option option3" data-page="{% url 'view_donation_history' %}">
-                    <i class="fa fa-users"></i>
-                    <h3>View Donation History</h3>
-                </div>
-                <div class="nav-option option4" data-page="{% url 'check_eligibility' %}">
-                    <i class="fa fa-heartbeat"></i>
-                    <h3>Check Eligibility</h3>
-                </div>
-                <div class="nav-option option5" data-page="{% url 'request_appoiments' %}">
-                    <i class="fa fa-users"></i>
-                    <h3>Request Appoiments</h3>
-                </div>
-                <div>
-
-                <a href="{% url 'logout' %}" class="nav-option option6">
-                    <i class="fa fa-sign-out-alt"></i>
-                    <h3 class="logout-line">Logout</h3>
-                </a>
-                </div>
-            </div>
-        </nav>
+        <div class="dropdown-content">
+        <a href="{% url 'view_profile' %}"><i class="fas fa-user me-2"></i>View Profile</a>
+          <a href="{% url 'logout' %}" class="logout"><i class="fas fa-sign-out-alt me-2"></i>Logout</a>
+        </div>
+      </div>
     </div>
-    
+  </header>
+    <!-- ===== ABOUT BLOOD DONATION SECTION ===== -->
+ 
 
-    <div class="main" id="main-content">
-        <!-- Dynamic content loads here -->
+
+  <!-- ===== FEATURE CARDS ===== -->
+  <section class="features">
+    <div class="feature-card glow">
+      <i class="fas fa-user-cog"></i>
+      <h3>Update Details</h3>
+      <p>Keep your profile and donation information up to date.</p>
+      <a href="{% url 'update_donor_detail' %}" class="btn">Go</a>
     </div>
+
+    <div class="feature-card glow">
+      <i class="fas fa-history"></i>
+      <h3>Donation History</h3>
+      <p>View your past donations and achievements.</p>
+      <a href="{% url 'view_donation_history' %}" class="btn">Go</a>
+    </div>
+
+    <div class="feature-card glow">
+      <i class="fas fa-heartbeat"></i>
+      <h3>Check Eligibility</h3>
+      <p>See if you’re ready to donate again today.</p>
+      <a href="{% url 'check_eligibility' %}" class="btn">Go</a>
+    </div>
+
+    <div class="feature-card glow">
+      <i class="fas fa-calendar-check"></i>
+      <h3>Request Appointment</h3>
+      <p>Book a donation slot at your nearest blood bank.</p>
+      <a href="{% url 'request_appoiments' %}" class="btn">Go</a>
+    </div>
+  </section>
+    <!-- ===== ABOUT BLOOD DONATION SECTION ===== -->
+  <section class="about-blood-donation">
+    <div class="about-donation-container">
+      <div class="donation-image">
+        <img src="{% static 'images/blood_donation.jpg' %}" alt="Blood Donation Process">
+      </div>
+      <div class="donation-text">
+        <h2>About Blood Donation</h2>
+        <p>
+          Blood donation is a voluntary procedure that helps save countless lives. It provides
+          essential support to patients undergoing surgeries, cancer treatments, and those
+          suffering from anemia or severe injuries.
+        </p>
+        <p>
+          The process is simple and safe — usually taking less than 30 minutes. Every blood
+          donor contributes to building a healthier, more caring society.
+        </p>
+        <ul class="donation-points">
+          <li><i class="fas fa-check-circle"></i> Safe and monitored process</li>
+          <li><i class="fas fa-check-circle"></i> Takes only 10–15 minutes</li>
+          <li><i class="fas fa-check-circle"></i> Free health check-up before donation</li>
+          <li><i class="fas fa-check-circle"></i> Helps hospitals meet emergency needs</li>
+        </ul>
+        <a href="{% url 'request_appoiments' %}" class="donate-btn">Donate Now</a>
+      </div>
+    </div>
+  </section>
+
 </div>
 
- <!-- ================== JS Script ==================  -->
+<!-- =================== STYLING =================== -->
+<style>
+/* Global Layout */
+body {
+  background-color: #f8f9fb;
+  font-family: 'Poppins', sans-serif;
+}
+
+/* === HEADER === */
+.dashboard-header {
+  background-color: #fff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 40px;
+  border-bottom: 2px solid #f1f1f1;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+  animation: fadeInDown 0.6s ease-in-out;
+}
+
+.logo {
+  width: 48px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.center-section .welcome-text {
+  font-size: 1.2rem;
+  color: #333;
+  font-weight: 500;
+}
+.center-section .welcome-text span {
+  color: #c82333;
+  font-weight: 600;
+}
+
+/* Notification Icon */
+.notification-icon i {
+  color: #444;
+  transition: all 0.3s ease;
+}
+.notification-icon i:hover {
+  color: #c82333;
+  transform: scale(1.15);
+}
+
+/* Profile Dropdown */
+.profile-dropdown {
+  position: relative;
+  display: inline-block;
+}
+.profile-photo {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 2px solid #c82333;
+  cursor: pointer;
+  transition: transform 0.3s ease, border-color 0.3s ease;
+  object-fit: cover;
+}
+.profile-photo:hover {
+  transform: scale(1.1);
+  border-color: #a71d2a;
+}
+
+.dropdown-content {
+  display: none;
+  position: absolute;
+  right: 0;
+  top: 60px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  min-width: 170px;
+  animation: fadeIn 0.3s ease-in-out;
+}
+.dropdown-content a {
+  display: flex;
+  align-items: center;
+  padding: 10px 15px;
+  text-decoration: none;
+  color: #333;
+  font-weight: 500;
+  border-bottom: 1px solid #f2f2f2;
+  transition: all 0.3s ease;
+}
+.dropdown-content a:hover {
+  background: #c82333;
+  color: white;
+}
+.dropdown-content a.logout {
+  color: #b30000;
+  font-weight: 600;
+}
+/* .profile-dropdown:hover .dropdown-content {
+  display: block;
+} */
+
+/* === FEATURES SECTION === */
+.features {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 30px;
+  margin-top: 60px;
+  padding: 0 40px;
+}
+
+.feature-card {
+  background: white;
+  border-radius: 20px;
+  padding: 35px 25px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+  transition: all 0.3s ease;
+  text-align: center;
+  position: relative;
+}
+.feature-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 12px 25px rgba(200, 35, 51, 0.2);
+}
+.feature-card i {
+  font-size: 2.8rem;
+  color: #c82333;
+  margin-bottom: 15px;
+}
+.feature-card h3 {
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+.feature-card p {
+  font-size: 0.95rem;
+  color: #555;
+  margin-bottom: 15px;
+}
+.feature-card .btn {
+  background-color: #c82333;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+.feature-card .btn:hover {
+  background-color: #a71d2a;
+  transform: scale(1.05);
+}
+
+/* === ANIMATIONS === */
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translateY(-15px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* === RESPONSIVE === */
+@media (max-width: 768px) {
+  .dashboard-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+    padding: 15px 20px;
+  }
+  .center-section .welcome-text {
+    font-size: 1rem;
+  }
+  .features {
+    padding: 0 20px;
+  }
+}
+
+/* about blood donating section */
+
+/* === ABOUT BLOOD DONATION SECTION === */
+.about-section {
+  background: linear-gradient(135deg, #ffeaea 0%, #fff 100%);
+  padding: 80px 40px;
+  text-align: center;
+  animation: fadeIn 1s ease-in-out;
+}
+
+.about-title {
+  font-size: 2rem;
+  color: #c82333;
+  font-weight: 700;
+  margin-bottom: 20px;
+}
+
+.about-text {
+  font-size: 1rem;
+  color: #555;
+  max-width: 700px;
+  margin: 0 auto 40px auto;
+  line-height: 1.7;
+}
+
+.benefits-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 25px;
+  margin-bottom: 40px;
+}
+
+.benefit-card {
+  background: white;
+  border-radius: 15px;
+  padding: 25px;
+  box-shadow: 0 8px 18px rgba(0,0,0,0.08);
+  transition: all 0.3s ease;
+}
+
+.benefit-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 25px rgba(200, 35, 51, 0.2);
+}
+
+.benefit-card i {
+  font-size: 2.5rem;
+  color: #c82333;
+  margin-bottom: 15px;
+}
+
+.benefit-card h4 {
+  font-weight: 600;
+  color: #222;
+  margin-bottom: 10px;
+}
+
+.benefit-card p {
+  color: #555;
+  font-size: 0.95rem;
+}
+
+.learn-more-btn {
+  display: inline-block;
+  background-color: #c82333;
+  color: white;
+  padding: 12px 25px;
+  border-radius: 8px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+/* === ABOUT BLOOD DONATION SECTION === */
+.about-blood-donation {
+  background: #fff5f5;
+  padding: 80px 50px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.about-donation-container {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 40px;
+  max-width: 1100px;
+}
+
+.donation-image img {
+  width: 420px;
+  height: auto;
+  border-radius: 15px;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.1);
+}
+
+.donation-text {
+  max-width: 600px;
+}
+
+.donation-text h2 {
+  color: #c82333;
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 20px;
+}
+
+.donation-text p {
+  color: #444;
+  font-size: 1rem;
+  line-height: 1.7;
+  margin-bottom: 15px;
+}
+
+.donation-points {
+  list-style: none;
+  padding: 0;
+  margin: 20px 0;
+}
+
+.donation-points li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #333;
+  font-size: 1rem;
+  margin-bottom: 10px;
+}
+
+.donation-points i {
+  color: #c82333;
+  font-size: 1.2rem;
+}
+
+.donate-btn {
+  display: inline-block;
+  background: #c82333;
+  color: #fff;
+  padding: 12px 25px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.donate-btn:hover {
+  background: #a71d2a;
+  transform: scale(1.05);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .about-blood-donation {
+    padding: 60px 20px;
+  }
+  .about-donation-container {
+    flex-direction: column;
+  }
+  .donation-image img {
+    width: 100%;
+    max-width: 350px;
+  }
+}
+
+
+.learn-more-btn:hover {
+  background-color: #a71d2a;
+  transform: scale(1.05);
+}
+
+</style>
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const mainContent = document.getElementById('main-content');
-    const params = new URLSearchParams(window.location.search);
-    const section = params.get('section');
-    const message = params.get('msg');
+  document.addEventListener('DOMContentLoaded', function() {
+    const profileDropdown = document.querySelector('.profile-dropdown');
+    const dropdownContent = profileDropdown.querySelector('.dropdown-content');
 
-    // ✅ Show success message if exists
-    if (message) {
-        const alertBox = document.createElement('div');
-        alertBox.classList.add('alert-success');
-        alertBox.textContent = decodeURIComponent(message);
-        document.body.prepend(alertBox);
-        setTimeout(() => alertBox.remove(), 4000);
-    }
-
-    // Determine default section page
-    let defaultPageUrl = "{% url 'admin_dashboard_content' %}";  // fallback
-    let activeOptionClass = 'option1';  // default
-
-    if (section === 'update_details') {
-        defaultPageUrl = "{% url 'update_donor_detail' %}";
-        activeOptionClass = 'option2';
-    } else if (section === 'view_donation_history') {
-        defaultPageUrl = "{% url 'view_donation_history' %}";
-        activeOptionClass = 'option3';
-    } else if (section === 'check_eligibility') {
-        defaultPageUrl = "{% url 'check_eligibility' %}";
-        activeOptionClass = 'option4';
-    } else if (section === 'request_appoiments') {
-        defaultPageUrl = "{% url 'request_appoiments' %}";
-        activeOptionClass = 'option5';
-    }
-
-    // ✅ Load the correct page in main-content
-    loadPage(defaultPageUrl);
-    setActiveOption(activeOptionClass);
-
-    // Sidebar click handling
-    document.querySelector('.navcontainer').addEventListener('click', function(e) {
-        const target = e.target.closest('.nav-option');
-        if (!target) return;
-        e.preventDefault();
-
-        const pageUrl = target.getAttribute('data-page');
-        if (!pageUrl) return;
-
-        setActiveOption(target.classList[1]);
-        loadPage(pageUrl);
+    // Toggle dropdown on click
+    profileDropdown.addEventListener('click', function(e) {
+      e.stopPropagation(); // Prevent closing immediately
+      dropdownContent.classList.toggle('show');
     });
 
-    // Load a page into main-content
-    function loadPage(url) {
-        fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
-            .then(res => res.text())
-            .then(html => mainContent.innerHTML = html)
-            .catch(err => console.error('Error loading content:', err));
-    }
-
-    // Highlight sidebar active item
-    function setActiveOption(className) {
-        document.querySelectorAll('.nav-option').forEach(opt => opt.classList.remove('active'));
-        const target = document.querySelector('.' + className);
-        if (target) target.classList.add('active');
-    }
-});
-
-document.querySelector('.option2').addEventListener('click', function(e){
-    e.preventDefault();
-
-    fetch("{% url 'update_donor_detail' %}", {headers: {'X-Requested-With': 'XMLHttpRequest'}})
-        .then(res => res.text())
-        .then(html => {
-            document.getElementById('main-content').innerHTML = html;
-        });
-});
+    // Close dropdown if clicked outside
+    document.addEventListener('click', function() {
+      dropdownContent.classList.remove('show');
+    });
+  });
 </script>
-
- <style>
-    .welcome-admin img {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 2px solid #c82333; /* optional border */
-    margin-right: 10px;
-}
-
-header.header {
-    background-color: #f8f9fa; /* light gray background */
-    padding: 10px 20px;
-    display: flex;
-    justify-content: space-between; /* logo left, profile right */
-    align-items: center;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-}
-
-.logosec .logo {
-    font-size: 24px;
-    font-weight: bold;
-    color: #c82333; /* optional color */
-}
-
-.welcome-admin {
-    display: flex;
-    align-items: center;
-}
-
-.welcome-admin img {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 2px solid #c82333; /* optional border */
-    margin-right: 10px;
-}
-
-.welcome-admin span {
-    font-weight: 500;
-    color: #333;
-}
-</style>
 
 {% endblock %}

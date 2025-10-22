@@ -1,0 +1,22 @@
+{% extends 'master.html' %}
+{% load static %}
+
+{% block title %}Profile{% endblock %}
+
+{% block content %}
+<div class="profile-page">
+    <h2>{{ user.username }}'s Profile</h2>
+    
+    {% if donor %}
+        <img src="{{ donor.profile_photo.url }}" alt="Profile Photo" width="150">
+        <p><strong>Blood Group:</strong> {{ donor.blood_group }}</p>
+        <p><strong>Gender:</strong> {{ donor.gender }}</p>
+        <p><strong>Age:</strong> {{ donor.age }}</p>
+        <p><strong>Weight:</strong> {{ donor.weight }} kg</p>
+        <p><strong>Phone:</strong> {{ donor.phone_number }}</p>
+        <p><strong>Address:</strong> {{ donor.address }}</p>
+    {% else %}
+        <p>No donor profile available.</p>
+    {% endif %}
+</div>
+{% endblock %}

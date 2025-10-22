@@ -10,14 +10,14 @@
     <div class="dashboard-header">
         <h2>Welcome, {{ user.username }} 🩸</h2>
         <div class="notification-icon" style="position: relative;">
-    <a href="{% url 'view_notifications' %}" class="text-white">
-        <i class="fas fa-bell fa-lg"></i>
-        {% if unread_count > 0 %}
-            <span class="badge bg-danger rounded-circle" 
-                  style="position:absolute; top:-5px; right:-5px;">{{ unread_count }}</span>
-        {% endif %}
-    </a>
-</div>
+            <a href="{% url 'view_notifications' %}" class="text-white">
+                <i class="fas fa-bell fa-lg"></i>
+                {% if unread_count > 0 %}
+                    <span class="badge bg-danger rounded-circle" 
+                        style="position:absolute; top:-5px; right:-5px;">{{ unread_count }}</span>
+                {% endif %}
+            </a>
+        </div>
 
         <div class="profile-dropdown">
             {% if user.patientdetail.profile_photo %}

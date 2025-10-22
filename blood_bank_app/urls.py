@@ -41,6 +41,8 @@ urlpatterns = [
     path('edit_patient_profile/', views.edit_patient_profile, name='edit_patient_profile'),
     path('partials/update_request_status/<int:request_id>/<str:action>/', views.update_request_status, name='update_request_status'),
     path('notifications/', views.view_notifications, name='view_notifications'),
+    path('profile/', views.view_profile, name='view_profile'),
+
 
 
 

@@ -401,6 +401,20 @@ def view_notifications(request):
 
     return render(request, 'patient/notification.html', {'notifications': notifications})
 
+@login_required
+def view_profile(request):
+    user = request.user
+    try:
+        donor = user.donordetail  # For donors
+    except:
+        donor = None
+
+    context = {
+        'user': user,
+        'donor': donor,
+    }
+    return render(request, 'view_profile.html', context)
+
 
 
 
