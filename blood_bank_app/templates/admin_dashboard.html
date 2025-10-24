@@ -73,13 +73,11 @@
                     <i class="fa fa-users"></i>
                     <h3>View Reports</h3>
                 </div>
-                <div>
 
-                <a href="{% url 'logout' %}" class="nav-option option4">
+                <a href="{% url 'logout' %}" class="nav-option option6">
                     <i class="fa fa-sign-out-alt"></i>
-                    <h3 >Logout</h3>
+                    <h3>Logout</h3>
                 </a>
-                </div>
             </div>
         </nav>
     </div>
@@ -131,25 +129,25 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(html => mainContent.innerHTML = html)
         .catch(err => console.error('Error loading content:', err));
 
-    // ✅ Sidebar click handling
-    document.querySelectorAll('.nav-option').forEach(item => {
-        item.addEventListener('click', function(e) {
-            // Don't block logout link
-            if (this.classList.contains('option4')) return;
+document.querySelectorAll('.nav-option').forEach(item => {
+    item.addEventListener('click', function(e) {
+        // Don't block logout link
+        if (this.classList.contains('option6')) return;
 
-            e.preventDefault();
-            const pageUrl = this.getAttribute('data-page');
-            if (!pageUrl) return;
+        e.preventDefault();
+        const pageUrl = this.getAttribute('data-page');
+        if (!pageUrl) return;
 
-            document.querySelectorAll('.nav-option').forEach(opt => opt.classList.remove('active'));
-            this.classList.add('active');
+        document.querySelectorAll('.nav-option').forEach(opt => opt.classList.remove('active'));
+        this.classList.add('active');
 
-            fetch(pageUrl)
-                .then(response => response.text())
-                .then(html => mainContent.innerHTML = html)
-                .catch(err => console.error('Error loading page:', err));
-        });
+        fetch(pageUrl)
+            .then(response => response.text())
+            .then(html => mainContent.innerHTML = html)
+            .catch(err => console.error('Error loading page:', err));
     });
+});
+
 
     // Helper for active state
     function setActiveOption(className) {

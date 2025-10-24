@@ -1,0 +1,22 @@
+{% extends 'master.html' %}
+{% block content %}
+<div class="container mt-5">
+  <h2 class="text-center mb-4">🩸 Available Blood Stock</h2>
+  <table class="table table-bordered">
+    <thead>
+      <tr>
+        <th>Blood Group</th>
+        <th>Units Available</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for stock in stocks %}
+      <tr>
+        <td>{{ stock.blood_group }}</td>
+        <td>{{ stock.units }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

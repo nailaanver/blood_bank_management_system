@@ -43,6 +43,12 @@ urlpatterns = [
     path('notifications/', views.view_notifications, name='view_notifications'),
     path('profile/', views.view_profile, name='view_profile'),
     path('add-blood-stock/', views.add_blood_stock, name='add_blood_stock'),
+    
+    path('hospital_request_blood/',views.hospital_request_blood, name='hospital_request_blood'),
+    path('hospital_request_history/',views.hospital_request_history, name='hospital_request_history'),
+    path('hospital_dashboard_content/',views.hospital_dashboard_content, name='hospital_dashboard_content'),
+    path('reports/', views.reports, name='reports'),
+
 
 
 

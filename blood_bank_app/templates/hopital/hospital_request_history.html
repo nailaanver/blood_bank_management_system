@@ -1,0 +1,19 @@
+<h3>Request History</h3>
+<table class="table">
+  <tr>
+    <th>Patient Name</th>
+    <th>Blood Group</th>
+    <th>Units</th>
+    <th>Status</th>
+    <th>Requested On</th>
+  </tr>
+  {% for r in requests %}
+  <tr>
+    <td>{{ r.full_name }}</td>
+    <td>{{ r.blood_group }}</td>
+    <td>{{ r.units_required }}</td>
+    <td>{{ r.status }}</td>
+    <td>{{ r.created_at }}</td>
+  </tr>
+  {% endfor %}
+</table>

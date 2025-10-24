@@ -14,7 +14,7 @@ from .models import Branch, Appointment
 
 
 from .models import Profile, DonorDetail, PatientDetail, HospitalDetail, User, ContactMessage,Notification,BloodStock
-from .forms import LoginForm, UserForm, ContactForm, DonorDetailForm, PatientDetailForm, HospitalDetailForm,EligibilityForm,BloodStockForm
+from .forms import LoginForm, UserForm, ContactForm, DonorDetailForm, PatientDetailForm, HospitalDetailForm,EligibilityForm,BloodStockForm,HospitalBloodRequestForm
 
 
 from blood_bank_app.forms import LoginForm,UserForm
@@ -76,8 +76,23 @@ def register(request):
 def patient_dashboard(request):
     unread_count = Notification.objects.filter(user=request.user, is_read=False).count()
     return render(request, 'patient_dashboard.html', {'unread_count': unread_count})
+@login_required
 def hospital_dashboard(request):
-    return render(request, 'hospital_dashboard.html')
+    hospital = HospitalDetail.objects.get(user=request.user)
+    blood_stocks = BloodStock.objects.filter(hospital=hospital)
+    requests = BloodRequest.objects.filter(hospital_name=hospital.hospital_name)
+
+    context = {
+        'hospital': hospital,
+        'blood_stocks': blood_stocks,
+        'requests': requests,
+        'total_requests': requests.count(),
+        'pending_requests': requests.filter(status='Pending').count(),
+        'approved_requests': requests.filter(status='Approved').count(),
+    }
+    return render(request, 'hospital_dashboard.html', context)
+
+
 @login_required
 def admin_dashboard(request):
     pending_count = BloodRequest.objects.filter(status='Pending').count()
@@ -460,4 +475,38 @@ def add_blood_stock(request):
         form = BloodStockForm()
     return render(request, 'partials/add_blood_stock.html', {'form': form})
 
+@login_required
+def view_blood_stock(request):
+    stocks = BloodStock.objects.all()
+    return render(request, 'hospital/view_blood_stock.html', {'stocks': stocks})
 
+@login_required
+def hospital_request_blood(request):
+    hospital = HospitalDetail.objects.get(user=request.user)
+    if request.method == 'POST':
+        form = HospitalBloodRequestForm(request.POST)
+        if form.is_valid():
+            blood_request = form.save(commit=False)
+            blood_request.user = request.user
+            blood_request.hospital_name = hospital.hospital_name
+            blood_request.hospital_address = hospital.address
+            blood_request.save()
+            messages.success(request, 'Blood request submitted successfully!')
+            return redirect('hospital_dashboard')
+    else:
+        form = HospitalBloodRequestForm()
+    return render(request, 'hopital/hospital_request_blood.html', {'form': form})
+
+@login_required
+def hospital_request_history(request):
+    hospital = HospitalDetail.objects.get(user=request.user)
+    requests = BloodRequest.objects.filter(hospital_name=hospital.hospital_name)
+    return render(request, 'hopital/hospital_request_history.html', {'requests': requests})
+
+
+@login_required
+def reports(request):
+    return render(request, 'reports.html')
+@login_required
+def hospital_dashboard_content(request):
+    return render(request, 'hopital/hospital_dashboard_content.html')

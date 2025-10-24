@@ -95,3 +95,7 @@ class BloodStockForm(forms.ModelForm):
         # Make sure all hospitals are included
         self.fields['hospital'].queryset = HospitalDetail.objects.all()
 
+class HospitalBloodRequestForm(forms.ModelForm):
+    class Meta:
+        model = BloodRequest
+        fields = ['full_name', 'blood_group', 'units_required', 'required_date', 'urgency', 'reason']

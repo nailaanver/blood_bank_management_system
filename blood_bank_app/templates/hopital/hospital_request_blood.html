@@ -1,0 +1,28 @@
+{% extends 'master.html' %}
+{% block title %}Request Blood{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2>Hospital Blood Request</h2>
+    <form method="post">
+        {% csrf_token %}
+        <label for="blood_group">Select Blood Group:</label>
+        <select name="blood_group" id="blood_group" required>
+            <option value="">-- Select --</option>
+            <option value="A+">A+</option>
+            <option value="A-">A-</option>
+            <option value="B+">B+</option>
+            <option value="B-">B-</option>
+            <option value="O+">O+</option>
+            <option value="O-">O-</option>
+            <option value="AB+">AB+</option>
+            <option value="AB-">AB-</option>
+        </select>
+
+        <label for="units">Number of Units:</label>
+        <input type="number" name="units" id="units" min="1" required>
+
+        <button type="submit" class="btn btn-primary">Submit Request</button>
+    </form>
+</div>
+{% endblock %}

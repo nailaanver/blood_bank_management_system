@@ -1,7 +1,117 @@
 {% extends 'master.html' %}
-{% block title %}patient-dashboard{% endblock %}
-{% block content %}
-<h2>hospital</h2>
-<button><a href="{% url 'logout' %}">Logout</a></button>
+{% load static %}
 
+{% block title %}Hospital Dashboard{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="logo-section">
+      <img src="{% static 'images/logo.png' %}" alt="LifeDrop Logo" class="logo">
+      <h2>Hospital Panel</h2>
+    </div>
+    <nav class="menu">
+      <a href="{% url 'hospital_dashboard' %}" class="menu-item active" data-url="{% url 'hospital_dashboard' %}">
+        <i class="fas fa-chart-line"></i> Dashboard
+      </a>
+      <a href="{% url 'hospital_request_blood' %}" class="menu-item" data-url="{% url 'hospital_request_blood' %}">
+        <i class="fas fa-tint"></i> Request Blood
+      </a>
+      <a href="{% url 'hospital_request_history' %}" class="menu-item" data-url="{% url 'hospital_request_history' %}">
+        <i class="fas fa-history"></i> Request History
+      </a>
+      <a href="{% url 'reports' %}" class="menu-item" data-url="{% url 'reports' %}">
+        <i class="fas fa-file-alt"></i> Reports
+      </a>
+    </nav>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content" id="content-area">
+    {% include 'hopital/hospital_dashboard_content.html' %}
+  </main>
+</div>
+
+<style>
+/* --- same CSS as before (no change) --- */
+body {
+  font-family: 'Poppins', sans-serif;
+  background-color: #f7f9fb;
+  margin: 0;
+}
+
+.dashboard-container {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 240px;
+  background-color: #0b3d91;
+  color: white;
+  padding: 20px;
+  position: fixed;
+  height: 100%;
+}
+
+.sidebar .logo {
+  width: 60px;
+  margin-bottom: 10px;
+}
+
+.sidebar .menu a {
+  display: block;
+  color: #cfd8e3;
+  text-decoration: none;
+  padding: 10px 15px;
+  border-radius: 6px;
+  margin-bottom: 8px;
+  transition: 0.3s;
+}
+
+.sidebar .menu a.active, 
+.sidebar .menu a:hover {
+  background-color: #1450b9;
+  color: #fff;
+}
+
+/* Main Content */
+.main-content {
+  margin-left: 260px;
+  padding: 30px;
+  width: 100%;
+}
+</style>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const contentArea = document.getElementById("content-area");
+  const menuItems = document.querySelectorAll(".menu-item");
+
+  menuItems.forEach(item => {
+    item.addEventListener("click", function(e) {
+      e.preventDefault();
+
+      // Remove active class from all
+      menuItems.forEach(i => i.classList.remove("active"));
+      this.classList.add("active");
+
+      const url = this.dataset.url;
+
+      // Fetch partial content
+      fetch(url, { headers: { "X-Requested-With": "XMLHttpRequest" } })
+        .then(response => response.text())
+        .then(html => {
+          contentArea.innerHTML = html;
+        })
+        .catch(err => {
+          contentArea.innerHTML = `<p style="color:red;">Error loading content.</p>`;
+          console.error(err);
+        });
+    });
+  });
+});
+</script>
 {% endblock %}
