@@ -186,3 +186,23 @@ class BloodStock(models.Model):
 
     def __str__(self):
         return f"{self.blood_group} - {self.hospital.hospital_name}"
+
+class HospitalBloodRequest(models.Model):
+    hospital = models.ForeignKey(User, on_delete=models.CASCADE)
+    full_name = models.CharField(max_length=100)
+    blood_group = models.CharField(max_length=5)
+    units_required = models.IntegerField()
+    required_date = models.DateField()
+    urgency = models.CharField(
+        max_length=20,
+        choices=[
+            ('Low', 'Low'),
+            ('Medium', 'Medium'),
+            ('High', 'High'),
+        ],
+        default='Medium'
+    )
+    status = models.CharField(max_length=20, default='Pending')
+
+    def __str__(self):
+        return f"{self.full_name} - {self.blood_group}"

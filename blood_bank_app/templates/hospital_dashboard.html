@@ -4,114 +4,158 @@
 {% block title %}Hospital Dashboard{% endblock %}
 
 {% block content %}
-<div class="dashboard-container">
-  <!-- Sidebar -->
-  <aside class="sidebar">
-    <div class="logo-section">
-      <img src="{% static 'images/logo.png' %}" alt="LifeDrop Logo" class="logo">
-      <h2>Hospital Panel</h2>
-    </div>
-    <nav class="menu">
-      <a href="{% url 'hospital_dashboard' %}" class="menu-item active" data-url="{% url 'hospital_dashboard' %}">
-        <i class="fas fa-chart-line"></i> Dashboard
-      </a>
-      <a href="{% url 'hospital_request_blood' %}" class="menu-item" data-url="{% url 'hospital_request_blood' %}">
-        <i class="fas fa-tint"></i> Request Blood
-      </a>
-      <a href="{% url 'hospital_request_history' %}" class="menu-item" data-url="{% url 'hospital_request_history' %}">
-        <i class="fas fa-history"></i> Request History
-      </a>
-      <a href="{% url 'reports' %}" class="menu-item" data-url="{% url 'reports' %}">
-        <i class="fas fa-file-alt"></i> Reports
-      </a>
-    </nav>
-  </aside>
 
-  <!-- Main Content -->
-  <main class="main-content" id="content-area">
-    {% include 'hopital/hospital_dashboard_content.html' %}
-  </main>
+
+
+<header class="header">
+  <div class="logosec">
+    <div class="logo">
+      <img src="{% static 'images/blood-logo.png' %}" alt="Logo" class="logo-img">
+      <h2>{{ hospital.hospital_name }}</h2>  <!-- ✅ Should show name -->
+
+    </div>
+  </div>
+
+  <div class="header-right">
+    <div class="date-time">
+      <span id="current-date"></span>
+    </div>
+
+    <!-- <div class="notifications" style="position: relative; cursor: pointer;" onclick="window.location.href='{% url 'manage_requests' %}'"> -->
+  <i class="fa fa-bell fa-lg"></i>
+  {% if pending_count > 0 %}
+  <span class="badge" style="position: absolute; top: -5px; right: -5px; background:red; color:white; border-radius:50%; padding:2px 6px; font-size:12px;">
+    {{ pending_count }}
+  </span>
+  {% endif %}
 </div>
 
-<style>
-/* --- same CSS as before (no change) --- */
-body {
-  font-family: 'Poppins', sans-serif;
-  background-color: #f7f9fb;
-  margin: 0;
-}
 
-.dashboard-container {
-  display: flex;
-  min-height: 100vh;
-}
+    <!-- <div class="admin-info">
+      <img src="{% static 'images/admin-avatar.png' %}" alt="Admin Avatar" class="avatar">
+      <div class="dropdown">
+        <button class="dropdown-toggle">
+          {{ user.username }} <i class="fa fa-caret-down"></i>
+        </button>
+        <div class="dropdown-menu">
+    
+          <a href="{% url 'logout' %}"><i class="fa fa-sign-out-alt"></i> Logout</a>
+        </div>
+      </div>
+    </div> -->
+  </div>
+</header>
 
-/* Sidebar */
-.sidebar {
-  width: 240px;
-  background-color: #0b3d91;
-  color: white;
-  padding: 20px;
-  position: fixed;
-  height: 100%;
-}
 
-.sidebar .logo {
-  width: 60px;
-  margin-bottom: 10px;
-}
+<div class="main-container">
+    <div class="navcontainer">
+        <nav class="nav">
+            <div class="nav-upper-options">
 
-.sidebar .menu a {
-  display: block;
-  color: #cfd8e3;
-  text-decoration: none;
-  padding: 10px 15px;
-  border-radius: 6px;
-  margin-bottom: 8px;
-  transition: 0.3s;
-}
+                <div class="nav-option option1 " data-page="{% url 'hospital_dashboard_content' %}">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <h3>Dashboard</h3>
+                </div>
 
-.sidebar .menu a.active, 
-.sidebar .menu a:hover {
-  background-color: #1450b9;
-  color: #fff;
-}
+                <div class="nav-option option2" data-page="{% url 'hospital_request_blood' %}">
+                    <i class="fas fa-user-cog"></i>
+                    <h3>Request Blood</h3>
+                </div>
 
-/* Main Content */
-.main-content {
-  margin-left: 260px;
-  padding: 30px;
-  width: 100%;
-}
-</style>
+                <div class="nav-option option3" data-page="{% url 'hospital_request_history' %}">
+                    <i class="fa fa-users"></i>
+                    <h3>Request History</h3>
+                </div>
 
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-  const contentArea = document.getElementById("content-area");
-  const menuItems = document.querySelectorAll(".menu-item");
+                <a href="{% url 'logout' %}" class="nav-option option6">
+                    <i class="fa fa-sign-out-alt"></i>
+                    <h3>Logout</h3>
+                </a>
+            </div>
+        </nav>
+    </div>
 
-  menuItems.forEach(item => {
-    item.addEventListener("click", function(e) {
-      e.preventDefault();
+    <div class="main" id="main-content">
+        <!-- Dynamic content loads here -->
+    </div>
+</div>
 
-      // Remove active class from all
-      menuItems.forEach(i => i.classList.remove("active"));
-      this.classList.add("active");
+ <!-- ================== JS Script ==================  -->
+  
+ <script> 
+document.addEventListener('DOMContentLoaded', function() {
+    const mainContent = document.getElementById('main-content');
+    const params = new URLSearchParams(window.location.search);
+    const section = params.get('section');
+    const message = params.get('msg');
 
-      const url = this.dataset.url;
+    // ✅ Show success message if exists
+    if (message) {
+        const alertBox = document.createElement('div');
+        alertBox.classList.add('alert-success');
+        alertBox.textContent = decodeURIComponent(message);
+        document.body.prepend(alertBox);
+        setTimeout(() => alertBox.remove(), 3000);
+    }
 
-      // Fetch partial content
-      fetch(url, { headers: { "X-Requested-With": "XMLHttpRequest" } })
+    // ✅ Decide which section to show first
+    let defaultPageUrl = "{% url 'hospital_dashboard_content' %}";
+    if (section === 'request_history') {
+        defaultPageUrl = "{% url 'hospital_request_history' %}";
+        setActiveOption('option3');
+    } else if (section === 'hospital_request_blood') {
+        defaultPageUrl = "{% url 'hospital_request_blood' %}";
+        setActiveOption('option2');
+    } else if (section === 'reports') {
+        defaultPageUrl = "{% url 'reports' %}";
+        setActiveOption('option4');
+    }  else {
+        setActiveOption('option1');
+    }
+
+    // ✅ Load the correct section
+    fetch(defaultPageUrl)
         .then(response => response.text())
-        .then(html => {
-          contentArea.innerHTML = html;
-        })
-        .catch(err => {
-          contentArea.innerHTML = `<p style="color:red;">Error loading content.</p>`;
-          console.error(err);
-        });
+        .then(html => mainContent.innerHTML = html)
+        .catch(err => console.error('Error loading content:', err));
+
+document.querySelectorAll('.nav-option').forEach(item => {
+    item.addEventListener('click', function(e) {
+        // Don't block logout link
+        if (this.classList.contains('option6')) return;
+
+        e.preventDefault();
+        const pageUrl = this.getAttribute('data-page');
+        if (!pageUrl) return;
+
+        document.querySelectorAll('.nav-option').forEach(opt => opt.classList.remove('active'));
+        this.classList.add('active');
+
+        fetch(pageUrl)
+            .then(response => response.text())
+            .then(html => mainContent.innerHTML = html)
+            .catch(err => console.error('Error loading page:', err));
     });
-  });
 });
-</script>
+
+
+    // Helper for active state
+    function setActiveOption(className) {
+        document.querySelectorAll('.nav-option').forEach(opt => opt.classList.remove('active'));
+        const target = document.querySelector('.' + className);
+        if (target) target.classList.add('active');
+    }
+});
+
+document.addEventListener("DOMContentLoaded", function() {
+    const dateElement = document.getElementById("current-date");
+    const now = new Date();
+    const options = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
+    dateElement.textContent = now.toLocaleDateString('en-US', options);
+});
+
+
+</script> 
+
+
 {% endblock %}

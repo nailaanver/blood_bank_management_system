@@ -90,7 +90,9 @@ def hospital_dashboard(request):
         'pending_requests': requests.filter(status='Pending').count(),
         'approved_requests': requests.filter(status='Approved').count(),
     }
+
     return render(request, 'hospital_dashboard.html', context)
+
 
 
 @login_required
@@ -509,4 +511,5 @@ def reports(request):
     return render(request, 'reports.html')
 @login_required
 def hospital_dashboard_content(request):
-    return render(request, 'hopital/hospital_dashboard_content.html')
+    hospital = HospitalDetail.objects.get(user=request.user)
+    return render(request, 'hopital/hospital_dashboard_content.html', {'hospital': hospital})
