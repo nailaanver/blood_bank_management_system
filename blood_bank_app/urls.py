@@ -44,6 +44,9 @@ urlpatterns = [
     path('profile/', views.view_profile, name='view_profile'),
     path('add-blood-stock/', views.add_blood_stock, name='add_blood_stock'),
     
+    path('edit_user/<int:user_id>/', views.edit_user, name='edit_user'),  # 👈 this line is required
+    path('delete_user/<int:user_id>/', views.delete_user, name='delete_user'),
+    
     path('hospital_request_blood/',views.hospital_request_blood, name='hospital_request_blood'),
     path('hospital_request_history/',views.hospital_request_history, name='hospital_request_history'),
     path('hospital_dashboard_content/',views.hospital_dashboard_content, name='hospital_dashboard_content'),

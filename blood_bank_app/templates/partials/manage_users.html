@@ -16,26 +16,89 @@
           <th>Email</th>
           <th>Role</th>
           <th>Date Joined</th>
+          <th>Actions</th>
         </tr>
       </thead>
       <tbody>
         {% for user in users %}
-        <tr>
+        <tr id="user-row-{{ user.id }}">
           <td>{{ user.id }}</td>
           <td>{{ user.username }}</td>
           <td>{{ user.email }}</td>
           <td>{{ user.profile.role|title }}</td>
           <td>{{ user.date_joined|date:"M d, Y" }}</td>
+          <td>
+          <a href="{% url 'edit_user' user.id %}" class="btn btn-sm btn-primary">Edit</a>
+
+            <a href="{% url 'delete_user' user.id %}" 
+               class="btn btn-danger btn-sm"
+               onclick="return confirm('Are you sure you want to delete this user?');">
+               Delete
+            </a>
+          </td>
         </tr>
         {% empty %}
-        <tr>
-          <td colspan="5">No users found.</td>
-        </tr>
+        <tr><td colspan="6">No users found.</td></tr>
         {% endfor %}
       </tbody>
     </table>
   </div>
 </div>
+
+
+
+<!-- <script> -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js">
+    
+
+document.addEventListener('DOMContentLoaded', function () {
+  const modal = new bootstrap.Modal(document.getElementById('editUserModal'));
+  const modalBody = document.getElementById('modal-body-content');
+  const form = document.getElementById('editUserForm');
+
+  document.querySelectorAll('.edit-btn').forEach(btn => {
+    btn.addEventListener('click', function () {
+      const userId = this.dataset.id;
+      modalBody.innerHTML = "<div class='text-center py-4 text-muted'>Loading...</div>";
+
+      // Load user form HTML via AJAX
+      fetch(`/edit_user/${userId}/`)
+        .then(res => res.text())
+        .then(html => {
+          modalBody.innerHTML = html;
+          modal.show();
+        })
+        .catch(err => {
+          modalBody.innerHTML = "<div class='text-danger'>Error loading form.</div>";
+        });
+    });
+  });
+
+  // Handle form submit via AJAX
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    const userId = document.querySelector('#editUserModal input[name="user_id"]').value;
+    const formData = new FormData(form);
+
+    fetch(`/edit_user/${userId}/`, {
+      method: "POST",
+      body: formData
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          alert("User updated successfully!");
+          modal.hide();
+          location.reload(); // optional: reload to update table
+        } else {
+          modalBody.innerHTML = data.html; // re-render form with errors
+        }
+      })
+      .catch(err => console.error("Error:", err));
+  });
+});
+</script>
+
 <style>
 .table-container {
   background: white;
@@ -47,5 +110,4 @@ h2 {
   font-weight: bold;
 }
 </style>
-
 {% endblock %}

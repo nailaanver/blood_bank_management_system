@@ -485,6 +485,7 @@ def view_blood_stock(request):
 @login_required
 def hospital_request_blood(request):
     hospital = HospitalDetail.objects.get(user=request.user)
+
     if request.method == 'POST':
         form = HospitalBloodRequestForm(request.POST)
         if form.is_valid():
@@ -495,9 +496,13 @@ def hospital_request_blood(request):
             blood_request.save()
             messages.success(request, 'Blood request submitted successfully!')
             return redirect('hospital_dashboard')
+        else:
+            print(form.errors)
     else:
         form = HospitalBloodRequestForm()
+
     return render(request, 'hopital/hospital_request_blood.html', {'form': form})
+
 
 @login_required
 def hospital_request_history(request):
@@ -513,3 +518,42 @@ def reports(request):
 def hospital_dashboard_content(request):
     hospital = HospitalDetail.objects.get(user=request.user)
     return render(request, 'hopital/hospital_dashboard_content.html', {'hospital': hospital})
+
+from .forms import UserEditForm
+from django.http import HttpResponse,JsonResponse
+from django.template.loader import render_to_string
+
+@login_required
+def edit_user(request, user_id):
+    user = get_object_or_404(User, id=user_id)
+    profile = get_object_or_404(Profile, user=user)
+
+    if request.method == 'POST':
+        form = UserForm(request.POST, instance=user)
+        if form.is_valid():
+            # Save user info
+            form.save()
+            
+            # Save profile info
+            profile.full_name = form.cleaned_data['full_name']
+            profile.role = form.cleaned_data['role']
+            profile.save()
+
+            messages.success(request, "User updated successfully!")
+            return redirect('/admin_dashboard/?section=manage_users&msg=User+updated+successfully!')
+    else:
+        form = UserForm(
+            instance=user,
+            initial={
+                'full_name': profile.full_name,
+                'role': profile.role
+            }
+        )
+
+    return render(request, 'partials/edit_user.html', {'form': form})
+
+def delete_user(request, user_id):
+    user = get_object_or_404(User, id=user_id)
+    user.delete()
+    messages.success(request, "User deleted successfully!")
+    return redirect('manage_users')

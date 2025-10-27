@@ -1,0 +1,20 @@
+<div class="form-group mb-3">
+  <label>Username</label>
+  <input type="text" name="username" value="{{ user.username }}" class="form-control" required>
+</div>
+
+<div class="form-group mb-3">
+  <label>Email</label>
+  <input type="email" name="email" value="{{ user.email }}" class="form-control" required>
+</div>
+
+<div class="form-group mb-3">
+  <label>Role</label>
+  <select name="role" class="form-select">
+    {% for value, label in profile.ROLE_CHOICES %}
+      <option value="{{ value }}" {% if profile.role == value %}selected{% endif %}>{{ label }}</option>
+    {% endfor %}
+  </select>
+</div>
+
+<input type="hidden" name="user_id" value="{{ user.id }}">

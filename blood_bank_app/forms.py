@@ -6,7 +6,7 @@ from .models import DonorDetail, PatientDetail, HospitalDetail,HospitalBloodRequ
 
 
 class UserForm(forms.ModelForm):
-    full_name = forms.CharField()
+    full_name = forms.CharField(required=True)
     password = forms.CharField(widget=forms.PasswordInput)
     confirm_password = forms.CharField(widget=forms.PasswordInput)
     role = forms.ChoiceField(choices=Profile.ROLE_CHOICES)
@@ -98,4 +98,17 @@ class BloodStockForm(forms.ModelForm):
 class HospitalBloodRequestForm(forms.ModelForm):
     class Meta:
         model = HospitalBloodRequest
-        fields = ['full_name', 'blood_group', 'units_required']
+        fields = ['blood_group', 'units_required', 'required_date', 'urgency']
+        widgets = {
+            'blood_group': forms.Select(attrs={'class': 'form-control'}),
+            'required_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+            'urgency': forms.Select(attrs={'class': 'form-control'}),
+        }
+
+class UserEditForm(forms.ModelForm):
+    # first_name = forms.CharField(required=False)
+    # last_name = forms.CharField(required=False)
+    
+    class Meta:
+        model = User
+        fields = [  'username', 'email']
