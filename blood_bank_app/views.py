@@ -621,3 +621,16 @@ def delete_user(request, user_id):
     user.delete()
     messages.success(request, "User deleted successfully!")
     return redirect('manage_users')
+
+@login_required
+def received_history(request):
+    received_requests = BloodRequest.objects.filter(
+        user=request.user, status='Approved'
+    ).order_by('-created_at')
+
+    context = {
+        'received_requests': received_requests
+    }
+    return render(request, 'patient/received_history.html', context)
+
+

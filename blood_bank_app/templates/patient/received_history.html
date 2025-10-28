@@ -1,9 +1,120 @@
 {% extends 'master.html' %}
-{% block title %}Received Blood History{% endblock %}
+{% load static %}
 
 {% block content %}
-<div class="container">
-    <h2>Blood Received History</h2>
-    <p>This page will show the history of blood received by the patient.</p>
+<style>
+  body {
+    background-color: #fff5f5;
+  }
+
+  .history-container {
+    background-color: #ffffff;
+    border-radius: 20px;
+    box-shadow: 0 0 15px rgba(255, 0, 0, 0.2);
+    padding: 40px;
+    margin-top: 50px;
+    animation: fadeIn 1s ease-in-out;
+  }
+    .back-btn {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 25px;
+    font-weight: 500;
+    transition: 0.3s;
+  }
+
+  .back-btn:hover {
+    background-color: #b71c1c;
+    transform: scale(1.05);
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .table {
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .table thead {
+    background: linear-gradient(90deg, #dc3545, #ff6b6b);
+    color: white;
+    font-weight: bold;
+  }
+
+  .table tbody tr:hover {
+    background-color: #ffe5e5;
+    transition: 0.3s;
+  }
+
+  .title-heading {
+    font-weight: 700;
+    color: #dc3545;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .no-data {
+    color: #888;
+    font-size: 18px;
+    font-style: italic;
+  }
+
+  .blood-icon {
+    color: #dc3545;
+    font-size: 30px;
+    margin-right: 8px;
+  }
+
+  .table td {
+    vertical-align: middle;
+  }
+
+</style>
+
+<div class="container history-container">
+  <div class="text-center mb-4">
+    <i class="fas fa-tint blood-icon"></i>
+    <h2 class="title-heading">Received Blood History</h2>
+  </div>
+
+  {% if received_requests %}
+    <table class="table table-bordered table-striped text-center align-middle">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Blood Group</th>
+          <th>Units Received</th>
+          <th>Hospital</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for req in received_requests %}
+          <tr>
+            <td>{{ req.required_date|date:"d M, Y" }}</td>
+            <td>
+              <span class="badge bg-danger fs-6">{{ req.blood_group }}</span>
+            </td>
+            <td>{{ req.units_required }}</td>
+            <td>{{ req.hospital_name }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p class="text-center mt-4 no-data">No received history found.</p>
+  {% endif %}
 </div>
+<div class="text-center mt-4">
+    <button class="back-btn" onclick="window.history.back();">
+      ← Go Back
+    </button>
+  </div>
+
+<!-- Font Awesome for blood drop icon -->
+<script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
 {% endblock %}
