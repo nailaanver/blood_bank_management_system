@@ -120,8 +120,14 @@ def admin_dashboard(request):
 
 @login_required
 def donor_dashboard(request):
-    donor = DonorDetail.objects.filter(user=request.user).first()  # get latest donor details
-    return render(request, 'donor_dashboard.html', {'donor': donor})
+    donor = DonorDetail.objects.filter(user=request.user).first()
+    unread_count = Notification.objects.filter(user=request.user, is_read=False).count()
+
+    return render(request, 'donor_dashboard.html', {
+        'donor': donor,
+        'unread_count': unread_count
+    })
+
 def index(request):
     return render(request,'index.html')
 
@@ -533,13 +539,10 @@ def view_notifications(request):
     return render(request, 'patient/notification.html', {'notifications': notifications})
 
 @login_required
-def view_notifications(request):
+def view_notifications_donor(request):
     notifications = Notification.objects.filter(user=request.user).order_by('-created_at')
-    
-    # mark all as read when opened
-    notifications.update(is_read=True)
+    return render(request, 'donor/view_notifications.html', {'notifications': notifications})
 
-    return render(request, 'patient/notification.html', {'notifications': notifications})
 
 @login_required
 def view_profile(request):
@@ -692,12 +695,31 @@ def search_blood(request):
     }
     return render(request, 'patient/search_blood.html', context)
 
+from .models import Notification
+
+@login_required
 def update_appointment_status(request, appointment_id, status):
+    print("STATUS RECEIVED:", status)  # 🧭 Debug
+
     appointment = get_object_or_404(Appointment, id=appointment_id)
     appointment.status = status
     appointment.save()
-    messages.success(request, f"Donor appointment marked as {status}.")
+
+    # ✅ Create notification for donor
+    if status == "Accepted":
+        Notification.objects.create(
+            user=appointment.donor,
+            message=f"Your appointment with {appointment.hospital.hospital_name} on {appointment.appointment_date} has been accepted."
+        )
+    elif status == "Rejected":
+        Notification.objects.create(
+            user=appointment.donor,
+            message=f"Your appointment request with {appointment.hospital.hospital_name} has been rejected."
+        )
+
+    messages.success(request, f"Appointment status updated to {status}.")
     return redirect('manage_requests')
+
 
 def update_patient_status(request, request_id, status):
     req = get_object_or_404(BloodRequest, id=request_id)
@@ -713,6 +735,33 @@ def update_hospital_status(request, request_id, status):
     messages.success(request, f"Hospital request marked as {status}.")
     return redirect('manage_requests')
 
+
+from .models import Appointment, Notification
+
+def approve_appointment(request, appointment_id):
+    appointment = get_object_or_404(Appointment, id=appointment_id)
+    appointment.status = 'Approved'
+    appointment.save()
+
+    # ✅ Create notification for donor
+    Notification.objects.create(
+        user=appointment.donor,
+        message=f"✅ Your appointment at {appointment.hospital.hospital_name} on {appointment.appointment_date} has been approved by the admin."
+    )
+
+    return redirect('manage_requests')
+
+
+def reject_appointment(request, appointment_id):
+    appointment = Appointment.objects.get(id=appointment_id)
+    appointment.status = 'Rejected'
+    appointment.save()
+
+    Notification.objects.create(
+        user=appointment.donor,
+        message=f"❌ Your appointment at {appointment.hospital.hospital_name} has been rejected."
+    )
+    return redirect('manage_requests')
 
 
 

@@ -1,0 +1,52 @@
+{% extends 'master.html' %}
+{% block title %}My Notifications{% endblock %}
+
+{% block content %}
+<div class="notification-container">
+  <h2>Notifications</h2>
+  {% if notifications %}
+    <ul>
+      {% for note in notifications %}
+        <li class="{% if not note.is_read %}unread{% endif %}">
+          {{ note.message }} <br>
+          <small>{{ note.created_at|date:"M d, Y H:i" }}</small>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>No notifications yet.</p>
+  {% endif %}
+</div>
+
+<style>
+.notification-container {
+  width: 80%;
+  margin: 30px auto;
+  background: #fff;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.notification-container h2 {
+  color: #e63946;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.notification-container ul {
+  list-style: none;
+  padding: 0;
+}
+
+.notification-container li {
+  border-bottom: 1px solid #eee;
+  padding: 10px 0;
+  font-size: 1rem;
+}
+
+.unread {
+  background-color: #fff3cd;
+}
+</style>
+{% endblock %}

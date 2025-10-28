@@ -4,6 +4,13 @@
 {% block title %}Manage All Requests{% endblock %}
 
 {% block content %}
+<!-- {% if appointment.status == "Pending" %}
+  <a href="{% url 'approve_appointment' appointment.id %}" class="btn btn-success btn-sm">Approve</a>
+  <a href="{% url 'reject_appointment' appointment.id %}" class="btn btn-danger btn-sm">Reject</a>
+{% else %}
+  —
+{% endif %} -->
+
 <div class="manage-requests-container">
   <h2 class="page-title">Manage All Requests</h2>
 

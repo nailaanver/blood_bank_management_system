@@ -41,6 +41,7 @@ urlpatterns = [
     path('edit_patient_profile/', views.edit_patient_profile, name='edit_patient_profile'),
     path('partials/update_request_status/<int:request_id>/<str:action>/', views.update_request_status, name='update_request_status'),
     path('notifications/', views.view_notifications, name='view_notifications'),
+    path('view_notifications/', views.view_notifications_donor, name='view_notifications_donor'),
     path('profile/', views.view_profile, name='view_profile'),
     path('add-blood-stock/', views.add_blood_stock, name='add_blood_stock'),
     
@@ -55,7 +56,8 @@ urlpatterns = [
     path('update_patient_status/<int:request_id>/<str:status>/', views.update_patient_status, name='update_patient_status'),
     path('update_hospital_status/<int:request_id>/<str:status>/', views.update_hospital_status, name='update_hospital_status'),
 
-
+    path('approve_appointment/<int:appointment_id>/', views.approve_appointment, name='approve_appointment'),
+    path('reject_appointment/<int:appointment_id>/', views.reject_appointment, name='reject_appointment'),
 ]
 # ✅ Add this at the end to serve media files
 if settings.DEBUG:
