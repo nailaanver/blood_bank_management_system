@@ -120,7 +120,7 @@ class Branch(models.Model):
 
 class Appointment(models.Model):
     donor = models.ForeignKey(User, on_delete=models.CASCADE)
-    branch = models.ForeignKey(Branch, on_delete=models.CASCADE)
+    hospital = models.ForeignKey(HospitalDetail, on_delete=models.CASCADE,null=True)
     appointment_date = models.DateField()
     appointment_time = models.TimeField()
     notes = models.TextField(blank=True, null=True)
@@ -132,7 +132,9 @@ class Appointment(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.donor.username} - {self.appointment_date}"
+        return f"{self.donor.username} - {self.hospital.hospital_name} ({self.status})"
+
+
     
 class BloodRequest(models.Model):
     BLOOD_GROUPS = [

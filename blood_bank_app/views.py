@@ -13,7 +13,7 @@ from django.urls import reverse
 from .models import Branch, Appointment
 
 
-from .models import Profile, DonorDetail, PatientDetail, HospitalDetail, User, ContactMessage,Notification,BloodStock,Donation
+from .models import Profile, DonorDetail, PatientDetail, HospitalDetail, User, ContactMessage,Notification,BloodStock,Donation,HospitalBloodRequest
 from .forms import LoginForm, UserForm, ContactForm, DonorDetailForm, PatientDetailForm, HospitalDetailForm,EligibilityForm,BloodStockForm,HospitalBloodRequestForm
 
 
@@ -97,7 +97,25 @@ def hospital_dashboard(request):
 
 @login_required
 def admin_dashboard(request):
-    return render(request,'admin_dashboard.html')
+    # Get all appointment requests
+    appointments = Appointment.objects.all().order_by('-created_at')
+
+    # Get other dashboard details (optional)
+    total_donors = DonorDetail.objects.count()
+    total_patients = PatientDetail.objects.count()
+    total_hospital = HospitalDetail.objects.count()
+    total_requests = appointments.count()
+
+    context = {
+        'appointments': appointments,
+        'total_donors': total_donors,
+        'total_patients': total_patients,
+        'total_hospital': total_hospital,
+        'total_requests': total_requests,
+    }
+
+    return render(request, 'admin_dashboard.html', context)
+
     
 
 @login_required
@@ -201,10 +219,26 @@ def manage_bloodstock(request):
     })
 
 
+@login_required
 def manage_requests(request):
-    # Get all requests ordered by latest first
-    blood_requests = BloodRequest.objects.all().order_by('-id')
-    return render(request, 'partials/manage_requests.html', {'blood_requests': blood_requests})
+    from .models import Appointment, BloodRequest, HospitalBloodRequest
+
+    # Fetch all donor appointment requests
+    appointment_requests = Appointment.objects.all().order_by('-created_at')
+
+    # Fetch all patient blood requests
+    patient_requests = BloodRequest.objects.all().order_by('-created_at')
+
+    # Fetch all hospital blood requests
+    hospital_requests = HospitalBloodRequest.objects.all().order_by('-required_date')
+
+    return render(request, 'partials/manage_requests.html', {
+        'appointment_requests': appointment_requests,
+        'patient_requests': patient_requests,
+        'hospital_requests': hospital_requests,
+    })
+
+
 
 
 
@@ -307,6 +341,13 @@ def view_donation_history(request):
 
 
 
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from django.urls import reverse
+from datetime import date, timedelta
+from django.contrib.auth.decorators import login_required
+from .forms import EligibilityForm
+
 @login_required
 def check_eligibility(request):
     form = EligibilityForm(request.POST or None)
@@ -332,9 +373,10 @@ def check_eligibility(request):
                 result = f"🕒 You can donate again after {next_date.strftime('%d %B %Y')}."
                 status = "warning"
             else:
-                # ✅ Eligible: redirect to Request Appointments
-                message = "✅ You are eligible to donate blood! Proceed to request an appointment."
-                return redirect(f"{reverse('donor_dashboard')}?section=request_appoiments&msg={message}")
+                # ✅ Eligible → Redirect to Donor Dashboard with success message
+                messages.success(request, "✅ You are eligible to donate blood! Proceed to request an appointment.")
+                return redirect(reverse('donor_dashboard') + "?section=request_appoiments")
+
         else:
             result = "⚠️ Please correct the errors and try again."
             status = "warning"
@@ -344,39 +386,37 @@ def check_eligibility(request):
         'result': result,
         'status': status
     })
+
     
 @login_required
-def request_appoiments(request):
-    branches = Branch.objects.all()
-    success_message = None
+def request_appointment(request):
+    hospitals = HospitalDetail.objects.all()
 
     if request.method == 'POST':
-        date = request.POST.get('appointment_date')
-        time = request.POST.get('appointment_time')
-        branch_id = request.POST.get('branch')
+        appointment_date = request.POST.get('appointment_date')
+        appointment_time = request.POST.get('appointment_time')
+        hospital_id = request.POST.get('hospital')
         notes = request.POST.get('notes')
 
-        if date and time and branch_id:
-            Appointment.objects.create(
-                donor=request.user,
-                branch_id=branch_id,
-                appointment_date=date,
-                appointment_time=time,
-                notes=notes
-            )
-            # ✅ Use redirect to avoid duplicate submissions
-            success_message = "✅ Your appointment request has been submitted successfully!"
-            return redirect(f"{reverse('request_appoiments')}?msg={success_message}")
+        if not hospital_id:
+            messages.error(request, "Please select a hospital.")
+            return redirect('request_appointment')
 
-    # Check if there's a success message in GET params
-    if 'msg' in request.GET:
-        success_message = request.GET['msg']
+        hospital = HospitalDetail.objects.get(id=hospital_id)
 
-    return render(request, 'donor/request_appoiment.html', {
-        'branches': branches,
-        'success_message': success_message
-    })
+        Appointment.objects.create(
+            donor=request.user,
+            hospital=hospital,
+            appointment_date=appointment_date,
+            appointment_time=appointment_time,
+            notes=notes,
+            status='Pending'
+        )
 
+        messages.success(request, "Appointment request sent successfully! Waiting for admin approval.")
+        return redirect('donor_dashboard')
+
+    return render(request, 'donor/request_appoiment.html', {'hospitals': hospitals})
 
 
 
@@ -651,6 +691,27 @@ def search_blood(request):
         'location': location,
     }
     return render(request, 'patient/search_blood.html', context)
+
+def update_appointment_status(request, appointment_id, status):
+    appointment = get_object_or_404(Appointment, id=appointment_id)
+    appointment.status = status
+    appointment.save()
+    messages.success(request, f"Donor appointment marked as {status}.")
+    return redirect('manage_requests')
+
+def update_patient_status(request, request_id, status):
+    req = get_object_or_404(BloodRequest, id=request_id)
+    req.status = status
+    req.save()
+    messages.success(request, f"Patient request marked as {status}.")
+    return redirect('manage_requests')
+
+def update_hospital_status(request, request_id, status):
+    req = get_object_or_404(HospitalBloodRequest, id=request_id)
+    req.status = status
+    req.save()
+    messages.success(request, f"Hospital request marked as {status}.")
+    return redirect('manage_requests')
 
 
 

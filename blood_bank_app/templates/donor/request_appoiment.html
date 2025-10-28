@@ -7,10 +7,11 @@
 {% if success_message %}
 <div class="alert alert-success">{{ success_message }}</div>
 {% endif %}
+
 <div class="request-container">
     <h2 class="page-title">Request Appointment</h2>
     <p class="page-subtitle">
-        Please select your preferred date, time, and branch for donation.
+        Please select your preferred date, time, and hospital for blood donation.
     </p>
 
     <form method="POST" id="appointment-form">
@@ -26,13 +27,18 @@
         </div>
 
         <div class="form-group">
-            <label for="branch">Select Donation Branch:</label>
-            <select id="branch" name="branch" required>
-                <option value="">-- Select Branch --</option>
-                {% for branch in branches %}
-                <option value="{{ branch.id }}">{{ branch.name }}</option>
-                {% endfor %}
-            </select>
+            <label for="hospital">Select Hospital:</label>
+            <div class="form-group">
+    <label for="hospital">Select Hospital:</label>
+    <select id="hospital" name="hospital" required>
+        <option value="">-- Select Hospital --</option>
+        {% for hospital in hospitals %}
+        <option value="{{ hospital.id }}">{{ hospital.hospital_name }}</option>
+        {% endfor %}
+    </select>
+</div>
+
+
         </div>
 
         <div class="form-group">
@@ -40,14 +46,14 @@
             <textarea id="notes" name="notes" rows="3"></textarea>
         </div>
 
-        <button type="submit" class="btn-submit">Submit Appointment Request</button>
+        <button type="submit" class="btn-submit">📅 Send Appointment Request</button>
     </form>
 
-    {% if success_message %}
+    <!-- {% if success_message %}
         <div class="alert-success">
             {{ success_message }}
         </div>
-    {% endif %}
+    {% endif %} -->
 </div>
 
 <style>

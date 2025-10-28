@@ -1,108 +1,253 @@
 {% extends 'master.html' %}
 {% load static %}
 
+{% block title %}Manage All Requests{% endblock %}
+
 {% block content %}
-<div class="container mt-5 mb-5">
-  <div class="card shadow-lg border-0 rounded-4">
-    <div class="card-header bg-danger text-white text-center py-3 rounded-top-4">
-      <h3 class="fw-bold mb-0">🩸 Blood Requests</h3>
-    </div>
+<div class="manage-requests-container">
+  <h2 class="page-title">Manage All Requests</h2>
 
-    <div class="card-body p-4">
-
-      {% if messages %}
-        {% for message in messages %}
-          <div class="alert alert-info text-center mb-4">{{ message }}</div>
+  <!-- Donor Appointment Requests -->
+  <div class="request-section">
+    <h4 class="section-title">🩸 Donor Appointment Requests</h4>
+    <table class="table table-hover align-middle text-center custom-table">
+      <thead>
+        <tr>
+          <th>Donor</th>
+          <th>Hospital</th>
+          <th>Date</th>
+          <th>Time</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for appointment in appointment_requests %}
+        <tr>
+          <td>{{ appointment.donor.username }}</td>
+          <td>{{ appointment.hospital.hospital_name }}</td>
+          <td>{{ appointment.appointment_date }}</td>
+          <td>{{ appointment.appointment_time }}</td>
+          <td>
+            {% if appointment.status == 'Accepted' %}
+              <span class="status-badge accepted">Accepted</span>
+            {% elif appointment.status == 'Pending' %}
+              <span class="status-badge pending">Pending</span>
+            {% else %}
+              <span class="status-badge rejected">Rejected</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if appointment.status == 'Pending' %}
+              <form action="{% url 'update_appointment_status' appointment.id 'Accepted' %}" method="post" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn-action accept">Accept</button>
+              </form>
+              <form action="{% url 'update_appointment_status' appointment.id 'Rejected' %}" method="post" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn-action reject">Reject</button>
+              </form>
+            {% else %}
+              <span class="text-muted">—</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" class="text-muted">No donor appointment requests found</td></tr>
         {% endfor %}
-      {% endif %}
+      </tbody>
+    </table>
+  </div>
 
-      <div class="table-responsive">
-        <table class="table align-middle table-bordered text-center">
-          <thead class="table-danger text-white" style="background-color:#dc3545;">
-            <tr>
-              <th>#</th>
-              <th>Patient</th>
-              <th>Blood Group</th>
-              <th>Units</th>
-              <th>Hospital</th>
-              <th>Urgency</th>
-              <th>Status</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for req in blood_requests %}
-            <tr>
-              <td>{{ forloop.counter }}</td>
-              <td class="fw-semibold">{{ req.full_name }}</td>
-              <td><span class="badge bg-danger fs-6">{{ req.blood_group }}</span></td>
-              <td>{{ req.units_required }}</td>
-              <td>{{ req.hospital_name }}</td>
-              <td>
-                {% if req.urgency == "High" %}
-                  <span class="badge bg-danger">High</span>
-                {% elif req.urgency == "Medium" %}
-                  <span class="badge bg-warning text-dark">Medium</span>
-                {% else %}
-                  <span class="badge bg-success">Low</span>
-                {% endif %}
-              </td>
-              <td>
-                {% if req.status == "Pending" %}
-                  <span class="badge bg-warning text-dark px-3 py-2 rounded-pill">Pending</span>
-                {% elif req.status == "Approved" %}
-                  <span class="badge bg-success px-3 py-2 rounded-pill">Approved</span>
-                {% else %}
-                  <span class="badge bg-danger px-3 py-2 rounded-pill">Rejected</span>
-                {% endif %}
-              </td>
-              <td>
-                {% if req.status == "Pending" %}
-                  <div class="d-flex justify-content-center gap-2">
-                    <a href="{% url 'update_request_status' req.id 'approve' %}" class="btn btn-success btn-sm px-3">Approve</a>
-                    <a href="{% url 'update_request_status' req.id 'reject' %}" class="btn btn-danger btn-sm px-3">Reject</a>
-                  </div>
-                {% else %}
-                  <span class="text-muted">No actions</span>
-                {% endif %}
-              </td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-    </div>
+  <!-- Patient Blood Requests -->
+  <div class="request-section">
+    <h4 class="section-title">🧬 Patient Blood Requests</h4>
+    <table class="table table-hover align-middle text-center custom-table">
+      <thead>
+        <tr>
+          <th>Full Name</th>
+          <th>Blood Group</th>
+          <th>Units Required</th>
+          <th>Hospital</th>
+          <th>Required Date</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for request in patient_requests %}
+        <tr>
+          <td>{{ request.full_name }}</td>
+          <td>{{ request.blood_group }}</td>
+          <td>{{ request.units_required }}</td>
+          <td>{{ request.hospital_name }}</td>
+          <td>{{ request.required_date }}</td>
+          <td>
+            {% if request.status == 'Accepted' %}
+              <span class="status-badge accepted">Accepted</span>
+            {% elif request.status == 'Pending' %}
+              <span class="status-badge pending">Pending</span>
+            {% else %}
+              <span class="status-badge rejected">Rejected</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if request.status == 'Pending' %}
+              <form action="{% url 'update_patient_status' request.id 'Accepted' %}" method="post" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn-action accept">Accept</button>
+              </form>
+              <form action="{% url 'update_patient_status' request.id 'Rejected' %}" method="post" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn-action reject">Reject</button>
+              </form>
+            {% else %}
+              <span class="text-muted">—</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="7" class="text-muted">No patient blood requests found</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Hospital Blood Requests -->
+  <div class="request-section">
+    <h4 class="section-title">🏥 Hospital Blood Requests</h4>
+    <table class="table table-hover align-middle text-center custom-table">
+      <thead>
+        <tr>
+          <th>Full Name</th>
+          <th>Blood Group</th>
+          <th>Units Required</th>
+          <th>Required Date</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for hospital_request in hospital_requests %}
+        <tr>
+          <td>{{ hospital_request.full_name }}</td>
+          <td>{{ hospital_request.blood_group }}</td>
+          <td>{{ hospital_request.units_required }}</td>
+          <td>{{ hospital_request.required_date }}</td>
+          <td>
+            {% if hospital_request.status == 'Accepted' %}
+              <span class="status-badge accepted">Accepted</span>
+            {% elif hospital_request.status == 'Pending' %}
+              <span class="status-badge pending">Pending</span>
+            {% else %}
+              <span class="status-badge rejected">Rejected</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if hospital_request.status == 'Pending' %}
+              <form action="{% url 'update_hospital_status' hospital_request.id 'Accepted' %}" method="post" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn-action accept">Accept</button>
+              </form>
+              <form action="{% url 'update_hospital_status' hospital_request.id 'Rejected' %}" method="post" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn-action reject">Reject</button>
+              </form>
+            {% else %}
+              <span class="text-muted">—</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" class="text-muted">No hospital blood requests found</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
   </div>
 </div>
 
 <style>
-  body {
-    background-color: #f8f9fa;
-    font-family: 'Poppins', sans-serif;
-  }
+.manage-requests-container {
+  width: 90%;
+  margin: 40px auto;
+  background: #fff;
+  border-radius: 16px;
+  padding: 30px 40px;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+}
 
-  .card {
-    border: none;
-    background-color: #ffffff;
-  }
+.page-title {
+  text-align: center;
+  color: #e63946;
+  font-size: 2rem;
+  margin-bottom: 30px;
+  font-weight: 700;
+}
 
-  .table th {
-    background-color: #dc3545 !important;
-    color: white !important;
-    font-weight: 600;
-  }
+.section-title {
+  margin-top: 40px;
+  color: #d62828;
+  border-left: 5px solid #d62828;
+  padding-left: 10px;
+  font-weight: 600;
+  font-size: 1.3rem;
+}
 
-  .table td {
-    vertical-align: middle;
-  }
+.custom-table {
+  background-color: #fff;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
 
-  .btn-sm {
-    border-radius: 20px;
-    font-size: 0.85rem;
-  }
+.custom-table thead {
+  background-color: #e63946;
+  color: white;
+}
 
-  h3 {
-    letter-spacing: 1px;
-  }
+.custom-table th, .custom-table td {
+  vertical-align: middle;
+  font-size: 0.95rem;
+}
+
+.status-badge {
+  padding: 6px 12px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  display: inline-block;
+}
+
+.status-badge.accepted { background-color: #d4edda; color: #155724; }
+.status-badge.pending { background-color: #fff3cd; color: #856404; }
+.status-badge.rejected { background-color: #f8d7da; color: #721c24; }
+
+.btn-action {
+  border: none;
+  padding: 5px 10px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.btn-action.accept {
+  background-color: #28a745;
+  color: white;
+}
+
+.btn-action.reject {
+  background-color: #dc3545;
+  color: white;
+}
+
+.btn-action:hover {
+  opacity: 0.85;
+}
+
+.text-muted {
+  color: #888 !important;
+}
 </style>
 {% endblock %}

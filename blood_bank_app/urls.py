@@ -32,7 +32,7 @@ urlpatterns = [
     
     path('donor/view_donation_history/',views.view_donation_history,name = 'view_donation_history'),
     path('donor/check_eligibility/',views.check_eligibility,name = 'check_eligibility'),
-    path('donor/request_appoiments/',views.request_appoiments,name = 'request_appoiments'),
+    path('donor/request_appoiments/',views.request_appointment,name = 'request_appoiments'),
     path('donor/update_donor_detail/', views.update_donor_detail_view, name='update_donor_detail'),
     path('request_blood/', views.request_blood, name='request_blood'),
     path('request_status/', views.request_status, name='request_status'),
@@ -51,11 +51,9 @@ urlpatterns = [
     path('hospital_request_history/',views.hospital_request_history, name='hospital_request_history'),
     path('hospital_dashboard_content/',views.hospital_dashboard_content, name='hospital_dashboard_content'),
     path('reports/', views.reports, name='reports'),
-
-
-
-
-
+    path('update_appointment_status/<int:appointment_id>/<str:status>/', views.update_appointment_status, name='update_appointment_status'),
+    path('update_patient_status/<int:request_id>/<str:status>/', views.update_patient_status, name='update_patient_status'),
+    path('update_hospital_status/<int:request_id>/<str:status>/', views.update_hospital_status, name='update_hospital_status'),
 
 
 ]

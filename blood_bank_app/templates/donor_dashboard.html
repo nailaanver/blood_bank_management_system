@@ -4,6 +4,18 @@
 {% block title %}Donor Home{% endblock %}
 
 {% block content %}
+
+
+
+
+{% if messages %}
+  {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} text-center mt-3">
+      {{ message }}
+    </div>
+  {% endfor %}
+{% endif %}
+
 <div class="donor-home-container">
 
   <!-- ===== HEADER ===== -->
