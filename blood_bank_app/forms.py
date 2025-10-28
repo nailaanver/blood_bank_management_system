@@ -88,12 +88,11 @@ from .models import BloodStock
 class BloodStockForm(forms.ModelForm):
     class Meta:
         model = BloodStock
-        fields = ['hospital', 'blood_group', 'units_available']
+        fields = [ 'blood_group', 'units_available']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # Make sure all hospitals are included
-        self.fields['hospital'].queryset = HospitalDetail.objects.all()
 
 class HospitalBloodRequestForm(forms.ModelForm):
     class Meta:

@@ -1,42 +1,51 @@
 <div class="dashboard-main">
-  <!-- <div class="searchbar2">
-    <input type="text" placeholder="Search" />
-    <div class="searchbtn">
-      <img src="https://media.geeksforgeeks.org/wp-content/uploads/20221210180758/Untitled-design-(28).png"
-           class="icn srchicn" alt="search-button" />
-    </div>
-  </div> -->
-
   <div class="box-container">
+    
     <div class="box box1">
       <div class="text">
         <i class="fa fa-user-group fa-2x"></i>
         <h2 class="topic-heading">Total Donors</h2>
-        <p class="count">{{ total_users }}</p>
+        <p class="count">{{ total_donors }}</p>
+      </div>
+    </div>
+    <div class="box box2">
+      <div class="text">
+        <i class="fa fa-user-group fa-2x"></i>
+        <h2 class="topic-heading">Total Patients</h2>
+        <p class="count">{{ total_patients }}</p>
+      </div>
+    </div>
+    <div class="box box3">
+      <div class="text">
+        <i class="fa fa-user-group fa-2x"></i>
+        <h2 class="topic-heading">Total Hospital</h2>
+        <p class="count">{{ total_hospital }}</p>
       </div>
     </div>
 
-    <div class="box box2">
+    <div class="box box4">
       <div class="text">
         <i class="fa fa-address-book fa-2x"></i>
         <h2 class="topic-heading">Total Blood Units</h2>
-        <p class="count">{{ total_contacts }}</p>
+        <p class="count">{{ total_stock }}</p>
       </div>
     </div>
 
-    <div class="box box3">
+    <div class="box box5">
       <div class="text">
         <i class="fa fa-users fa-2x"></i>
         <h2 class="topic-heading">Total Requests</h2>
-        <p class="count">0</p> <!-- optional, implement later -->
+        <p class="count">{{ total_requests }}</p>
       </div>
     </div>
-    <div class="box box4">
+
+    <div class="box box6">
       <div class="text">
-        <i class="fa fa-users fa-2x"></i>
-        <h2 class="topic-heading">Total Stock</h2>
-        <p class="count">0</p> <!-- optional, implement later -->
+        <i class="fa fa-hourglass-half fa-2x"></i>
+        <h2 class="topic-heading">Pending</h2>
+        <p class="count">{{ pending_count }}</p>  <!-- 👈 This will show the number -->
       </div>
     </div>
+
   </div>
 </div>

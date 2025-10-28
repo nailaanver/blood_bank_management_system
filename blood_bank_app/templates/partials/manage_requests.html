@@ -2,57 +2,107 @@
 {% load static %}
 
 {% block content %}
-<div class="container mt-5">
-    <h2 class="text-center mb-4 text-danger">🩸 Blood Requests</h2>
+<div class="container mt-5 mb-5">
+  <div class="card shadow-lg border-0 rounded-4">
+    <div class="card-header bg-danger text-white text-center py-3 rounded-top-4">
+      <h3 class="fw-bold mb-0">🩸 Blood Requests</h3>
+    </div>
 
-    {% if messages %}
+    <div class="card-body p-4">
+
+      {% if messages %}
         {% for message in messages %}
-            <div class="alert alert-info text-center">{{ message }}</div>
+          <div class="alert alert-info text-center mb-4">{{ message }}</div>
         {% endfor %}
-    {% endif %}
+      {% endif %}
 
-    <table class="table table-bordered text-center shadow-sm">
-        <thead class="table-danger">
+      <div class="table-responsive">
+        <table class="table align-middle table-bordered text-center">
+          <thead class="table-danger text-white" style="background-color:#dc3545;">
             <tr>
-                <th>#</th>
-                <th>Patient</th>
-                <th>Blood Group</th>
-                <th>Units</th>
-                <th>Hospital</th>
-                <th>Urgency</th>
-                <th>Status</th>
-                <th>Actions</th>
+              <th>#</th>
+              <th>Patient</th>
+              <th>Blood Group</th>
+              <th>Units</th>
+              <th>Hospital</th>
+              <th>Urgency</th>
+              <th>Status</th>
+              <th>Actions</th>
             </tr>
-        </thead>
-        <tbody>
+          </thead>
+          <tbody>
             {% for req in blood_requests %}
             <tr>
-                <td>{{ forloop.counter }}</td>
-                <td>{{ req.full_name }}</td>
-                <td>{{ req.blood_group }}</td>
-                <td>{{ req.units_required }}</td>
-                <td>{{ req.hospital_name }}</td>
-                <td>{{ req.urgency }}</td>
-                <td>
-                    {% if req.status == "Pending" %}
-                        <span class="badge bg-warning text-dark">Pending</span>
-                    {% elif req.status == "Approved" %}
-                        <span class="badge bg-success">Approved</span>
-                    {% else %}
-                        <span class="badge bg-danger">Rejected</span>
-                    {% endif %}
-                </td>
-                <td>
-                    {% if req.status == "Pending" %}
-                        <a href="{% url 'update_request_status' req.id 'approve' %}" class="btn btn-success btn-sm">Approve</a>
-                        <a href="{% url 'update_request_status' req.id 'reject' %}" class="btn btn-danger btn-sm">Reject</a>
-                    {% else %}
-                        <span class="text-muted">No actions</span>
-                    {% endif %}
-                </td>
+              <td>{{ forloop.counter }}</td>
+              <td class="fw-semibold">{{ req.full_name }}</td>
+              <td><span class="badge bg-danger fs-6">{{ req.blood_group }}</span></td>
+              <td>{{ req.units_required }}</td>
+              <td>{{ req.hospital_name }}</td>
+              <td>
+                {% if req.urgency == "High" %}
+                  <span class="badge bg-danger">High</span>
+                {% elif req.urgency == "Medium" %}
+                  <span class="badge bg-warning text-dark">Medium</span>
+                {% else %}
+                  <span class="badge bg-success">Low</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if req.status == "Pending" %}
+                  <span class="badge bg-warning text-dark px-3 py-2 rounded-pill">Pending</span>
+                {% elif req.status == "Approved" %}
+                  <span class="badge bg-success px-3 py-2 rounded-pill">Approved</span>
+                {% else %}
+                  <span class="badge bg-danger px-3 py-2 rounded-pill">Rejected</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if req.status == "Pending" %}
+                  <div class="d-flex justify-content-center gap-2">
+                    <a href="{% url 'update_request_status' req.id 'approve' %}" class="btn btn-success btn-sm px-3">Approve</a>
+                    <a href="{% url 'update_request_status' req.id 'reject' %}" class="btn btn-danger btn-sm px-3">Reject</a>
+                  </div>
+                {% else %}
+                  <span class="text-muted">No actions</span>
+                {% endif %}
+              </td>
             </tr>
             {% endfor %}
-        </tbody>
-    </table>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
 </div>
+
+<style>
+  body {
+    background-color: #f8f9fa;
+    font-family: 'Poppins', sans-serif;
+  }
+
+  .card {
+    border: none;
+    background-color: #ffffff;
+  }
+
+  .table th {
+    background-color: #dc3545 !important;
+    color: white !important;
+    font-weight: 600;
+  }
+
+  .table td {
+    vertical-align: middle;
+  }
+
+  .btn-sm {
+    border-radius: 20px;
+    font-size: 0.85rem;
+  }
+
+  h3 {
+    letter-spacing: 1px;
+  }
+</style>
 {% endblock %}

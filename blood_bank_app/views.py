@@ -13,7 +13,7 @@ from django.urls import reverse
 from .models import Branch, Appointment
 
 
-from .models import Profile, DonorDetail, PatientDetail, HospitalDetail, User, ContactMessage,Notification,BloodStock
+from .models import Profile, DonorDetail, PatientDetail, HospitalDetail, User, ContactMessage,Notification,BloodStock,Donation
 from .forms import LoginForm, UserForm, ContactForm, DonorDetailForm, PatientDetailForm, HospitalDetailForm,EligibilityForm,BloodStockForm,HospitalBloodRequestForm
 
 
@@ -97,8 +97,9 @@ def hospital_dashboard(request):
 
 @login_required
 def admin_dashboard(request):
-    pending_count = BloodRequest.objects.filter(status='Pending').count()
-    return render(request, 'admin_dashboard.html', {'pending_count': pending_count})
+    return render(request,'admin_dashboard.html')
+    
+
 @login_required
 def donor_dashboard(request):
     donor = DonorDetail.objects.filter(user=request.user).first()  # get latest donor details
@@ -150,14 +151,23 @@ def contact_view(request):
         form = ContactForm()
     return render(request, 'contact.html', {'form': form})
 def admin_dashboard_content(request):
-    # total_users = User.objects.count()
-    # total_contacts = Contact.objects.count()
+    total_donors = DonorDetail.objects.count()
+    total_patients = PatientDetail.objects.count()
+    total_hospital = HospitalDetail.objects.count()
+    total_stock_data = BloodStock.objects.aggregate(total_units=Sum('units_available'))
+    total_stock = total_stock_data['total_units'] or 0  # handle None case
+    total_requests = BloodRequest.objects.all().count()
+    pending_count = BloodRequest.objects.filter(status='Pending').count()
 
-    # context = {
-    #     'total_users': total_users,
-    #     'total_contacts': total_contacts
-    # }
-    return render(request, 'partials/admin_dashboard_content.html')
+    context = {
+        'total_donors': total_donors,
+        'total_stock': total_stock,
+        'total_requests': total_requests,
+        'total_patients': total_patients,
+        'total_hospital': total_hospital,
+        'pending_count': pending_count,
+    }
+    return render(request, 'partials/admin_dashboard_content.html', context)
 def manage_users(request):
     users = User.objects.all().select_related('profile')  # if you have a Profile model linked to User
     return render(request, 'partials/manage_users.html', {'users': users})
@@ -195,12 +205,56 @@ def manage_requests(request):
     # Get all requests ordered by latest first
     blood_requests = BloodRequest.objects.all().order_by('-id')
     return render(request, 'partials/manage_requests.html', {'blood_requests': blood_requests})
+
+
+
+import io
+import base64
+from matplotlib import pyplot as plt
+from django.shortcuts import render
+from django.db.models import Sum
+from .models import BloodStock
+
 def view_reports(request):
-    return render(request, 'partials/view_reports.html')
+    # Normalize blood_group values (trim spaces + uppercase)
+    blood_data = (
+        BloodStock.objects
+        .values_list('blood_group', 'units_available')
+    )
+
+    normalized_data = {}
+    for bg, units in blood_data:
+        clean_bg = bg.strip().upper()  # remove spaces and make uppercase
+        normalized_data[clean_bg] = normalized_data.get(clean_bg, 0) + (units or 0)
+
+    # Prepare data for chart
+    labels = list(normalized_data.keys())
+    sizes = list(normalized_data.values())
+
+    # Create pie chart
+    plt.figure(figsize=(6, 6))
+    plt.pie(
+        sizes,
+        labels=labels,
+        autopct='%1.1f%%',
+        startangle=140,
+        shadow=True
+    )
+    plt.title('Total Blood Stock by Blood Group')
+
+    # Save chart as image
+    buffer = io.BytesIO()
+    plt.savefig(buffer, format='png')
+    buffer.seek(0)
+    image_png = buffer.getvalue()
+    buffer.close()
+    graphic = base64.b64encode(image_png).decode('utf-8')
+
+    plt.close()
+
+    return render(request, 'partials/view_reports.html', {'chart': graphic})
 
 
-
-from django.shortcuts import redirect, render, get_object_or_404
 
 @login_required
 def donor_detail_form_view(request):
@@ -470,12 +524,22 @@ def add_blood_stock(request):
     if request.method == "POST":
         form = BloodStockForm(request.POST)
         if form.is_valid():
-            form.save()
+            blood_stock = form.save(commit=False)
+            
+            # Automatically assign hospital if the admin is linked to one
+            if hasattr(request.user, 'profile') and hasattr(request.user.profile, 'hospital'):
+                blood_stock.hospital = request.user.profile.hospital
+            else:
+                blood_stock.hospital = None  # optional, depends on your model
+            
+            blood_stock.save()
             messages.success(request, "Blood stock added successfully!")
             return redirect('manage_bloodstock')
     else:
         form = BloodStockForm()
+    
     return render(request, 'partials/add_blood_stock.html', {'form': form})
+
 
 @login_required
 def view_blood_stock(request):
