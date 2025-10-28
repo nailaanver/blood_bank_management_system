@@ -633,4 +633,25 @@ def received_history(request):
     }
     return render(request, 'patient/received_history.html', context)
 
+@login_required
+def search_blood(request):
+    blood_group = request.GET.get('blood_group')
+    location = request.GET.get('location')
+
+    results = BloodStock.objects.select_related('hospital')
+
+    if blood_group:
+        results = results.filter(blood_group=blood_group)
+    if location:
+        results = results.filter(hospital__address__icontains=location)
+
+    context = {
+        'results': results,
+        'blood_group': blood_group,
+        'location': location,
+    }
+    return render(request, 'patient/search_blood.html', context)
+
+
+
 

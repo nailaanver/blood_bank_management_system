@@ -179,14 +179,21 @@ class Notification(models.Model):
 
 # models.py
 class BloodStock(models.Model):
-    BLOOD_GROUPS = [('A+','A+'),('A-','A-'),('B+','B+'),('B-','B-'),('AB+','AB+'),('AB-','AB-'),('O+','O+'),('O-','O-')]
+    BLOOD_GROUPS = [
+        ('A+', 'A+'), ('A-', 'A-'),
+        ('B+', 'B+'), ('B-', 'B-'),
+        ('AB+', 'AB+'), ('AB-', 'AB-'),
+        ('O+', 'O+'), ('O-', 'O-'),
+    ]
 
+    hospital = models.ForeignKey('HospitalDetail', on_delete=models.CASCADE, null=True, blank=True)
     blood_group = models.CharField(max_length=3, choices=BLOOD_GROUPS)
     units_available = models.PositiveIntegerField(default=0)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"{self.blood_group} - {self.hospital.hospital_name}"
+        return f"{self.blood_group} - {self.hospital.hospital_name if self.hospital else 'No Hospital'}"
+
 
 class HospitalBloodRequest(models.Model):
     BLOOD_GROUP_CHOICES = [

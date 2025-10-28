@@ -1,9 +1,125 @@
 {% extends 'master.html' %}
-{% block title %}Search Blood Availability{% endblock %}
+{% load static %}
 
 {% block content %}
-<div class="container">
-    <h2>Search Blood Availability</h2>
-    <p>This page will allow patients to search for available blood by group, location, or hospital.</p>
+<style>
+  body {
+    background-color: #fff8f8;
+  }
+
+  .search-section {
+    background: #fff;
+    padding: 40px;
+    border-radius: 15px;
+    box-shadow: 0 4px 12px rgba(255, 0, 0, 0.1);
+    margin-top: 50px;
+  }
+
+  .search-section h2 {
+    font-weight: bold;
+    color: #d32f2f;
+    letter-spacing: 1px;
+  }
+
+  .form-select, .form-control {
+    border: 2px solid #f1c5c5;
+    border-radius: 10px;
+    transition: all 0.3s;
+  }
+
+  .form-select:focus, .form-control:focus {
+    border-color: #d32f2f;
+    box-shadow: 0 0 8px rgba(211, 47, 47, 0.3);
+  }
+
+  .btn-danger {
+    font-weight: bold;
+    border-radius: 10px;
+    transition: 0.3s;
+  }
+
+  .btn-danger:hover {
+    background-color: #b71c1c;
+  }
+
+  table {
+    background: #fff;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+  }
+
+  thead {
+    background-color: #ef9a9a;
+    color: #800000;
+  }
+
+  tbody tr:hover {
+    background-color: #fdeaea;
+  }
+
+  .back-btn {
+    border-radius: 10px;
+    font-weight: 500;
+  }
+
+  .no-results {
+    color: #888;
+    font-style: italic;
+    font-size: 1.1rem;
+  }
+</style>
+
+<div class="container search-section">
+  <h2 class="text-center mb-4">🔍 Search Blood Availability</h2>
+
+  <!-- Search Form -->
+  <form method="get" class="row g-3 justify-content-center mb-4">
+    <div class="col-md-4">
+      <select name="blood_group" class="form-select" required>
+        <option value="">Select Blood Group</option>
+        <option value="A+">A+</option><option value="A-">A-</option>
+        <option value="B+">B+</option><option value="B-">B-</option>
+        <option value="AB+">AB+</option><option value="AB-">AB-</option>
+        <option value="O+">O+</option><option value="O-">O-</option>
+      </select>
+    </div>
+    <!-- <div class="col-md-4">
+      <input type="text" name="location" placeholder="Enter location" class="form-control">
+    </div> -->
+    <div class="col-md-2 text-center">
+      <button type="submit" class="btn btn-danger w-100">Search</button>
+    </div>
+  </form>
+
+  <!-- Results Table -->
+  {% if results %}
+  <div class="table-responsive">
+    <table class="table table-bordered table-hover text-center align-middle">
+      <thead>
+        <tr>
+          <th>Blood Group</th>
+          <th>Units Available</th>
+          <th>Last Updated</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in results %}
+        <tr>
+          <td class="fw-bold text-danger">{{ item.blood_group }}</td>
+          <td>{{ item.units_available }}</td>
+          <td>{{ item.updated_at|date:"M d, Y" }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p class="text-center mt-4 no-results">No matching blood availability found.</p>
+  {% endif %}
+
+  <div class="text-center mt-4">
+    <a href="{% url 'patient_dashboard' %}" class="btn btn-outline-danger back-btn">⬅ Back to Dashboard</a>
+  </div>
 </div>
 {% endblock %}
