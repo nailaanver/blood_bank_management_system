@@ -72,7 +72,7 @@
     <table class="table table-hover align-middle text-center custom-table">
       <thead>
         <tr>
-          <th>Full Name</th>
+          <th>Hospital Name</th>
           <th>Blood Group</th>
           <th>Units Required</th>
           <th>Hospital</th>
@@ -84,7 +84,7 @@
       <tbody>
         {% for request in patient_requests %}
         <tr>
-          <td>{{ request.full_name }}</td>
+          <td>{{ request.hospital_name }}</td>
           <td>{{ request.blood_group }}</td>
           <td>{{ request.units_required }}</td>
           <td>{{ request.hospital_name }}</td>
@@ -126,7 +126,7 @@
     <table class="table table-hover align-middle text-center custom-table">
       <thead>
         <tr>
-          <th>Full Name</th>
+          <th>Hospital Name</th>
           <th>Blood Group</th>
           <th>Units Required</th>
           <th>Required Date</th>
@@ -137,7 +137,7 @@
       <tbody>
         {% for hospital_request in hospital_requests %}
         <tr>
-          <td>{{ hospital_request.full_name }}</td>
+          <td>{{ hospital_request.hospital_name }}</td>
           <td>{{ hospital_request.blood_group }}</td>
           <td>{{ hospital_request.units_required }}</td>
           <td>{{ hospital_request.required_date }}</td>

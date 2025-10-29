@@ -1,19 +1,143 @@
-<h3>Request History</h3>
-<table class="table">
-  <tr>
-    <th>Patient Name</th>
-    <th>Blood Group</th>
-    <th>Units</th>
-    <th>Status</th>
-    <th>Requested On</th>
-  </tr>
-  {% for r in requests %}
-  <tr>
-    <td>{{ r.full_name }}</td>
-    <td>{{ r.blood_group }}</td>
-    <td>{{ r.units_required }}</td>
-    <td>{{ r.status }}</td>
-    <td>{{ r.created_at }}</td>
-  </tr>
-  {% endfor %}
-</table>
+{% extends 'master.html' %}
+{% block title %}Hospital Request History{% endblock %}
+
+{% block content %}
+<style>
+    body {
+        background-color: #fafafa;
+        font-family: 'Poppins', sans-serif;
+    }
+
+    .container {
+        max-width: 900px;
+        margin: 50px auto;
+        background: #fff;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    }
+
+    h2 {
+        text-align: center;
+        color: #c82333;
+        margin-bottom: 25px;
+        letter-spacing: 1px;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 15px;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+    thead {
+        background-color: #c82333;
+        color: #fff;
+    }
+
+    th, td {
+        padding: 12px 15px;
+        text-align: center;
+        border-bottom: 1px solid #ddd;
+    }
+
+    tr:hover {
+        background-color: #f8f9fa;
+        transition: 0.2s ease;
+    }
+
+    td strong {
+        color: #222;
+    }
+
+    /* Badge Styles */
+    .badge {
+        display: inline-block;
+        padding: 5px 10px;
+        border-radius: 20px;
+        font-size: 13px;
+        color: #fff;
+        font-weight: 600;
+    }
+
+    .badge-high {
+        background-color: #e74c3c;
+    }
+
+    .badge-medium {
+        background-color: #f1c40f;
+        color: #222;
+    }
+
+    .badge-low {
+        background-color: #2ecc71;
+    }
+
+    .badge-approved {
+        background-color: #28a745;
+    }
+
+    .badge-rejected {
+        background-color: #dc3545;
+    }
+
+    .badge-pending {
+        background-color: #6c757d;
+    }
+
+    td[colspan] {
+        text-align: center;
+        color: #888;
+        font-style: italic;
+        padding: 20px;
+    }
+</style>
+
+<div class="container">
+    <h2>Blood Request History</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Blood Group</th>
+                <th>Units</th>
+                <th>Urgency</th>
+                <th>Status</th>
+                <th>Requested Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for req in requests %}
+            <tr>
+                <td><strong>{{ req.blood_group }}</strong></td>
+                <td>{{ req.units_required }}</td>
+                <td>
+                    {% if req.urgency == 'High' %}
+                        <span class="badge badge-high">High</span>
+                    {% elif req.urgency == 'Medium' %}
+                        <span class="badge badge-medium">Medium</span>
+                    {% else %}
+                        <span class="badge badge-low">Low</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if req.status == 'Approved' %}
+                        <span class="badge badge-approved">Approved</span>
+                    {% elif req.status == 'Rejected' %}
+                        <span class="badge badge-rejected">Rejected</span>
+                    {% else %}
+                        <span class="badge badge-pending">Pending</span>
+                    {% endif %}
+                </td>
+                <td>{{ req.requested_at|date:"d M Y, h:i A" }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5">No blood requests found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

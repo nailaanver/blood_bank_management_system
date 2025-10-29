@@ -587,35 +587,48 @@ def add_blood_stock(request):
 @login_required
 def view_blood_stock(request):
     stocks = BloodStock.objects.all()
-    return render(request, 'hospital/view_blood_stock.html', {'stocks': stocks})
+    return render(request, 'hopital/view_blood_stock.html', {'stocks': stocks})
 
 @login_required
 def hospital_request_blood(request):
-    hospital = HospitalDetail.objects.get(user=request.user)
+    try:
+        hospital = HospitalDetail.objects.get(user=request.user)
+    except HospitalDetail.DoesNotExist:
+        messages.error(request, "Hospital details not found for this user.")
+        return redirect('hospital_detail_form')
 
     if request.method == 'POST':
         form = HospitalBloodRequestForm(request.POST)
         if form.is_valid():
-            blood_request = form.save(commit=False)
-            blood_request.user = request.user
-            blood_request.hospital_name = hospital.hospital_name
-            blood_request.hospital_address = hospital.address
-            blood_request.save()
-            messages.success(request, 'Blood request submitted successfully!')
+            hospital_request = form.save(commit=False)
+            hospital_request.hospital_name = hospital
+            hospital_request.user = request.user  # ✅ link user too
+            hospital_request.save()
+            messages.success(request, "Blood request sent successfully!")
             return redirect('hospital_dashboard')
         else:
-            print(form.errors)
+            print("Form errors:", form.errors)
     else:
         form = HospitalBloodRequestForm()
 
     return render(request, 'hopital/hospital_request_blood.html', {'form': form})
 
 
+
+
 @login_required
 def hospital_request_history(request):
-    hospital = HospitalDetail.objects.get(user=request.user)
-    requests = BloodRequest.objects.filter(hospital_name=hospital.hospital_name)
+    try:
+        hospital = HospitalDetail.objects.get(user=request.user)
+    except HospitalDetail.DoesNotExist:
+        messages.error(request, "Hospital details not found for this user.")
+        return redirect('hospital_dashboard')
+
+    requests = HospitalBloodRequest.objects.filter(hospital_name=hospital).order_by('-requested_at')
     return render(request, 'hopital/hospital_request_history.html', {'requests': requests})
+
+
+
 
 
 @login_required
@@ -765,3 +778,20 @@ def reject_appointment(request, appointment_id):
 
 
 
+@login_required
+def manage_hospital_requests(request):
+    requests = HospitalBloodRequest.objects.all().order_by('-requested_at')
+    return render(request, 'admin/manage_hospital_requests.html', {'requests': requests})
+
+@login_required
+def update_hospital_status(request, request_id, status):
+    blood_request = HospitalBloodRequest.objects.get(id=request_id)
+    blood_request.status = status
+    blood_request.save()
+
+    # ✅ Create notification for hospital
+    from .models import Notification
+    message = f"Your hospital blood request for {blood_request.blood_group} has been {status.lower()}."
+    Notification.objects.create(user=blood_request.user, message=message)
+
+    return redirect('manage_hospital_requests')

@@ -199,24 +199,36 @@ class BloodStock(models.Model):
 
 class HospitalBloodRequest(models.Model):
     BLOOD_GROUP_CHOICES = [
-        ('A+', 'A+'),
-        ('A-', 'A-'),
-        ('B+', 'B+'),
-        ('B-', 'B-'),
-        ('AB+', 'AB+'),
-        ('AB-', 'AB-'),
-        ('O+', 'O+'),
-        ('O-', 'O-'),
+        ('A+', 'A+'), ('A-', 'A-'),
+        ('B+', 'B+'), ('B-', 'B-'),
+        ('AB+', 'AB+'), ('AB-', 'AB-'),
+        ('O+', 'O+'), ('O-', 'O-'),
     ]
 
-    full_name = models.CharField(max_length=100,null=True)
-    blood_group = models.CharField(max_length=3, choices=BLOOD_GROUP_CHOICES,null=True)
+    URGENCY_CHOICES = [
+        ('Low', 'Low'),
+        ('Medium', 'Medium'),
+        ('High', 'High'),
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+    hospital_name = models.ForeignKey(HospitalDetail, on_delete=models.CASCADE, null=True, blank=True)
+    blood_group = models.CharField(max_length=3, choices=BLOOD_GROUP_CHOICES, null=True)
     units_required = models.IntegerField(null=True)
     required_date = models.DateField(null=True)
-    urgency = models.CharField(
-        max_length=20,null=True,
-        choices=[('Low', 'Low'), ('Medium', 'Medium'), ('High', 'High')],
-        default='Medium'
+    urgency = models.CharField(max_length=20, choices=URGENCY_CHOICES, default='Medium', null=True)
+    status = models.CharField(
+        max_length=20,
+        choices=[('Pending', 'Pending'), ('Approved', 'Approved'), ('Rejected', 'Rejected')],
+        default='Pending',
+        null=True
     )
-    status = models.CharField(max_length=20, default='Pending',null=True)
+    requested_at = models.DateTimeField(auto_now_add=True, null=True)
+
+    def __str__(self):
+        if self.hospital_name:
+            return f"{self.hospital_name.hospital_name} - {self.blood_group}"
+        else:
+            return f"Hospital Blood Request - {self.blood_group}"
+
 

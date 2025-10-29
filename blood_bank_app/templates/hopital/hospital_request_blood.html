@@ -4,7 +4,7 @@
 {% block content %}
 <div class="container">
     <h2>Hospital Blood Request</h2>
-    <form method="post">
+    <form method="post" action="{% url 'hospital_request_blood' %}">
         {% csrf_token %}
         {{ form.as_p}}
         

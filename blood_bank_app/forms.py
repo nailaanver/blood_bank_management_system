@@ -97,12 +97,7 @@ class BloodStockForm(forms.ModelForm):
 class HospitalBloodRequestForm(forms.ModelForm):
     class Meta:
         model = HospitalBloodRequest
-        fields = ['blood_group', 'units_required', 'required_date', 'urgency']
-        widgets = {
-            'blood_group': forms.Select(attrs={'class': 'form-control'}),
-            'required_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
-            'urgency': forms.Select(attrs={'class': 'form-control'}),
-        }
+        fields = [ 'hospital_name','blood_group', 'units_required', 'required_date', 'urgency']
 
 class UserEditForm(forms.ModelForm):
     # first_name = forms.CharField(required=False)
