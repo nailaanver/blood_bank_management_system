@@ -132,7 +132,10 @@ class Appointment(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.donor.username} - {self.hospital.hospital_name} ({self.status})"
+        donor_name = self.donor.username if self.donor else "Unknown Donor"
+        hospital_name = self.hospital.hospital_name if self.hospital else "No Hospital"
+        return f"{donor_name} - {hospital_name} ({self.status})"
+
 
 
     
@@ -230,5 +233,11 @@ class HospitalBloodRequest(models.Model):
             return f"{self.hospital_name.hospital_name} - {self.blood_group}"
         else:
             return f"Hospital Blood Request - {self.blood_group}"
+
+class DonationRequest(models.Model):
+    donor = models.ForeignKey('DonorDetail', on_delete=models.CASCADE,null=True)
+    hospital = models.ForeignKey('HospitalDetail', on_delete=models.CASCADE,null=True)
+    donation_date = models.DateField(null=True, blank=True)  # ✅ this is important
+    status = models.CharField(max_length=20, default='Pending')
 
 

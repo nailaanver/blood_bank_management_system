@@ -1,0 +1,15 @@
+{% extends 'master.html' %}
+{% block title %}Set Donation Date{% endblock %}
+{% block content %}
+<div class="container mt-4">
+  <h3>Set Donation Date</h3>
+  <form method="post">
+    {% csrf_token %}
+    <div>
+      <label for="donation_date">Select Donation Date:</label>
+      <input type="date" id="donation_date" name="donation_date" required>
+    </div>
+    <button type="submit">Send Date</button>
+  </form>
+</div>
+{% endblock %}

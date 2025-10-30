@@ -59,6 +59,12 @@ urlpatterns = [
     path('approve_appointment/<int:appointment_id>/', views.approve_appointment, name='approve_appointment'),
     path('reject_appointment/<int:appointment_id>/', views.reject_appointment, name='reject_appointment'),
     path('manage_hospital_requests/', views.manage_hospital_requests, name='manage_hospital_requests'),
+    
+    path('approve_appointment/<int:appointment_id>/', views.approve_appointment, name='approve_appointment'),
+    path('respond_to_donation_date/<int:appointment_id>/', views.respond_to_donation_date, name='respond_to_donation_date'),
+    path('mark_donation_completed/<int:appointment_id>/', views.mark_donation_completed, name='mark_donation_completed'),
+    path('assign_donation_date/<int:request_id>/', views.assign_donation_date, name='assign_donation_date'),
+    path('approve_request/<int:request_id>/', views.approve_request, name='approve_request'),
 
 ]
 # ✅ Add this at the end to serve media files

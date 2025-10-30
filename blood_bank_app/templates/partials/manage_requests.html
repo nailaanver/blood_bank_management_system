@@ -44,12 +44,18 @@
               <span class="status-badge rejected">Rejected</span>
             {% endif %}
           </td>
+          {% for req in blood_requests %}
+  <form action="{% url 'approve_request' req.id %}" method="post">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-success">Approve</button>
+  </form>
+{% endfor %}
+
+
           <td>
             {% if appointment.status == 'Pending' %}
-              <form action="{% url 'update_appointment_status' appointment.id 'Accepted' %}" method="post" style="display:inline;">
-                {% csrf_token %}
-                <button type="submit" class="btn-action accept">Accept</button>
-              </form>
+              <a href="{% url 'assign_donation_date' appointment.id %}" class="btn-action accept">Send Donation Date</a>
+
               <form action="{% url 'update_appointment_status' appointment.id 'Rejected' %}" method="post" style="display:inline;">
                 {% csrf_token %}
                 <button type="submit" class="btn-action reject">Reject</button>

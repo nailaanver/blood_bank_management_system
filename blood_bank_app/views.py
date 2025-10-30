@@ -10,7 +10,7 @@ from .forms import BloodRequestForm
 from django.contrib.auth.decorators import login_required
 from datetime import date, timedelta
 from django.urls import reverse
-from .models import Branch, Appointment
+from .models import Branch, Appointment,DonationRequest
 
 
 from .models import Profile, DonorDetail, PatientDetail, HospitalDetail, User, ContactMessage,Notification,BloodStock,Donation,HospitalBloodRequest
@@ -121,12 +121,20 @@ def admin_dashboard(request):
 @login_required
 def donor_dashboard(request):
     donor = DonorDetail.objects.filter(user=request.user).first()
-    unread_count = Notification.objects.filter(user=request.user, is_read=False).count()
+    donor_requests = DonationRequest.objects.filter(donor=donor)
+    unread_notifications = Notification.objects.filter(user=request.user, is_read=False)
+    unread_count = unread_notifications.count()
 
     return render(request, 'donor_dashboard.html', {
         'donor': donor,
+        'donor_requests': donor_requests,
+        'unread_notifications': unread_notifications,
         'unread_count': unread_count
     })
+
+
+
+
 
 def index(request):
     return render(request,'index.html')
@@ -394,6 +402,8 @@ def check_eligibility(request):
     })
 
     
+from .models import Notification
+
 @login_required
 def request_appointment(request):
     hospitals = HospitalDetail.objects.all()
@@ -410,7 +420,7 @@ def request_appointment(request):
 
         hospital = HospitalDetail.objects.get(id=hospital_id)
 
-        Appointment.objects.create(
+        appointment = Appointment.objects.create(
             donor=request.user,
             hospital=hospital,
             appointment_date=appointment_date,
@@ -419,10 +429,25 @@ def request_appointment(request):
             status='Pending'
         )
 
+        # ✅ Create notification for donor
+        Notification.objects.create(
+            user=request.user,
+            message=f"Your appointment request at {hospital.hospital_name} on {appointment_date} is pending approval."
+        )
+
+        # ✅ Create notification for admin (optional)
+        admin_users = User.objects.filter(profile__role='admin')
+        for admin in admin_users:
+            Notification.objects.create(
+                user=admin,
+                message=f"New appointment request from {request.user.username} for {hospital.hospital_name}."
+            )
+
         messages.success(request, "Appointment request sent successfully! Waiting for admin approval.")
         return redirect('donor_dashboard')
 
     return render(request, 'donor/request_appoiment.html', {'hospitals': hospitals})
+
 
 
 
@@ -529,14 +554,15 @@ def update_request_status(request, request_id, action):
     return redirect('manage_requests')
 
 
-@login_required
 def view_notifications(request):
-    notifications = Notification.objects.filter(user=request.user).order_by('-created_at')
+    user = request.user
+    notifications = Notification.objects.filter(user=user).order_by('-created_at')
 
-    # mark all as read when opened
-    notifications.update(is_read=True)
+    # Mark unread notifications as read
+    notifications.filter(is_read=False).update(is_read=True)
 
-    return render(request, 'patient/notification.html', {'notifications': notifications})
+    return render(request, 'view_notifications.html', {'notifications': notifications})
+
 
 @login_required
 def view_notifications_donor(request):
@@ -710,50 +736,37 @@ def search_blood(request):
 
 from .models import Notification
 
-@login_required
+from .models import Notification
+
 def update_appointment_status(request, appointment_id, status):
     appointment = get_object_or_404(Appointment, id=appointment_id)
     appointment.status = status
     appointment.save()
 
-    # ✅ When accepted, create donation record and update stock
+    # ✅ If admin accepts, send notification to donor
     if status == "Accepted":
-        # 1️⃣ Create a new Donation record
-        Donation.objects.create(
-            donor=appointment.donor,
-            hospital=appointment.hospital,
-            date=appointment.appointment_date,
-            blood_group=appointment.donor.donordetail.blood_group,
-            units=1  # assuming 1 unit donated; adjust if needed
+        message = (
+            f"Your blood donation appointment has been accepted by "
+            f"{appointment.hospital.hospital_name}. "
+            f"Please donate blood on {appointment.appointment_date} at {appointment.appointment_time}."
         )
-
-        # 2️⃣ Update hospital's blood stock
-        blood_stock, created = BloodStock.objects.get_or_create(
-            hospital=appointment.hospital,
-            blood_group=appointment.donor.donordetail.blood_group,
-            defaults={'units_available': 0}
-        )
-        blood_stock.units_available += 1
-        blood_stock.save()
-
-        # 3️⃣ Notify donor
-        Notification.objects.create(
-            user=appointment.donor,
-            message=f"✅ Your appointment with {appointment.hospital.hospital_name} "
-                    f"on {appointment.appointment_date} has been accepted. "
-                    f"Thank you for donating blood!"
-        )
-
-        messages.success(request, "Appointment accepted and donation recorded successfully.")
-
     elif status == "Rejected":
-        Notification.objects.create(
-            user=appointment.donor,
-            message=f"❌ Your appointment with {appointment.hospital.hospital_name} has been rejected."
+        message = (
+            f"Your blood donation appointment request at "
+            f"{appointment.hospital.hospital_name} has been rejected."
         )
-        messages.error(request, "Appointment rejected.")
+    else:
+        message = f"Your appointment request status changed to {status}."
 
+    # ✅ Create Notification for donor
+    Notification.objects.create(
+        user=appointment.donor,
+        message=message
+    )
+
+    messages.success(request, f"Appointment status updated to {status}.")
     return redirect('manage_requests')
+
 
 
 
@@ -774,18 +787,96 @@ def update_hospital_status(request, request_id, status):
 
 from .models import Appointment, Notification
 
+@login_required
+@user_passes_test(is_admin)
 def approve_appointment(request, appointment_id):
     appointment = get_object_or_404(Appointment, id=appointment_id)
-    appointment.status = 'Approved'
-    appointment.save()
 
-    # ✅ Create notification for donor
-    Notification.objects.create(
-        user=appointment.donor,
-        message=f"✅ Your appointment at {appointment.hospital.hospital_name} on {appointment.appointment_date} has been approved by the admin."
-    )
+    if request.method == 'POST':
+        donation_date = request.POST.get('donation_date')
+        appointment.status = 'Date Sent'
+        appointment.appointment_date = donation_date
+        appointment.save()
+
+        Notification.objects.create(
+            user=appointment.donor,
+            message=f"🩸 Your donation is scheduled on {donation_date} at {appointment.hospital.hospital_name}. "
+                    f"Please confirm your availability."
+        )
+
+        messages.success(request, "Donation date sent to donor.")
+        return redirect('manage_requests')
+
+    return render(request, 'partials/set_donation_date.html', {'appointment': appointment})
+
+@login_required
+def respond_to_donation_date(request, appointment_id):
+    appointment = get_object_or_404(DonationRequest, id=appointment_id, donor=request.user)
+
+    if request.method == 'POST':
+        action = request.POST.get('action')
+
+        if action == 'accept':
+            appointment.status = 'Donor Confirmed'
+            appointment.save()
+
+            Notification.objects.create(
+                user=appointment.hospital.user,
+                message=f"✅ Donor {request.user.username} confirmed the donation on {appointment.appointment_date}."
+            )
+            messages.success(request, "You confirmed your donation date.")
+        elif action == 'reschedule':
+            appointment.status = 'Reschedule Requested'
+            appointment.save()
+
+            Notification.objects.create(
+                user=appointment.hospital.user,
+                message=f"🔄 Donor {request.user.username} requested a new donation date."
+            )
+            messages.warning(request, "You requested another date.")
+
+        return redirect('donor_dashboard')
+
+    return render(request, 'donor/respond_donation_date.html', {'appointment': appointment})
+
+@login_required
+@user_passes_test(is_admin)
+def mark_donation_completed(request, appointment_id):
+    appointment = get_object_or_404(DonationRequest, id=appointment_id)
+
+    if appointment.status == 'Donor Confirmed':
+        # Add to blood stock after date
+        Donation.objects.create(
+            donor=appointment.donor,
+            hospital=appointment.hospital,
+            date=appointment.appointment_date,
+            blood_group=appointment.donor.donordetail.blood_group,
+            units=1
+        )
+
+        blood_stock, _ = BloodStock.objects.get_or_create(
+            hospital=appointment.hospital,
+            blood_group=appointment.donor.donordetail.blood_group,
+            defaults={'units_available': 0}
+        )
+        blood_stock.units_available += 1
+        blood_stock.save()
+
+        appointment.status = 'Completed'
+        appointment.save()
+
+        Notification.objects.create(
+            user=appointment.donor,
+            message=f"🎉 Thank you for donating blood on {appointment.appointment_date}! "
+                    f"Your donation has been recorded."
+        )
+
+        messages.success(request, "Donation completed and added to stock.")
+    else:
+        messages.error(request, "Cannot mark as completed unless donor confirmed.")
 
     return redirect('manage_requests')
+
 
 
 def reject_appointment(request, appointment_id):
@@ -818,3 +909,75 @@ def update_hospital_status(request, request_id, status):
     Notification.objects.create(user=blood_request.user, message=message)
 
     return redirect('manage_hospital_requests')
+
+
+def assign_donation_date(request, request_id):
+    donation_request = get_object_or_404(Appointment, id=request_id)
+
+    if request.method == 'POST':
+        date = request.POST.get('donation_date')
+        donation_request.donation_date = date
+        donation_request.status = 'Accepted'
+        donation_request.save()
+
+        # ✅ Create a notification for the donor
+        donor_user = donation_request.donor
+        Notification.objects.create(
+            user=donor_user,
+            message=f"You have been assigned a donation date on {date}."
+        )
+
+        messages.success(request, "Donation date assigned and donor notified.")
+        return redirect('manage_requests')
+
+    return render(request, 'partials/assign_donation_date.html', {'donation_request': donation_request})
+
+def donor_accept_date(request, request_id):
+    donor_request = get_object_or_404(DonationRequest, id=request_id)
+    donor_request.status = "donor_confirmed"
+    donor_request.save()
+    messages.success(request, "You have confirmed your donation date.")
+    return redirect('donor_dashboard')
+
+
+def donor_reject_date(request, request_id):
+    donor_request = get_object_or_404(DonationRequest, id=request_id)
+    donor_request.status = "date_rejected"
+    donor_request.save()
+    messages.warning(request, "You have requested another date. Admin will update soon.")
+    return redirect('donor_dashboard')
+
+
+def mark_donation_completed(request, donation_id):
+    donation = get_object_or_404(DonationRequest, id=donation_id)
+    if donation.status == "donor_confirmed":
+        # Add blood to stock
+        BloodStock.objects.create(
+            blood_group=donation.blood_group,
+            units=1  # or the number of units donated
+        )
+        donation.status = "completed"
+        donation.save()
+        messages.success(request, "Donation completed and stock updated.")
+    return redirect('manage_requests')
+
+
+
+def approve_request(request, request_id):
+    if request.method == 'POST':
+        blood_request = get_object_or_404(BloodRequest, id=request_id)
+        blood_request.status = 'Approved'
+        blood_request.save()
+        return redirect(request.META.get('HTTP_REFERER', 'manage_requests'))
+    
+def approve_donation_request(request, request_id):
+    donor_request = DonationRequest.objects.get(id=request_id)
+    if request.method == 'POST':
+        donation_date = request.POST.get('donation_date')
+        donor_request.status = 'approved'
+        donor_request.donation_date = donation_date
+        donor_request.save()
+        messages.success(request, "Donation date assigned successfully.")
+        return redirect('manage_donor_requests')
+
+    return render(request, 'admin/assign_donation_date.html', {'donor_request': donor_request})

@@ -1,0 +1,15 @@
+{% extends 'master.html' %}
+{% block title %}Assign Donation Date{% endblock %}
+{% block content %}
+<div class="container" style="margin-top: 50px; text-align:center;">
+  <h2>Assign Donation Date for {{ appointment.donor.username }}</h2>
+  <form method="POST">
+    {% csrf_token %}
+    <label>Date:</label><br>
+    <input type="date" name="donation_date" required><br><br>
+    <label>Time:</label><br>
+    <input type="time" name="donation_time" required><br><br>
+    <button type="submit" style="background:#28a745;color:white;padding:8px 16px;border:none;border-radius:5px;">Assign Date</button>
+  </form>
+</div>
+{% endblock %}
