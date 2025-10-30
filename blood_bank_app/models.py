@@ -41,19 +41,12 @@ class DonorDetail(models.Model):
     phone_number = models.CharField(max_length=15)
     profile_photo = models.ImageField(upload_to='donor_photos/', default='donor_photos/default.jpg')
 
+    # ✅ New field to track eligibility
+    is_eligible = models.BooleanField(default=False)
+
     def __str__(self):
         return self.user.username
 
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
-        try:
-            img = Image.open(self.profile_photo.path)
-            if img.height > 400 or img.width > 400:
-                output_size = (400, 400)
-                img.thumbnail(output_size)
-                img.save(self.profile_photo.path)
-        except Exception as e:
-            print("Image processing error:", e)
 
             
             

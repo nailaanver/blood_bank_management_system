@@ -101,11 +101,18 @@
     </div>
 
     <div class="feature-card glow">
-      <i class="fas fa-calendar-check"></i>
-      <h3>Request Appointment</h3>
-      <p>Book a donation slot at your nearest blood bank.</p>
-      <a href="{% url 'request_appoiments' %}" class="btn">Go</a>
-    </div>
+  <i class="fas fa-calendar-check"></i>
+  <h3>Request Appointment</h3>
+  <p>Book a donation slot at your nearest blood bank.</p>
+
+  {% if user.donordetail.is_eligible %}
+    <a href="{% url 'request_appoiments' %}" class="btn">Go</a>
+  {% else %}
+    <a href="{% url 'check_eligibility' %}" class="btn disabled" 
+       style="background-color: gray; pointer-events: none;">Check Eligibility First</a>
+  {% endif %}
+</div>
+
   </section>
     <!-- ===== ABOUT BLOOD DONATION SECTION ===== -->
   <section class="about-blood-donation">

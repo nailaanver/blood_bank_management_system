@@ -362,50 +362,53 @@ from datetime import date, timedelta
 from django.contrib.auth.decorators import login_required
 from .forms import EligibilityForm
 
+from .models import DonorDetail
+
 @login_required
 def check_eligibility(request):
     form = EligibilityForm(request.POST or None)
     result = None
     status = None
 
-    if request.method == 'POST':
-        if form.is_valid():
-            age = form.cleaned_data['age']
-            weight = form.cleaned_data['weight']
-            last_donation = form.cleaned_data['last_donation_date']
-            hemoglobin = form.cleaned_data['hemoglobin']
+    if request.method == 'POST' and form.is_valid():
+        age = form.cleaned_data['age']
+        weight = form.cleaned_data['weight']
+        last_donation = form.cleaned_data['last_donation_date']
+        hemoglobin = form.cleaned_data['hemoglobin']
 
-            # --- Eligibility Logic ---
-            if age < 18 or age > 65:
-                result = "❌ You are not eligible due to age restrictions."
-                status = "danger"
-            elif weight < 50:
-                result = "⚠️ You are not eligible due to low weight."
-                status = "warning"
-            elif last_donation and (date.today() - last_donation).days < 90:
-                next_date = last_donation + timedelta(days=90)
-                result = f"🕒 You can donate again after {next_date.strftime('%d %B %Y')}."
-                status = "warning"
-            else:
-                # ✅ Eligible → Redirect to Donor Dashboard with success message
-                messages.success(request, "✅ You are eligible to donate blood! Proceed to request an appointment.")
-                return redirect(reverse('donor_dashboard') + "?section=request_appoiments")
-
-        else:
-            result = "⚠️ Please correct the errors and try again."
+        if age < 18 or age > 65:
+            result = "❌ You are not eligible due to age restrictions."
+            status = "danger"
+        elif weight < 50:
+            result = "⚠️ You are not eligible due to low weight."
             status = "warning"
+        elif last_donation and (date.today() - last_donation).days < 90:
+            next_date = last_donation + timedelta(days=90)
+            result = f"🕒 You can donate again after {next_date.strftime('%d %B %Y')}."
+            status = "warning"
+        else:
+            donor, _ = DonorDetail.objects.get_or_create(user=request.user)
+            donor.is_eligible = True
+            donor.save()
 
-    return render(request, 'donor/check_eligibility.html', {
-        'form': form,
-        'result': result,
-        'status': status
-    })
+            messages.success(request, "✅ You are eligible! You can now request an appointment.")
+            return redirect('request_appoiments')
+
+    return render(request, 'donor/check_eligibility.html', {'form': form, 'result': result, 'status': status})
+
 
     
 from .models import Notification
 
 @login_required
 def request_appointment(request):
+    donor = DonorDetail.objects.filter(user=request.user).first()
+
+    if not donor or not donor.is_eligible:
+        messages.warning(request, "⚠️ Please check your eligibility before requesting an appointment.")
+        return redirect('check_eligibility')
+
+
     hospitals = HospitalDetail.objects.all()
 
     if request.method == 'POST':
@@ -415,8 +418,9 @@ def request_appointment(request):
         notes = request.POST.get('notes')
 
         if not hospital_id:
-            messages.error(request, "Please select a hospital.")
-            return redirect('request_appointment')
+            messages.success(request, "✅ You are eligible! You can now request an appointment.")
+            return redirect('request_appoiments')
+
 
         hospital = HospitalDetail.objects.get(id=hospital_id)
 
@@ -429,24 +433,19 @@ def request_appointment(request):
             status='Pending'
         )
 
-        # ✅ Create notification for donor
+        # ✅ Notification
         Notification.objects.create(
             user=request.user,
             message=f"Your appointment request at {hospital.hospital_name} on {appointment_date} is pending approval."
         )
 
-        # ✅ Create notification for admin (optional)
-        admin_users = User.objects.filter(profile__role='admin')
-        for admin in admin_users:
-            Notification.objects.create(
-                user=admin,
-                message=f"New appointment request from {request.user.username} for {hospital.hospital_name}."
-            )
-
-        messages.success(request, "Appointment request sent successfully! Waiting for admin approval.")
+        messages.success(request, "Appointment request sent successfully!")
+        # ❌ Remove eligibility flag (so they must check again next time)
+        request.session.pop('eligibility_checked', None)
         return redirect('donor_dashboard')
 
     return render(request, 'donor/request_appoiment.html', {'hospitals': hospitals})
+
 
 
 
