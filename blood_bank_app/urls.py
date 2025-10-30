@@ -58,6 +58,8 @@ urlpatterns = [
 
     path('approve_appointment/<int:appointment_id>/', views.approve_appointment, name='approve_appointment'),
     path('reject_appointment/<int:appointment_id>/', views.reject_appointment, name='reject_appointment'),
+    path('manage_hospital_requests/', views.manage_hospital_requests, name='manage_hospital_requests'),
+
 ]
 # ✅ Add this at the end to serve media files
 if settings.DEBUG:

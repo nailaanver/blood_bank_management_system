@@ -712,26 +712,49 @@ from .models import Notification
 
 @login_required
 def update_appointment_status(request, appointment_id, status):
-    print("STATUS RECEIVED:", status)  # 🧭 Debug
-
     appointment = get_object_or_404(Appointment, id=appointment_id)
     appointment.status = status
     appointment.save()
 
-    # ✅ Create notification for donor
+    # ✅ When accepted, create donation record and update stock
     if status == "Accepted":
+        # 1️⃣ Create a new Donation record
+        Donation.objects.create(
+            donor=appointment.donor,
+            hospital=appointment.hospital,
+            date=appointment.appointment_date,
+            blood_group=appointment.donor.donordetail.blood_group,
+            units=1  # assuming 1 unit donated; adjust if needed
+        )
+
+        # 2️⃣ Update hospital's blood stock
+        blood_stock, created = BloodStock.objects.get_or_create(
+            hospital=appointment.hospital,
+            blood_group=appointment.donor.donordetail.blood_group,
+            defaults={'units_available': 0}
+        )
+        blood_stock.units_available += 1
+        blood_stock.save()
+
+        # 3️⃣ Notify donor
         Notification.objects.create(
             user=appointment.donor,
-            message=f"Your appointment with {appointment.hospital.hospital_name} on {appointment.appointment_date} has been accepted."
+            message=f"✅ Your appointment with {appointment.hospital.hospital_name} "
+                    f"on {appointment.appointment_date} has been accepted. "
+                    f"Thank you for donating blood!"
         )
+
+        messages.success(request, "Appointment accepted and donation recorded successfully.")
+
     elif status == "Rejected":
         Notification.objects.create(
             user=appointment.donor,
-            message=f"Your appointment request with {appointment.hospital.hospital_name} has been rejected."
+            message=f"❌ Your appointment with {appointment.hospital.hospital_name} has been rejected."
         )
+        messages.error(request, "Appointment rejected.")
 
-    messages.success(request, f"Appointment status updated to {status}.")
     return redirect('manage_requests')
+
 
 
 def update_patient_status(request, request_id, status):
@@ -774,14 +797,14 @@ def reject_appointment(request, appointment_id):
         user=appointment.donor,
         message=f"❌ Your appointment at {appointment.hospital.hospital_name} has been rejected."
     )
-    return redirect('manage_requests')
+    
 
 
 
 @login_required
 def manage_hospital_requests(request):
     requests = HospitalBloodRequest.objects.all().order_by('-requested_at')
-    return render(request, 'admin/manage_hospital_requests.html', {'requests': requests})
+    return render(request, 'partials/manage_hospital_requests.html', {'requests': requests})
 
 @login_required
 def update_hospital_status(request, request_id, status):
