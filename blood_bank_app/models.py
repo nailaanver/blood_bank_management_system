@@ -113,21 +113,33 @@ class Branch(models.Model):
 
 class Appointment(models.Model):
     donor = models.ForeignKey(User, on_delete=models.CASCADE)
-    hospital = models.ForeignKey(HospitalDetail, on_delete=models.CASCADE,null=True)
-    appointment_date = models.DateField()
+    hospital = models.ForeignKey(HospitalDetail, on_delete=models.CASCADE, null=True)
+    appointment_date = models.DateField(null=True)
     appointment_time = models.TimeField()
     notes = models.TextField(blank=True, null=True)
-    status = models.CharField(
+    
+    STATUS_CHOICES = [
+        ('Pending', 'Pending'),
+        ('Approved', 'Approved'),
+        ('Rejected', 'Rejected'),
+        ('Completed', 'Completed'),
+    ]
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending', null=True)
+
+    donor_response = models.CharField(
         max_length=20,
-        choices=[('Pending', 'Pending'), ('Approved', 'Approved'), ('Rejected', 'Rejected')],
-        default='Pending'
+        choices=[('Accepted', 'Accepted'), ('Reschedule', 'Reschedule'), ('No Response', 'No Response')],
+        default='No Response', null=True
     )
-    created_at = models.DateTimeField(auto_now_add=True)
+
+    blood_units = models.IntegerField(default=0, null=True)  # Units donated by donor
+
+    created_at = models.DateTimeField(auto_now_add=True,null=True)  # Add created_at field
 
     def __str__(self):
-        donor_name = self.donor.username if self.donor else "Unknown Donor"
-        hospital_name = self.hospital.hospital_name if self.hospital else "No Hospital"
-        return f"{donor_name} - {hospital_name} ({self.status})"
+        return f"{self.donor.username} - {self.hospital.hospital_name}"
+
+
 
 
 
@@ -170,6 +182,7 @@ class Notification(models.Model):
     message = models.TextField()
     is_read = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
+    appointment = models.ForeignKey(Appointment, on_delete=models.SET_NULL, null=True, blank=True)
 
     def __str__(self):
         return f"Notification for {self.user.username}"

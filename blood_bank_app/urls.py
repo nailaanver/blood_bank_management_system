@@ -65,6 +65,7 @@ urlpatterns = [
     path('mark_donation_completed/<int:appointment_id>/', views.mark_donation_completed, name='mark_donation_completed'),
     path('assign_donation_date/<int:request_id>/', views.assign_donation_date, name='assign_donation_date'),
     path('approve_request/<int:request_id>/', views.approve_request, name='approve_request'),
+    path('respond_to_donation_date/<int:appointment_id>/', views.respond_to_donation_date, name='respond_to_donation_date')
 
 ]
 # ✅ Add this at the end to serve media files

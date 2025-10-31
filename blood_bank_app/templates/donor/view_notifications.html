@@ -1,131 +1,143 @@
 {% extends 'master.html' %}
-{% block title %}Notifications{% endblock %}
+
+{% block title %}Your Notifications{% endblock %}
 
 {% block content %}
-<div class="notification-wrapper">
-  <div class="notification-box">
-    <h2>🔔 Your Notifications</h2>
+<div class="container mt-5">
+  <h2 class="text-center mb-4">Your Notifications</h2>
+  <ul class="list-unstyled">
+    {% for notification in notifications %}
+      <li class="notification-item card p-4 mb-3 {% if notification.is_read %}read{% else %}unread{% endif %}">
+        <p class="notification-message">{{ notification.message }}</p>
+        <p><small class="text-muted">{{ notification.created_at }}</small></p>
 
-    {% if notifications %}
-      <ul>
-        {% for note in notifications %}
-          <li class="notification-item">
-            <div class="message">{{ note.message }}</div>
-            <div class="time">{{ note.created_at|date:"Y-m-d H:i" }}</div>
-          </li>
-        {% endfor %}
-      </ul>
-    {% else %}
-      <p class="no-note">No notifications yet.</p>
-    {% endif %}
+        {% if "assigned a donation date" in notification.message %}
+          {% if notification.appointment %}
+            {% if notification.appointment.status != 'Donor Confirmed' %}
+              <div class="action-buttons">
+                <form method="POST" action="{% url 'respond_to_donation_date' notification.appointment.id %}">
+                  {% csrf_token %}
+                  <button type="submit" name="action" value="accept" class="btn btn-success">Accept</button>
+                  <button type="submit" name="action" value="reschedule" class="btn btn-warning">Request Another Date</button>
+                </form>
+              </div>
+            {% else %}
+              <p class="mt-2 text-success"><strong>Your donation date has been confirmed!</strong></p>
+            {% endif %}
+          {% else %}
+            <p>No donation date assigned yet.</p>
+          {% endif %}
+        {% elif "appointment request" in notification.message %}
+          <p>Your appointment request at {{ notification.appointment.hospital_name }} on {{ notification.appointment.appointment_date }} is pending approval.</p>
+        {% endif %}
+      </li>
+    {% endfor %}
+  </ul>
 
-    <div class="btn-container">
-      <a href="{% url 'donor_dashboard' %}" class="back-btn">⬅ Back to Dashboard</a>
-    </div>
-  </div>
+  <a href="{% url 'donor_dashboard' %}" class="btn btn-danger mt-4 d-block mx-auto">Back to Dashboard</a>
 </div>
 
 <style>
-/* --- Layout --- */
-.notification-wrapper {
-  background-color: #f5f6fa;
-  min-height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  padding-top: 60px;
-  font-family: "Poppins", sans-serif;
-}
+  /* Container and heading styles */
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+  }
 
-/* --- Card Box --- */
-.notification-box {
-  background-color: #ffffff;
-  width: 90%;
-  max-width: 700px;
-  border-radius: 15px;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-  padding: 30px;
-  animation: fadeIn 0.4s ease-in-out;
-}
+  h2 {
+    color: #333;
+    font-size: 2rem;
+    font-weight: bold;
+  }
 
-/* --- Heading --- */
-.notification-box h2 {
-  text-align: center;
-  color: #e63946;
-  margin-bottom: 25px;
-  font-size: 1.8rem;
-}
+  /* List styles for notifications */
+  .list-unstyled {
+    padding-left: 0;
+  }
 
-/* --- List --- */
-.notification-box ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
+  .notification-item {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border: 1px solid #f0f0f0;
+    padding: 20px;
+    transition: transform 0.3s ease-in-out;
+  }
 
-.notification-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: #fff;
-  padding: 15px 20px;
-  border-radius: 10px;
-  margin-bottom: 10px;
-  border: 1px solid #f0f0f0;
-  transition: all 0.3s ease;
-}
+  .notification-item:hover {
+    transform: translateY(-5px);
+  }
 
-.notification-item:hover {
-  background-color: #fff5f5;
-  transform: translateY(-2px);
-}
+  .notification-message {
+    font-size: 1rem;
+    line-height: 1.6;
+    color: #555;
+  }
 
-/* --- Text --- */
-.message {
-  color: #333;
-  font-size: 1rem;
-  flex: 1;
-}
+  /* Notification unread and read state styles */
+  .notification-item.unread {
+    border-left: 5px solid #28a745;
+  }
 
-.time {
-  color: #888;
-  font-size: 0.85rem;
-  margin-left: 10px;
-}
+  .notification-item.read {
+    border-left: 5px solid #e0e0e0;
+  }
 
-/* --- Empty State --- */
-.no-note {
-  text-align: center;
-  color: #666;
-  font-size: 1rem;
-  margin-top: 20px;
-}
+  /* Button styles */
+  button {
+    font-size: 1rem;
+    font-weight: bold;
+    width: 150px;
+    margin: 10px 5px;
+  }
 
-/* --- Button --- */
-.btn-container {
-  text-align: center;
-  margin-top: 25px;
-}
+  button:focus {
+    outline: none;
+  }
 
-.back-btn {
-  background-color: #e63946;
-  color: #fff;
-  text-decoration: none;
-  padding: 10px 25px;
-  border-radius: 25px;
-  font-weight: 500;
-  transition: all 0.3s ease;
-}
+  .action-buttons {
+    display: flex;
+    justify-content: flex-start;
+    margin-top: 15px;
+  }
 
-.back-btn:hover {
-  background-color: #d62828;
-  transform: scale(1.05);
-}
+  .btn-success {
+    background-color: #28a745;
+    border: none;
+  }
 
-/* --- Animation --- */
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
+  .btn-warning {
+    background-color: #ffc107;
+    border: none;
+  }
+
+  .btn-success:hover {
+    background-color: #218838;
+  }
+
+  .btn-warning:hover {
+    background-color: #e0a800;
+  }
+
+  /* Back to Dashboard button */
+  .btn-danger {
+    background-color: #dc3545;
+    border: none;
+  }
+
+  .btn-danger:hover {
+    background-color: #c82333;
+  }
+
+  /* Spacing for the "Back to Dashboard" button */
+  .mt-4 {
+    margin-top: 2rem;
+  }
+
+  /* Text and small details */
+  .text-muted {
+    color: #777;
+  }
 </style>
+
 {% endblock %}
