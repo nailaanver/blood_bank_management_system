@@ -18,18 +18,17 @@
         {% csrf_token %}
         <div class="form-group">
             <label for="appointment_date">Preferred Date:</label>
-            <input type="date" id="appointment_date" name="appointment_date" required>
+            <input type="date" id="appointment_date" name="appointment_date" required min="{{ today }}">
         </div>
 
         <div class="form-group">
             <label for="appointment_time">Preferred Time:</label>
-            <input type="time" id="appointment_time" name="appointment_time" required>
+            <input type="time" id="appointment_time" name="appointment_time" required >
         </div>
 
         <div class="form-group">
             <label for="hospital">Select Hospital:</label>
             <div class="form-group">
-    <label for="hospital">Select Hospital:</label>
     <select id="hospital" name="hospital" required>
         <option value="">-- Select Hospital --</option>
         {% for hospital in hospitals %}

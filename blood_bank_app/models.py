@@ -1,6 +1,13 @@
 from django.db import models
 from PIL import Image
 
+from django.core.exceptions import ValidationError
+from django.utils import timezone
+
+def validate_future_date(value):
+    """Allow only today or future dates."""
+    if value < timezone.localdate():
+        raise ValidationError("Date cannot be in the past.")
 
 # Create your models here.
 from django.contrib.auth.models import User
@@ -114,7 +121,7 @@ class Branch(models.Model):
 class Appointment(models.Model):
     donor = models.ForeignKey(User, on_delete=models.CASCADE)
     hospital = models.ForeignKey(HospitalDetail, on_delete=models.CASCADE, null=True)
-    appointment_date = models.DateField(null=True)
+    appointment_date = models.DateField(null=True, validators=[validate_future_date])
     appointment_time = models.TimeField()
     notes = models.TextField(blank=True, null=True)
     
@@ -135,14 +142,11 @@ class Appointment(models.Model):
     blood_units = models.IntegerField(default=0, null=True)  # Units donated by donor
 
     created_at = models.DateTimeField(auto_now_add=True,null=True)  # Add created_at field
+    donation_date = models.DateField(null=True, blank=True,validators=[validate_future_date])  # Optional: Date when donation happens
+
 
     def __str__(self):
         return f"{self.donor.username} - {self.hospital.hospital_name}"
-
-
-
-
-
     
 class BloodRequest(models.Model):
     BLOOD_GROUPS = [
@@ -168,7 +172,7 @@ class BloodRequest(models.Model):
     units_required = models.PositiveIntegerField()
     hospital_name = models.CharField(max_length=150)
     hospital_address = models.TextField()
-    required_date = models.DateField()
+    required_date = models.DateField(validators=[validate_future_date])
     urgency = models.CharField(max_length=20, choices=URGENCY_CHOICES)
     reason = models.TextField(blank=True, null=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending')
@@ -243,7 +247,8 @@ class HospitalBloodRequest(models.Model):
 class DonationRequest(models.Model):
     donor = models.ForeignKey('DonorDetail', on_delete=models.CASCADE,null=True)
     hospital = models.ForeignKey('HospitalDetail', on_delete=models.CASCADE,null=True)
-    donation_date = models.DateField(null=True, blank=True)  # ✅ this is important
+    donation_date = models.DateField(null=True, blank=True, validators=[validate_future_date])
     status = models.CharField(max_length=20, default='Pending')
+
 
 

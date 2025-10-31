@@ -20,7 +20,7 @@
       <span id="current-date"></span>
     </div>
 
-    <div class="notifications" style="position: relative; cursor: pointer;" onclick="window.location.href='{% url 'manage_requests' %}'">
+<div class="notifications" style="position: relative; cursor: pointer;" onclick="window.location.href='{% url 'notification_admin' %}'">
   <i class="fa fa-bell fa-lg"></i>
   {% if pending_count > 0 %}
   <span class="badge" style="position: absolute; top: -5px; right: -5px; background:red; color:white; border-radius:50%; padding:2px 6px; font-size:12px;">
@@ -28,6 +28,7 @@
   </span>
   {% endif %}
 </div>
+
 
 
     <!-- <div class="admin-info">

@@ -1,0 +1,90 @@
+{% extends 'master.html' %}
+{% load static %}
+
+{% block title %}Notifications{% endblock %}
+
+{% block content %}
+<style>
+/* Container styling */
+.container {
+    max-width: 700px;
+    margin: 40px auto;
+    padding: 20px 30px;
+    background-color: #f9f9f9;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+/* Heading */
+.container h2 {
+    text-align: center;
+    color: #d32f2f;  /* Red for blood bank theme */
+    margin-bottom: 25px;
+    font-family: 'Arial', sans-serif;
+}
+
+/* Notification list */
+.notification-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+/* Notification item */
+.notification-list li {
+    background-color: #fff;
+    border-left: 4px solid #d32f2f;
+    padding: 15px 20px;
+    margin-bottom: 15px;
+    border-radius: 8px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Hover effect */
+.notification-list li:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+/* Timestamp */
+.notification-list li span {
+    color: #888;
+    font-size: 12px;
+    margin-left: 10px;
+}
+
+/* No notifications message */
+.notification-list li:last-child:only-child {
+    text-align: center;
+    color: #555;
+    font-style: italic;
+}
+
+/* Optional: make container responsive */
+@media (max-width: 768px) {
+    .container {
+        padding: 15px 20px;
+        margin: 20px auto;
+    }
+}
+</style>
+
+<div class="container">
+    <h2>Admin Notifications</h2>
+    <ul class="notification-list">
+        {% if notifications %}
+            {% for notif in notifications %}
+                <li>
+                    {{ notif.message }} 
+                    <span>{{ notif.created_at|date:"d M Y H:i" }}</span>
+                </li>
+            {% endfor %}
+        {% else %}
+            <li>No notifications yet.</li>
+        {% endif %}
+    </ul>
+</div>
+{% endblock %}
