@@ -12,9 +12,11 @@ from datetime import date, timedelta
 from django.urls import reverse
 from .models import Branch, Appointment,DonationRequest
 from .models import Profile, DonorDetail, PatientDetail, HospitalDetail, User, ContactMessage,Notification,BloodStock,Donation,HospitalBloodRequest
-from .forms import LoginForm, UserForm, ContactForm, DonorDetailForm, PatientDetailForm, HospitalDetailForm,EligibilityForm,BloodStockForm,HospitalBloodRequestForm
+from .forms import LoginForm, UserForm, ContactForm, DonorDetailForm, PatientDetailForm, HospitalDetailForm,EligibilityForm,BloodStockForm,HospitalBloodRequestForm,AppointmentForm
 from blood_bank_app.forms import LoginForm,UserForm
 from django.contrib.auth.decorators import user_passes_test
+from django.core.exceptions import ValidationError
+
 
 # Create your views here.
 def login_View(request):
@@ -391,54 +393,47 @@ def check_eligibility(request):
 
     return render(request, 'donor/check_eligibility.html', {'form': form, 'result': result, 'status': status})
 
-@login_required
+from datetime import date, datetime
+
+
 def request_appointment(request):
-    donor = DonorDetail.objects.filter(user=request.user).first()
-    today = timezone.localdate().strftime('%Y-%m-%d')  # ✅ convert to HTML date format
-
-    if not donor or not donor.is_eligible:
-        messages.warning(request, "⚠️ Please check your eligibility before requesting an appointment.")
-        return redirect('check_eligibility')
-
     hospitals = HospitalDetail.objects.all()
+    today = date.today().isoformat()
 
-    if request.method == 'POST':
-        appointment_date = request.POST.get('appointment_date')
-        appointment_time = request.POST.get('appointment_time')
-        hospital_id = request.POST.get('hospital')
-        notes = request.POST.get('notes')
+    if request.method == "POST":
+        hospital_id = request.POST.get("hospital")
+        appointment_date = request.POST.get("appointment_date")
+        appointment_time = request.POST.get("appointment_time")
+        notes = request.POST.get("notes")
 
-        if not hospital_id:
-            messages.success(request, "✅ You are eligible! You can now request an appointment.")
-            return redirect('request_appoiments')
+        try:
+            appointment = Appointment.objects.create(
+                donor=request.user,
+                hospital_id=hospital_id,
+                appointment_date=appointment_date,
+                appointment_time=appointment_time,
+                notes=notes,
+                status='Pending'
+            )
 
-        hospital = HospitalDetail.objects.get(id=hospital_id)
+            # Notify admin
+            admin_user = User.objects.filter(is_superuser=True).first()
+            if admin_user:
+                Notification.objects.create(
+                    sender=request.user,
+                    user=admin_user,
+                    message=f"New appointment request from {request.user.username}."
+                )
 
-        appointment = Appointment.objects.create(
-            donor=request.user,
-            hospital=hospital,
-            appointment_date=appointment_date,
-            appointment_time=appointment_time,
-            notes=notes,
-            status='Pending'
-        )
+            messages.success(request, "✅ Appointment request sent successfully!")
+            return redirect('donor_dashboard')
 
-        # ✅ Notification
-        Notification.objects.create(
-            user=request.user,
-            message=f"Your appointment request at {hospital.hospital_name} on {appointment_date} is pending approval."
-        )
+        except ValidationError as e:
+            # This catches your model validator (past date error)
+            messages.error(request, str(e.message))
+            return render(request, 'donor/request_appoiment.html', {'hospitals': hospitals, 'today': today})
 
-        messages.success(request, "Appointment request sent successfully!")
-        request.session.pop('eligibility_checked', None)
-        return redirect('donor_dashboard')
-
-    # ✅ Pass 'today' to your HTML
-    return render(request, 'donor/request_appoiment.html', {
-        'hospitals': hospitals,
-        'today': today
-    })
-
+    return render(request, 'donor/request_appoiment.html', {'hospitals': hospitals, 'today': today})
 @login_required
 def patient_detail_form_view(request):
     form = PatientDetailForm(request.POST or None, request.FILES or None, instance=getattr(request.user, 'patientdetail', None))
@@ -460,18 +455,24 @@ def hospital_detail_form_view(request):
     return render(request, 'hospital_detail_form.html', {'form': form})
 
 def request_blood(request):
-    if request.method == 'POST':
+    if request.method == "POST":
         form = BloodRequestForm(request.POST)
         if form.is_valid():
             blood_request = form.save(commit=False)
-            blood_request.user = request.user  # ✅ assign logged-in user here
+            blood_request.user = request.user
+            blood_request.status = "Pending"
             blood_request.save()
-            messages.success(request, 'Your blood request has been submitted successfully!')
-            return redirect('request_status')  # redirect to status page
-    else:
-        form = BloodRequestForm()
 
-    return render(request, 'patient/blood_request.html', {'form': form})
+            # Notify admin
+            admin_user = User.objects.filter(is_superuser=True).first()
+            if admin_user:
+                Notification.objects.create(
+                    user=admin_user,
+                    message=f"New blood request from {request.user.username}."
+                )
+
+            return redirect('patient_dashboard')
+
 
 @login_required
 def request_status(request):
@@ -1086,12 +1087,36 @@ def check_and_add_blood_to_stock():
 from django.contrib.auth.decorators import login_required
 from .models import Notification
 
-@login_required
+login_required
 def notification_admin(request):
-    # Get notifications only for admin users
-    notifications = Notification.objects.filter(user=request.user).order_by('-created_at')
-    
-    context = {
-        'notifications': notifications,
-    }
-    return render(request, 'partials/notification_admin.html', context)
+    admin_user = request.user  # logged-in admin
+    notifications = Notification.objects.filter(user=admin_user).order_by('-created_at')
+    return render(request, 'partials/notification_admin.html', {'notifications': notifications})
+
+
+
+
+@login_required
+def create_appointment(request):
+    if request.method == 'POST':
+        # assume form handling here
+        form = AppointmentForm(request.POST)
+        if form.is_valid():
+            appointment = form.save(commit=False)
+            appointment.donor = request.user
+            appointment.save()
+
+            # Create notification for admin
+            admin_users = User.objects.filter(is_staff=True)  # all admin users
+            for admin in admin_users:
+                Notification.objects.create(
+                    user=admin,
+                    message=f"New appointment request from {request.user.username}"
+                )
+
+            messages.success(request, "Appointment request submitted successfully!")
+            return redirect('donor_dashboard')
+    else:
+        form = AppointmentForm()
+
+    return render(request, 'appointment_form.html', {'form': form})

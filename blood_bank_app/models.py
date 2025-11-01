@@ -182,14 +182,22 @@ class BloodRequest(models.Model):
         return f"{self.full_name} - {self.blood_group}"
     
 class Notification(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
+    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_notifications', null=True, blank=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')  # receiver (admin)
     message = models.TextField()
     is_read = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
-    appointment = models.ForeignKey(Appointment, on_delete=models.SET_NULL, null=True, blank=True)
+    appointment = models.ForeignKey(
+    'Appointment',             # new line ✅
+    on_delete=models.CASCADE,
+    null=True, blank=True,
+    related_name='notifications'
+)
+
 
     def __str__(self):
-        return f"Notification for {self.user.username}"
+        return f"Notification from {self.sender.username if self.sender else 'System'}"
+
 
 
 # models.py

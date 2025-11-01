@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth.models import User
 from .models import Profile
 from .models import ContactMessage
-from .models import DonorDetail, PatientDetail, HospitalDetail,HospitalBloodRequest
+from .models import DonorDetail, PatientDetail, HospitalDetail,HospitalBloodRequest,Appointment
 
 
 class UserForm(forms.ModelForm):
@@ -66,16 +66,14 @@ class BloodRequestForm(forms.ModelForm):
     class Meta:
         model = BloodRequest
         fields = [
-            'full_name', 'blood_group', 'units_required',
-            'hospital_name', 'hospital_address', 'required_date',
+            'blood_group', 'units_required',
+            'hospital_name',  'required_date',
             'urgency', 'reason'
         ]
         widgets = {
-            'full_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter your full name'}),
             'blood_group': forms.Select(attrs={'class': 'form-control'}),
             'units_required': forms.NumberInput(attrs={'class': 'form-control', 'min': '1'}),
             'hospital_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter hospital name'}),
-            'hospital_address': forms.Textarea(attrs={'class': 'form-control', 'rows': 2, 'placeholder': 'Enter hospital address'}),
             'required_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
             'urgency': forms.Select(attrs={'class': 'form-control'}),
             'reason': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Enter reason (optional)'}),
@@ -106,3 +104,8 @@ class UserEditForm(forms.ModelForm):
     class Meta:
         model = User
         fields = [  'username', 'email']
+        
+class AppointmentForm(forms.ModelForm):
+    class Meta:
+        model = Appointment
+        fields = ['hospital', 'appointment_date', 'appointment_time', 'notes']
