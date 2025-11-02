@@ -217,6 +217,26 @@ class BloodStock(models.Model):
     def __str__(self):
         return f"{self.blood_group} - {self.hospital.hospital_name if self.hospital else 'No Hospital'}"
 
+class HospitalBloodStock(models.Model):
+    hospital = models.ForeignKey(HospitalDetail, on_delete=models.CASCADE, null=True, blank=True)
+    
+    BLOOD_GROUPS = [
+        ('A+', 'A+'), ('A-', 'A-'),
+        ('B+', 'B+'), ('B-', 'B-'),
+        ('AB+', 'AB+'), ('AB-', 'AB-'),
+        ('O+', 'O+'), ('O-', 'O-'),
+    ]
+
+    blood_group = models.CharField(max_length=3, choices=BLOOD_GROUPS)
+    units_available = models.PositiveIntegerField(default=0)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.hospital.hospital_name if self.hospital else 'Unknown Hospital'} - {self.blood_group} ({self.units_available} units)"
+
+
+
+
 
 class HospitalBloodRequest(models.Model):
     BLOOD_GROUP_CHOICES = [

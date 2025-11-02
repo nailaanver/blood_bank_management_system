@@ -68,6 +68,7 @@ urlpatterns = [
     path('respond_to_donation_date/<int:appointment_id>/', views.respond_to_donation_date, name='respond_to_donation_date'),
 
     path('notification_admin/', views.notification_admin, name='notification_admin'),
+    path('hospital_bloodstock/', views.hospital_bloodstock, name='hospital_bloodstock'),
 
 ]
 # ✅ Add this at the end to serve media files

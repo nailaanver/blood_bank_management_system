@@ -1,25 +1,15 @@
-<div class="stock-section">
-      <div class="section-header">
-        <h2>Blood Stock Overview</h2>
-        <button class="report-btn"><i class="fas fa-file-download"></i> Generate Report</button>
-      </div>
+{% extends 'master.html' %}
+{% block title %}Hospital Dashboard{% endblock %}
+{% block content %}
 
-      <table class="stock-table">
-        <thead>
-          <tr>
-            <th>Blood Group</th>
-            <th>Units Available</th>
-            <th>Last Updated</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for stock in stocks %}
-          <tr>
-            <td>{{ stock.blood_group }}</td>
-            <td>{{ stock.units_available }}</td>
-            <td>{{ stock.last_updated|date:"Y-m-d H:i" }}</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
+<div class="chart-container text-center">
+  {% if chart_html %}
+      {{ chart_html|safe }}
+  {% else %}
+      <p class="text-muted">No blood stock data available.</p>
+  {% endif %}
+</div>
+
+
+
+{% endblock %}

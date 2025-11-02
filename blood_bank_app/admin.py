@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Profile,ContactMessage,DonorDetail,PatientDetail,HospitalDetail,Donation,Branch,Appointment,BloodRequest,Notification,BloodStock,HospitalBloodRequest,DonationRequest
+from .models import Profile,ContactMessage,DonorDetail,PatientDetail,HospitalDetail,Donation,Branch,Appointment,BloodRequest,Notification,BloodStock,HospitalBloodRequest,DonationRequest,HospitalBloodStock
 # Register your models here.
 admin.site.register(Profile)
 admin.site.register(ContactMessage)
@@ -14,4 +14,5 @@ admin.site.register(Notification)
 admin.site.register(BloodStock)
 admin.site.register(HospitalBloodRequest)
 admin.site.register(DonationRequest)
+admin.site.register(HospitalBloodStock)
 

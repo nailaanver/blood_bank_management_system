@@ -12,11 +12,18 @@ from datetime import date, timedelta
 from django.urls import reverse
 from .models import Branch, Appointment,DonationRequest
 from .models import Profile, DonorDetail, PatientDetail, HospitalDetail, User, ContactMessage,Notification,BloodStock,Donation,HospitalBloodRequest
-from .forms import LoginForm, UserForm, ContactForm, DonorDetailForm, PatientDetailForm, HospitalDetailForm,EligibilityForm,BloodStockForm,HospitalBloodRequestForm,AppointmentForm
+from .forms import LoginForm, UserForm, ContactForm, DonorDetailForm, PatientDetailForm, HospitalDetailForm,EligibilityForm,BloodStockForm,HospitalBloodRequestForm,AppointmentForm,HospitalBloodStockForm
 from blood_bank_app.forms import LoginForm,UserForm
 from django.contrib.auth.decorators import user_passes_test
 from django.core.exceptions import ValidationError
 
+from pyecharts.charts import Pie
+from pyecharts import options as opts
+from .models import HospitalBloodStock
+
+# ✅ Check if logged-in user is a hospital
+def is_hospital(user):
+    return hasattr(user, 'profile') and user.profile.role == 'hospital'
 
 # Create your views here.
 def login_View(request):
@@ -471,7 +478,14 @@ def request_blood(request):
                     message=f"New blood request from {request.user.username}."
                 )
 
+            messages.success(request, "Your blood request has been submitted successfully!")
             return redirect('patient_dashboard')
+    else:
+        form = BloodRequestForm()  # 👈 this handles GET requests
+
+    # 👇 Always return an HttpResponse for both GET and POST
+    return render(request, 'patient/blood_request.html', {'form': form})
+
 
 
 @login_required
@@ -527,7 +541,8 @@ def update_request_status(request, request_id, action):
         blood_request.save()
 
         Notification.objects.create(
-            user=blood_request.user,
+            sender=request.user,  # Admin who approves
+            user=blood_request.user,  # Patient who receives notification
             message=f"✅ Your blood request (for {blood_request.blood_group}) has been approved."
         )
         messages.success(request, "Request approved successfully.")
@@ -537,21 +552,25 @@ def update_request_status(request, request_id, action):
         blood_request.save()
 
         Notification.objects.create(
-            user=blood_request.user,
+            sender=request.user,  # Admin
+            user=blood_request.user,  # Patient
             message=f"❌ Your blood request (for {blood_request.blood_group}) has been rejected."
         )
         messages.error(request, "Request rejected successfully.")
 
     return redirect('manage_requests')
 
+
+@login_required
 def view_notifications(request):
     user = request.user
-    notifications = Notification.objects.filter(user=user, appointment__isnull=False).order_by('-created_at')
+    notifications = Notification.objects.filter(user=user).order_by('-created_at')
 
     # Mark unread notifications as read
     notifications.filter(is_read=False).update(is_read=True)
 
-    return render(request, 'view_notifications.html', {'notifications': notifications})
+    return render(request, 'patient/notification.html', {'notifications': notifications})
+
 
 @login_required
 def view_notifications_donor(request):
@@ -593,6 +612,35 @@ def add_blood_stock(request):
         form = BloodStockForm()
     
     return render(request, 'partials/add_blood_stock.html', {'form': form})
+
+def is_hospital(user):
+    return hasattr(user, 'profile') and user.profile.role == 'hospital'
+
+@login_required
+@user_passes_test(is_hospital)
+def hospital_bloodstock(request):
+    if request.method == "POST":
+        form = HospitalBloodStockForm(request.POST)
+        print("🩸 POST data:", request.POST)
+
+        if form.is_valid():
+            blood_stock = form.save(commit=False)
+            try:
+                hospital = HospitalDetail.objects.get(user=request.user)
+                blood_stock.hospital = hospital  # ✅ set hospital automatically
+                blood_stock.save()
+                messages.success(request, "✅ Blood stock added successfully!")
+                return redirect('hospital_dashboard')
+            except HospitalDetail.DoesNotExist:
+                messages.error(request, "⚠️ No hospital profile found for this user.")
+        else:
+            print("🩸 Form errors:", form.errors)
+            messages.error(request, "❌ Invalid form data.")
+    else:
+        form = HospitalBloodStockForm()
+
+    return render(request, 'hopital/hospital_bloodstock.html', {'form': form})
+
 
 
 @login_required
@@ -639,10 +687,40 @@ def hospital_request_history(request):
 def reports(request):
     return render(request, 'reports.html')
 
+def is_hospital(user):
+    return hasattr(user, 'profile') and user.profile.role == 'hospital'
+
 @login_required
+@user_passes_test(is_hospital)
 def hospital_dashboard_content(request):
-    hospital = HospitalDetail.objects.get(user=request.user)
-    return render(request, 'hopital/hospital_dashboard_content.html', {'hospital': hospital})
+    try:
+        hospital = HospitalDetail.objects.get(user=request.user)
+    except HospitalDetail.DoesNotExist:
+        messages.error(request, "⚠️ No hospital found for this user.")
+        hospital_blood_stock = []
+    else:
+        hospital_blood_stock = HospitalBloodStock.objects.filter(hospital=hospital)
+
+    # ✅ Prepare data for pie chart
+    labels = [stock.blood_group for stock in hospital_blood_stock]
+    values = [stock.units_available for stock in hospital_blood_stock]
+
+    if labels and values:
+        pie = (
+            Pie()
+            .add("", [list(z) for z in zip(labels, values)])
+            .set_global_opts(title_opts=opts.TitleOpts(title=f"{hospital.hospital_name} - Blood Stock Availability"))
+            .set_series_opts(label_opts=opts.LabelOpts(formatter="{b}: {c} units"))
+        )
+        chart_html = pie.render_embed()
+    else:
+        chart_html = "<p>No blood stock data available.</p>"
+
+    return render(request, 'hopital/hospital_dashboard_content.html', {
+    'chart_html': chart_html,
+    'hospital_blood_stock': hospital_blood_stock,
+})
+
 
 @login_required
 def edit_user(request, user_id):
@@ -1120,3 +1198,5 @@ def create_appointment(request):
         form = AppointmentForm()
 
     return render(request, 'appointment_form.html', {'form': form})
+
+# hospital blood stock

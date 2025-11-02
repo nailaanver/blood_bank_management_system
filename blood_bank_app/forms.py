@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth.models import User
 from .models import Profile
 from .models import ContactMessage
-from .models import DonorDetail, PatientDetail, HospitalDetail,HospitalBloodRequest,Appointment
+from .models import DonorDetail, PatientDetail, HospitalDetail,HospitalBloodRequest,Appointment,HospitalBloodStock
 
 
 class UserForm(forms.ModelForm):
@@ -90,12 +90,18 @@ class BloodStockForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        
+class HospitalBloodStockForm(forms.ModelForm):
+    class Meta:
+        model = HospitalBloodStock
+        fields = ['hospital','blood_group', 'units_available']
+
         # Make sure all hospitals are included
 
 class HospitalBloodRequestForm(forms.ModelForm):
     class Meta:
         model = HospitalBloodRequest
-        fields = [ 'hospital_name','blood_group', 'units_required', 'required_date', 'urgency']
+        fields = [ 'blood_group', 'units_required', 'required_date', 'urgency']
 
 class UserEditForm(forms.ModelForm):
     # first_name = forms.CharField(required=False)
