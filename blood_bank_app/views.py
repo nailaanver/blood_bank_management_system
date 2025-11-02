@@ -565,6 +565,7 @@ def update_request_status(request, request_id, action):
 def view_notifications(request):
     user = request.user
     notifications = Notification.objects.filter(user=user).order_by('-created_at')
+    
 
     # Mark unread notifications as read
     notifications.filter(is_read=False).update(is_read=True)
