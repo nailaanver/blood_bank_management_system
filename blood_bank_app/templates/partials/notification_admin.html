@@ -4,28 +4,133 @@
 {% block title %}Admin Notifications{% endblock %}
 
 {% block content %}
-<div class="container">
-    <h2>Notifications from Donors, Patients, and Hospitals</h2>
+<div class="notifications-container">
+  <h2 class="page-title">🔔 Notifications</h2>
+
+  {% if notifications %}
     <ul class="notification-list">
-        {% if notifications %}
-            {% for notif in notifications %}
-                <li>
-                    {% if notif.sender %}
-                        <strong>{{ notif.sender.username }}</strong> 
-                        ({{ notif.sender.profile.role|capfirst }})
-                    {% else %}
-                        <strong>System</strong>
-                    {% endif %}
-                    : {{ notif.message }}
-                    <br>
-                    <span style="color: gray; font-size:12px;">
-                        {{ notif.created_at|date:"d M Y H:i" }}
-                    </span>
-                </li>
-            {% endfor %}
-        {% else %}
-            <li>No notifications yet.</li>
-        {% endif %}
+      {% for notif in notifications %}
+      <li class="notification-item {% if not notif.is_read %}unread{% endif %}">
+        <div class="notif-header">
+          {% if notif.sender %}
+            <span class="notif-sender">{{ notif.sender.username }}</span>
+            <span class="notif-role">{{ notif.sender.profile.role|capfirst }}</span>
+          {% else %}
+            <span class="notif-sender system">System</span>
+          {% endif %}
+        </div>
+        <div class="notif-message">{{ notif.message }}</div>
+        <div class="notif-time">{{ notif.created_at|date:"d M Y, H:i" }}</div>
+      </li>
+      {% endfor %}
     </ul>
+  {% else %}
+    <div class="no-notifications">
+      <img src="{% static 'images/empty_notifications.svg' %}" alt="No Notifications" class="empty-icon">
+      <p>No notifications yet.</p>
+    </div>
+  {% endif %}
 </div>
+
+<style>
+/* 🌟 Overall Container */
+.notifications-container {
+  max-width: 800px;
+  margin: 40px auto;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+  padding: 40px;
+}
+
+/* 🔔 Page Title */
+.page-title {
+  text-align: center;
+  color: #e63946;
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 30px;
+}
+
+/* 🧾 Notification List */
+.notification-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* Each Notification Item */
+.notification-item {
+  background: #f9f9f9;
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin-bottom: 15px;
+  transition: all 0.25s ease;
+  border-left: 5px solid #e63946;
+}
+
+.notification-item:hover {
+  transform: translateY(-3px);
+  background: #fff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* Unread Indicator */
+.notification-item.unread {
+  background-color: #fff8f8;
+  border-left-color: #ff4d6d;
+}
+
+/* Sender Section */
+.notif-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.notif-sender {
+  font-weight: 600;
+  color: #222;
+}
+
+.notif-sender.system {
+  color: #0077b6;
+}
+
+.notif-role {
+  background-color: #f1f1f1;
+  color: #444;
+  font-size: 0.8rem;
+  padding: 2px 8px;
+  border-radius: 8px;
+}
+
+/* Message Section */
+.notif-message {
+  color: #333;
+  font-size: 0.95rem;
+  margin-bottom: 6px;
+}
+
+/* Timestamp */
+.notif-time {
+  font-size: 0.8rem;
+  color: #777;
+  text-align: right;
+}
+
+/* Empty State */
+.no-notifications {
+  text-align: center;
+  color: #777;
+  padding: 40px 0;
+}
+
+.empty-icon {
+  width: 120px;
+  opacity: 0.6;
+  margin-bottom: 10px;
+}
+</style>
 {% endblock %}

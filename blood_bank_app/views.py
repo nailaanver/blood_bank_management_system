@@ -564,7 +564,9 @@ def update_request_status(request, request_id, action):
 @login_required
 def view_notifications(request):
     user = request.user
+    print("🔍 Logged in as:", request.user.username)
     notifications = Notification.objects.filter(user=user).order_by('-created_at')
+    
     
 
     # Mark unread notifications as read
@@ -817,12 +819,30 @@ def update_appointment_status(request, appointment_id, status):
     messages.success(request, f"Appointment status updated to {status}.")
     return redirect('manage_requests')
 
+@login_required
+@user_passes_test(is_admin)
 def update_patient_status(request, request_id, status):
     req = get_object_or_404(BloodRequest, id=request_id)
     req.status = status
     req.save()
+
+    # ✅ Create notification for the patient
+    if status == 'Accepted':
+        Notification.objects.create(
+            sender=request.user,  # admin who approved
+            user=req.user,        # patient who made the request
+            message=f"✅ Your blood request (for {req.blood_group}) has been approved."
+        )
+    elif status == 'Rejected':
+        Notification.objects.create(
+            sender=request.user,
+            user=req.user,
+            message=f"❌ Your blood request (for {req.blood_group}) has been rejected."
+        )
+
     messages.success(request, f"Patient request marked as {status}.")
     return redirect('manage_requests')
+
 
 def update_hospital_status(request, request_id, status):
     req = get_object_or_404(HospitalBloodRequest, id=request_id)

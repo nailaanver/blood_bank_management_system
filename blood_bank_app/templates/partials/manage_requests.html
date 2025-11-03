@@ -36,8 +36,8 @@
           <td>{{ appointment.appointment_date }}</td>
           <td>{{ appointment.appointment_time }}</td>
           <td>
-            {% if appointment.status == 'Accepted' %}
-              <span class="status-badge accepted">Accepted</span>
+            {% if appointment.status == 'Approved' %}
+              <span class="status-badge accepted">Approved</span>
             {% elif appointment.status == 'Pending' %}
               <span class="status-badge pending">Pending</span>
             {% else %}

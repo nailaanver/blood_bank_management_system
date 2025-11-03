@@ -135,7 +135,7 @@ class Appointment(models.Model):
 
     donor_response = models.CharField(
         max_length=20,
-        choices=[('Accepted', 'Accepted'), ('Reschedule', 'Reschedule'), ('No Response', 'No Response')],
+        choices=[('Approved', 'Approved'), ('Reschedule', 'Reschedule'), ('No Response', 'No Response')],
         default='No Response', null=True
     )
 
