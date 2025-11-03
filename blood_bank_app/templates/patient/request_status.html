@@ -49,14 +49,18 @@
                             </td>
                             <td>{{ req.created_at|date:"M d, Y" }}</td>
                             <td>
-                                {% if req.status == "Pending" %}
-                                    <span class="badge bg-warning text-dark">Pending</span>
-                                {% elif req.status == "Approved" %}
-                                    <span class="badge bg-success">Approved</span>
-                                {% elif req.status == "Rejected" %}
-                                    <span class="badge bg-danger">Rejected</span>
-                                {% endif %}
+                            {% if req.status == "Pending" %}
+    <span class="badge bg-warning text-dark">Pending</span>
+{% elif req.status == "Approved" or req.status == "Accepted" %}
+    <span class="badge bg-success">Approved</span>
+{% elif req.status == "Rejected" %}
+    <span class="badge bg-danger">Rejected</span>
+{% else %}
+    <span class="text-muted">Unknown</span>
+{% endif %}
+
                             </td>
+
 
                         </tr>
                         {% endfor %}
