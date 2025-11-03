@@ -19,7 +19,8 @@ from django.core.exceptions import ValidationError
 
 from pyecharts.charts import Pie
 from pyecharts import options as opts
-from .models import HospitalBloodStock
+from .models import HospitalDetail, HospitalBloodStock
+
 
 # ✅ Check if logged-in user is a hospital
 def is_hospital(user):
@@ -578,7 +579,14 @@ def view_notifications(request):
 @login_required
 def view_notifications_donor(request):
     notifications = Notification.objects.filter(user=request.user).order_by('-created_at')
+
+    # 🔴 Mark all unread notifications as read
+    unread_notifications = notifications.filter(is_read=False)
+    if unread_notifications.exists():
+        unread_notifications.update(is_read=True)
+
     return render(request, 'donor/view_notifications.html', {'notifications': notifications})
+
 
 @login_required
 def view_profile(request):
@@ -692,37 +700,47 @@ def reports(request):
 
 def is_hospital(user):
     return hasattr(user, 'profile') and user.profile.role == 'hospital'
+from pyecharts.charts import Pie
+from pyecharts import options as opts
+from pyecharts.globals import CurrentConfig
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render
+from pyecharts.charts import Pie
+from pyecharts import options as opts
+from pyecharts.globals import CurrentConfig
+
+CurrentConfig.ONLINE_HOST = "https://cdn.jsdelivr.net/npm/echarts@5"
 
 @login_required
-@user_passes_test(is_hospital)
 def hospital_dashboard_content(request):
-    try:
-        hospital = HospitalDetail.objects.get(user=request.user)
-    except HospitalDetail.DoesNotExist:
-        messages.error(request, "⚠️ No hospital found for this user.")
-        hospital_blood_stock = []
-    else:
-        hospital_blood_stock = HospitalBloodStock.objects.filter(hospital=hospital)
+    hospital = HospitalDetail.objects.filter(user=request.user).first()
+    blood_stocks = HospitalBloodStock.objects.filter(hospital=hospital)
 
-    # ✅ Prepare data for pie chart
-    labels = [stock.blood_group for stock in hospital_blood_stock]
-    values = [stock.units_available for stock in hospital_blood_stock]
+    labels = [stock.blood_group for stock in blood_stocks]
+    values = [stock.units_available for stock in blood_stocks]
 
+    chart_html = ""
     if labels and values:
         pie = (
-            Pie()
+            Pie(init_opts=opts.InitOpts(width="600px", height="400px"))
             .add("", [list(z) for z in zip(labels, values)])
-            .set_global_opts(title_opts=opts.TitleOpts(title=f"{hospital.hospital_name} - Blood Stock Availability"))
+            .set_global_opts(
+                title_opts=opts.TitleOpts(title="Blood Stock Overview", pos_left="center"),
+                legend_opts=opts.LegendOpts(orient="vertical", pos_left="left"),
+            )
             .set_series_opts(label_opts=opts.LabelOpts(formatter="{b}: {c} units"))
         )
         chart_html = pie.render_embed()
     else:
-        chart_html = "<p>No blood stock data available.</p>"
+        chart_html = "<p class='text-muted'>No blood stock data available.</p>"
 
-    return render(request, 'hopital/hospital_dashboard_content.html', {
-    'chart_html': chart_html,
-    'hospital_blood_stock': hospital_blood_stock,
-})
+    return render(request, "hopital/hospital_dashboard_content.html", {
+        "chart_html": chart_html,
+        "hospital": hospital,
+        "blood_stocks": blood_stocks,
+    })
+
+
 
 
 @login_required

@@ -94,7 +94,7 @@ class BloodStockForm(forms.ModelForm):
 class HospitalBloodStockForm(forms.ModelForm):
     class Meta:
         model = HospitalBloodStock
-        fields = ['hospital','blood_group', 'units_available']
+        fields = ['blood_group', 'units_available']
 
         # Make sure all hospitals are included
 
