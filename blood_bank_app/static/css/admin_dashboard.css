@@ -118,7 +118,8 @@ body {
 /* ===== MAIN CONTENT ===== */
 .main {
     margin-left: 250px;
-    padding: 100px 40px 40px;
+    /* padding: 100px 40px 40px; */
+    padding: 30px;
     min-height: 100vh;
     transition: all 0.3s ease-in-out;
 }
