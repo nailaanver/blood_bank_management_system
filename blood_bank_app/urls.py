@@ -69,6 +69,8 @@ urlpatterns = [
 
     path('notification_admin/', views.notification_admin, name='notification_admin'),
     path('hospital_bloodstock/', views.hospital_bloodstock, name='hospital_bloodstock'),
+    path('hospital/edit-profile/', views.hospital_edit_profile, name='hospital_edit_profile'),
+
 
 ]
 # ✅ Add this at the end to serve media files

@@ -1241,3 +1241,16 @@ def create_appointment(request):
     return render(request, 'appointment_form.html', {'form': form})
 
 # hospital blood stock
+@login_required
+def hospital_edit_profile(request):
+    hospital = HospitalDetail.objects.get(user=request.user)
+    if request.method == 'POST':
+        form = HospitalDetailForm(request.POST, request.FILES, instance=hospital)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Profile updated successfully!")
+            return redirect('hospital_dashboard')
+    else:
+        form = HospitalDetailForm(instance=hospital)
+    
+    return render(request, 'hospital_detail_form.html', {'form': form})

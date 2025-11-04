@@ -31,18 +31,19 @@
 </div>
 
 
-    <!-- <div class="admin-info">
-      <img src="{% static 'images/admin-avatar.png' %}" alt="Admin Avatar" class="avatar">
-      <div class="dropdown">
-        <button class="dropdown-toggle">
-          {{ user.username }} <i class="fa fa-caret-down"></i>
-        </button>
-        <div class="dropdown-menu">
-    
-          <a href="{% url 'logout' %}"><i class="fa fa-sign-out-alt"></i> Logout</a>
-        </div>
-      </div>
-    </div> -->
+<div class="admin-info">
+  <div class="dropdown">
+    <i class="fa-solid fa-user-circle profile-icon" id="profileDropdownBtn"></i>
+    <div class="dropdown-menu" id="profileDropdownMenu">
+      <a href="{% url 'hospital_edit_profile' %}"><i class="fa fa-user-edit"></i> Edit Profile</a>
+      <a href="{% url 'logout' %}"><i class="fa fa-sign-out-alt"></i> Logout</a>
+    </div>
+  </div>
+</div>
+
+
+
+
   </div>
 </header>
 
@@ -161,8 +162,85 @@ document.addEventListener("DOMContentLoaded", function() {
     dateElement.textContent = now.toLocaleDateString('en-US', options);
 });
 
+// ✅ Profile dropdown toggle
+document.addEventListener("DOMContentLoaded", function() {
+  const dropdownBtn = document.getElementById("profileDropdownBtn");
+  const dropdownMenu = document.getElementById("profileDropdownMenu");
+
+  if (dropdownBtn) {
+    dropdownBtn.addEventListener("click", function (event) {
+      event.stopPropagation();
+      dropdownMenu.style.display =
+        dropdownMenu.style.display === "block" ? "none" : "block";
+    });
+  }
+
+  // Hide dropdown when clicking outside
+  document.addEventListener("click", function (event) {
+    if (!dropdownBtn.contains(event.target)) {
+      dropdownMenu.style.display = "none";
+    }
+  });
+});
+
+
 
 </script> 
+
+<style>
+.admin-info {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  margin-right: 20px;
+}
+
+.profile-icon {
+  font-size: 38px;
+  color: #333;
+  cursor: pointer;
+  transition: color 0.3s ease, transform 0.2s ease;
+}
+
+.profile-icon:hover {
+  color: #e74c3c;
+  transform: scale(1.1);
+}
+
+.dropdown {
+  position: relative;
+}
+
+.dropdown-menu {
+  display: none;
+  position: absolute;
+  right: 0;
+  top: 50px;
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  min-width: 180px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  z-index: 999;
+}
+
+.dropdown-menu a {
+  display: block;
+  padding: 10px 15px;
+  color: #333;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.dropdown-menu a:hover {
+  background: #f5f5f5;
+  color: #d9534f;
+}
+</style>
+
+
+
 
 
 {% endblock %}
