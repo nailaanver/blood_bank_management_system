@@ -98,10 +98,18 @@ class HospitalBloodStockForm(forms.ModelForm):
 
         # Make sure all hospitals are included
 
+from datetime import date
 class HospitalBloodRequestForm(forms.ModelForm):
     class Meta:
         model = HospitalBloodRequest
-        fields = [ 'blood_group', 'units_required', 'required_date', 'urgency']
+        fields = ['blood_group', 'units_required', 'required_date', 'urgency']
+        widgets = {
+            'required_date': forms.DateInput(attrs={
+                'type': 'date',
+                'min': date.today().strftime('%Y-%m-%d')
+            }),
+        }
+
 
 class UserEditForm(forms.ModelForm):
     # first_name = forms.CharField(required=False)

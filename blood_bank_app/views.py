@@ -709,8 +709,6 @@ from pyecharts.charts import Pie
 from pyecharts import options as opts
 from pyecharts.globals import CurrentConfig
 
-CurrentConfig.ONLINE_HOST = "https://cdn.jsdelivr.net/npm/echarts@5"
-
 @login_required
 def hospital_dashboard_content(request):
     hospital = HospitalDetail.objects.filter(user=request.user).first()
@@ -719,28 +717,32 @@ def hospital_dashboard_content(request):
     labels = [stock.blood_group for stock in blood_stocks]
     values = [stock.units_available for stock in blood_stocks]
 
-    chart_html = ""
+    chart_uri = None
+
     if labels and values:
-        pie = (
-            Pie(init_opts=opts.InitOpts(width="600px", height="400px"))
-            .add("", [list(z) for z in zip(labels, values)])
-            .set_global_opts(
-                title_opts=opts.TitleOpts(title="Blood Stock Overview", pos_left="center"),
-                legend_opts=opts.LegendOpts(orient="vertical", pos_left="left"),
-            )
-            .set_series_opts(label_opts=opts.LabelOpts(formatter="{b}: {c} units"))
-        )
-        chart_html = pie.render_embed()
+        # Create a matplotlib figure
+        plt.figure(figsize=(6, 4))
+        plt.pie(values, labels=labels, autopct='%1.1f%%', startangle=140)
+        plt.title(f"{hospital.hospital_name} - Blood Stock Distribution")
+
+        # Save the chart to a bytes buffer
+        buffer = io.BytesIO()
+        plt.savefig(buffer, format='png', bbox_inches='tight')
+        buffer.seek(0)
+        image_png = buffer.getvalue()
+        buffer.close()
+
+        # Encode the image to base64
+        chart_uri = base64.b64encode(image_png).decode('utf-8')
+        plt.close()
     else:
-        chart_html = "<p class='text-muted'>No blood stock data available.</p>"
+        chart_uri = None
 
     return render(request, "hopital/hospital_dashboard_content.html", {
-        "chart_html": chart_html,
         "hospital": hospital,
+        "chart_uri": chart_uri,
         "blood_stocks": blood_stocks,
     })
-
-
 
 
 @login_required

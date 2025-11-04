@@ -3,9 +3,10 @@
 
 {% block content %}
 <div class="chart-container text-center mt-4">
-  <h3 class="text-danger mb-3">Blood Stock Overview</h3>
-  {% if chart_html %}
-      {{ chart_html|safe }}
+  <h3 class="text-danger mb-3">{{ hospital.hospital_name }} - Blood Stock Overview</h3>
+
+  {% if chart_uri %}
+      <img src="data:image/png;base64,{{ chart_uri }}" alt="Blood Stock Chart" class="img-fluid" />
   {% else %}
       <p class="text-muted">No blood stock data available.</p>
   {% endif %}
@@ -21,9 +22,4 @@
   max-width: 800px;
 }
 </style>
-{% endblock %}
-
-{% block extra_scripts %}
-<!-- Load echarts (required for pyecharts charts) -->
-<script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
 {% endblock %}

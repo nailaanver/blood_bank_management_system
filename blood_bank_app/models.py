@@ -61,7 +61,7 @@ class PatientDetail(models.Model):
     BLOOD_GROUPS = [('A+','A+'),('A-','A-'),('B+','B+'),('B-','B-'),('AB+','AB+'),('AB-','AB-'),('O+','O+'),('O-','O-')]
     GENDER_CHOICES = [('Male','Male'),('Female','Female'),('Other','Other')]
 
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, on_delete=models.CASCADE,null=True)
     blood_group = models.CharField(max_length=3, choices=BLOOD_GROUPS)
     gender = models.CharField(max_length=10, choices=GENDER_CHOICES)
     date_of_birth = models.DateField()
@@ -83,7 +83,7 @@ class PatientDetail(models.Model):
             img.save(self.profile_photo.path)
 
 class HospitalDetail(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, on_delete=models.CASCADE,null=True)
     hospital_name = models.CharField(max_length=200)
     address = models.TextField()
     phone_number = models.CharField(max_length=15)
@@ -256,7 +256,7 @@ class HospitalBloodRequest(models.Model):
     hospital_name = models.ForeignKey(HospitalDetail, on_delete=models.CASCADE, null=True, blank=True)
     blood_group = models.CharField(max_length=3, choices=BLOOD_GROUP_CHOICES, null=True)
     units_required = models.IntegerField(null=True)
-    required_date = models.DateField(null=True)
+    required_date = models.DateField(validators=[validate_future_date],null=True)
     urgency = models.CharField(max_length=20, choices=URGENCY_CHOICES, default='Medium', null=True)
     status = models.CharField(
         max_length=20,
