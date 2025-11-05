@@ -1,0 +1,112 @@
+{% extends 'master.html' %}
+{% block title %}Notifications{% endblock %}
+
+{% block content %}
+<div class="notifications-container">
+  <h2 class="page-title">🔔 Notifications</h2>
+
+  {% if notifications %}
+    <ul class="notifications-list">
+      {% for n in notifications %}
+        <li class="notification-item {% if 'approved' in n.message|lower %}approved{% elif 'rejected' in n.message|lower %}rejected{% endif %}">
+          <div class="notification-icon">
+            {% if 'approved' in n.message|lower %}
+              <i class="fa fa-check-circle"></i>
+            {% elif 'rejected' in n.message|lower %}
+              <i class="fa fa-times-circle"></i>
+            {% else %}
+              <i class="fa fa-info-circle"></i>
+            {% endif %}
+          </div>
+          <div class="notification-text">
+            <p>{{ n.message }}</p>
+            <small>{{ n.created_at|date:"M d, Y H:i" }}</small>
+          </div>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="no-notifications">No notifications yet.</p>
+  {% endif %}
+</div>
+
+<style>
+.notifications-container {
+  max-width: 800px;
+  margin: 40px auto;
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 30px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+}
+
+.page-title {
+  text-align: center;
+  font-size: 26px;
+  color: #d9534f;
+  margin-bottom: 25px;
+  font-weight: 600;
+  border-bottom: 2px solid #f2f2f2;
+  padding-bottom: 10px;
+}
+
+.notifications-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.notification-item {
+  display: flex;
+  align-items: center;
+  background: #f9f9f9;
+  border-radius: 10px;
+  margin-bottom: 12px;
+  padding: 15px 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  transition: background 0.3s ease, transform 0.2s ease;
+}
+
+.notification-item:hover {
+  background: #fff;
+  transform: translateY(-2px);
+}
+
+.notification-icon {
+  font-size: 28px;
+  margin-right: 15px;
+}
+
+.notification-item.approved .notification-icon {
+  color: #28a745; /* Green for approved */
+}
+
+.notification-item.rejected .notification-icon {
+  color: #dc3545; /* Red for rejected */
+}
+
+.notification-text {
+  flex: 1;
+}
+
+.notification-text p {
+  margin: 0;
+  font-size: 16px;
+  color: #333;
+}
+
+.notification-text small {
+  color: #777;
+  font-size: 13px;
+  margin-top: 5px;
+  display: block;
+}
+
+.no-notifications {
+  text-align: center;
+  color: #999;
+  font-size: 16px;
+  margin-top: 20px;
+}
+</style>
+{% endblock %}

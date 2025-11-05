@@ -89,6 +89,10 @@ def hospital_dashboard(request):
     blood_stocks = BloodStock.objects.filter(hospital=hospital)
     requests = BloodRequest.objects.filter(hospital_name=hospital.hospital_name)
 
+    # ✅ Get unread notifications count
+    from .models import Notification
+    unread_count = Notification.objects.filter(user=request.user, is_read=False).count()
+
     context = {
         'hospital': hospital,
         'blood_stocks': blood_stocks,
@@ -96,9 +100,50 @@ def hospital_dashboard(request):
         'total_requests': requests.count(),
         'pending_requests': requests.filter(status='Pending').count(),
         'approved_requests': requests.filter(status='Approved').count(),
+        'unread_count': unread_count,  # ✅ add this
     }
 
     return render(request, 'hospital_dashboard.html', context)
+
+@login_required
+def update_hospital_status(request, request_id, status):
+    blood_request = HospitalBloodRequest.objects.get(id=request_id)
+    blood_request.status = status
+    blood_request.save()
+
+    # ✅ Only send notification when Approved or Rejected
+    if status in ['Approved', 'Rejected']:
+        message = f"Your hospital blood request for {blood_request.blood_group} has been {status.lower()}."
+        Notification.objects.create(
+            user=blood_request.user,   # hospital user (receiver)
+            sender=request.user,       # admin user (sender)
+            message=message
+        )
+
+    return redirect('manage_hospital_requests')
+@login_required
+def hospital_notifications(request):
+    from .models import Notification
+
+    # ✅ Filter only notifications related to blood requests
+    notifications = Notification.objects.filter(
+        user=request.user,
+        message__icontains='blood request'  # only messages mentioning “blood request”
+    ).order_by('-created_at')
+
+    # Mark all as read when hospital views them
+    notifications.update(is_read=True)
+
+    return render(request, 'hopital/hospital_notifications.html', {'notifications': notifications})
+
+from django.http import JsonResponse
+
+@login_required
+def mark_notifications_read(request):
+    Notification.objects.filter(user=request.user, is_read=False).update(is_read=True)
+    return JsonResponse({'status': 'success'})
+
+
 
 @login_required
 def admin_dashboard(request):

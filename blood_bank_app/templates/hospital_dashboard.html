@@ -21,14 +21,19 @@
       <span id="current-date"></span>
     </div>
 
-    <!-- <div class="notifications" style="position: relative; cursor: pointer;" onclick="window.location.href='{% url 'manage_requests' %}'"> -->
+<a href="{% url 'hospital_notifications' %}" class="notification-link" style="position: relative;">
   <i class="fa fa-bell fa-lg"></i>
-  {% if pending_count > 0 %}
-  <span class="badge" style="position: absolute; top: -5px; right: -5px; background:red; color:white; border-radius:50%; padding:2px 6px; font-size:12px;">
-    {{ pending_count }}
-  </span>
+  {% if unread_count > 0 %}
+    <span class="badge"
+      style="position: absolute; top: -5px; right: -5px; background:red; color:white; border-radius:50%; padding:2px 6px; font-size:12px;">
+      {{ unread_count }}
+    </span>
   {% endif %}
-</div>
+</a>
+
+
+
+
 
 
 <div class="admin-info">
@@ -183,6 +188,26 @@ document.addEventListener("DOMContentLoaded", function() {
   });
 });
 
+// document.addEventListener("DOMContentLoaded", function() {
+//   const bell = document.getElementById("notificationIcon");
+//   const dropdown = document.getElementById("notificationDropdown");
+
+//   bell.addEventListener("click", function(e) {
+//     e.stopPropagation();
+//     dropdown.style.display = dropdown.style.display === "block" ? "none" : "block";
+
+//     // Mark all as read
+//     fetch("{% url 'mark_notifications_read' %}")
+//       .then(response => response.json())
+//       .then(() => document.querySelector(".badge")?.remove());
+//   });
+
+//   document.addEventListener("click", function(e) {
+//     if (!bell.contains(e.target)) dropdown.style.display = "none";
+//   });
+// });
+
+
 
 
 </script> 
@@ -237,6 +262,50 @@ document.addEventListener("DOMContentLoaded", function() {
   background: #f5f5f5;
   color: #d9534f;
 }
+
+
+.notifications-container {
+  max-width: 700px;
+  margin: 40px auto;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  padding: 20px;
+}
+
+.notifications-container h2 {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.notification-item {
+  padding: 15px;
+  border-bottom: 1px solid #eee;
+}
+
+.notification-item.unread {
+  background-color: #f8f9fa;
+  font-weight: bold;
+}
+
+.no-notifications {
+  text-align: center;
+  color: gray;
+  padding: 20px;
+}
+
+.badge {
+  background: red;
+  color: white;
+  border-radius: 50%;
+  padding: 3px 6px;
+  font-size: 11px;
+  position: relative;
+  top: -10px;
+  right: 5px;
+}
+
 </style>
 
 

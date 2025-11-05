@@ -70,6 +70,8 @@ urlpatterns = [
     path('notification_admin/', views.notification_admin, name='notification_admin'),
     path('hospital_bloodstock/', views.hospital_bloodstock, name='hospital_bloodstock'),
     path('hospital/edit-profile/', views.hospital_edit_profile, name='hospital_edit_profile'),
+    path('mark-notifications-read/', views.mark_notifications_read, name='mark_notifications_read'),
+    path('hospital-notifications/', views.hospital_notifications, name='hospital_notifications'),
 
 
 ]
