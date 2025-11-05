@@ -21,13 +21,6 @@
 
 
 
-{% if messages %}
-  {% for message in messages %}
-    <div class="alert alert-{{ message.tags }} text-center mt-3">
-      {{ message }}
-    </div>
-  {% endfor %}
-{% endif %}
 
 <div class="donor-home-container">
 
@@ -73,6 +66,16 @@
     <!-- ===== ABOUT BLOOD DONATION SECTION ===== -->
  
 <!-- ===== DONATION REQUEST STATUS SECTION ===== -->
+
+{% if messages %}
+  <div class="message-container">
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags }}">
+        {{ message }}
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
 
 
 
@@ -587,6 +590,53 @@ body {
   display: block;
 }
 
+
+
+
+
+
+
+
+.message-container {
+  position: fixed;
+  top: 110px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2000;
+  width: 90%;
+  max-width: 600px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  opacity: 0;
+  animation: fadeSlide 0.5s ease-out forwards;
+}
+
+.alert {
+  background-color: #28a745;
+  color: white;
+  padding: 14px 25px;
+  border-radius: 10px;
+  text-align: center;
+  font-weight: 500;
+  font-size: 1rem;
+  margin-top: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  opacity: 0.95;
+}
+
+.alert-success { background-color: #28a745; }
+.alert-warning { background-color: #ffc107; color: #333; }
+.alert-danger  { background-color: #dc3545; }
+
+/* ✅ Smooth fade-down animation from top center */
+@keyframes fadeSlide {
+  from { opacity: 0; transform: translate(-50%, -20px); }
+  to   { opacity: 1; transform: translate(-50%, 0); }
+}
+
+
+
 </style>
 <script>
   document.addEventListener('DOMContentLoaded', function() {
@@ -604,6 +654,16 @@ body {
       dropdownContent.classList.remove('show');
     });
   });
+
+    // Auto-hide messages after 4 seconds
+  setTimeout(() => {
+    const alerts = document.querySelectorAll('.alert');
+    alerts.forEach(alert => {
+      alert.style.transition = "opacity 0.5s ease";
+      alert.style.opacity = "0";
+      setTimeout(() => alert.remove(), 500);
+    });
+  }, 4000);
 </script>
 
 {% endblock %}
