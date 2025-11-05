@@ -1158,12 +1158,14 @@ def update_hospital_status(request, request_id, status):
 
     return redirect('manage_hospital_requests')
 
+# views.py
 def assign_donation_date(request, request_id):
     donation_request = get_object_or_404(Appointment, id=request_id)
     today = timezone.localdate().strftime('%Y-%m-%d')
 
     if request.method == 'POST':
         date = request.POST.get('donation_date')
+        time = request.POST.get('donation_time')
 
         # Prevent past date selection
         if date < str(timezone.localdate()):
@@ -1174,13 +1176,14 @@ def assign_donation_date(request, request_id):
             })
 
         donation_request.donation_date = date
-        donation_request.status = 'Approved'  # ✅ Must match model choices
+        donation_request.appointment_time = time  # update with assigned time if changed
+        donation_request.status = 'Approved'
         donation_request.save()
 
-        # Create notification
+        # Notify donor
         Notification.objects.create(
             user=donation_request.donor,
-            message=f"You have been assigned a donation date on {date}.",
+            message=f"You have been assigned a donation date on {date} at {time}.",
             appointment=donation_request
         )
 
@@ -1189,8 +1192,12 @@ def assign_donation_date(request, request_id):
 
     return render(request, 'partials/assign_donation_date.html', {
         'donation_request': donation_request,
-        'today': today
+        'today': today,
+        # 👇 Pass these to prefill in template
+        'preferred_date': donation_request.appointment_date,
+        'preferred_time': donation_request.appointment_time,
     })
+
 def donor_accept_date(request, request_id):
     donor_request = get_object_or_404(DonationRequest, id=request_id)
     donor_request.status = "donor_confirmed"

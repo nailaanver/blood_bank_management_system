@@ -13,7 +13,7 @@
     <form method="POST" class="assign-form">
       {% csrf_token %}
       
-      <div class="form-group">
+      <!-- <div class="form-group">
         <label for="donation_date" class="form-label">Donation Date</label>
         <input type="date" id="donation_date" name="donation_date" required min="{{ today }}" class="form-control">
       </div>
@@ -21,7 +21,26 @@
       <div class="form-group">
         <label for="donation_time" class="form-label">Donation Time</label>
         <input type="time" id="donation_time" name="donation_time" required class="form-control">
-      </div>
+      </div> -->
+      <input 
+        type="date" 
+        id="donation_date" 
+        name="donation_date" 
+        required 
+        min="{{ today }}" 
+        class="form-control" 
+        value="{{ preferred_date|date:'Y-m-d' }}"
+      >
+
+      <input 
+        type="time" 
+        id="donation_time" 
+        name="donation_time" 
+        required 
+        class="form-control" 
+        value="{{ preferred_time|time:'H:i' }}"
+      >
+
 
       <button type="submit" class="btn-assign">✅ Assign Date</button>
       <a href="{% url 'manage_requests' %}" class="btn-cancel">↩ Back</a>
