@@ -967,59 +967,6 @@ def approve_appointment(request, appointment_id):
 
 from django.http import HttpResponse
 
-@login_required
-def respond_to_donation_date(request, appointment_id):
-    appointment = get_object_or_404(Appointment, id=appointment_id, donor=request.user)
-
-    if request.method == 'POST':
-        action = request.POST.get('action')
-
-        if action == 'accept':
-            # Donor accepts the date
-            appointment.status = 'Approved'  # ✅ change here
-            appointment.donor_response = 'Accepted'
-            appointment.donation_date = appointment.appointment_date  # optional
-            appointment.save()
-
-            # ✅ Create a Donation record when appointment is confirmed
-            Appointment.objects.create(
-                donor=request.user,
-                hospital_name=appointment.hospital.hospital_name,
-                date=appointment.appointment_date,
-                units=appointment.blood_units or 1,  # default 1 unit if not set
-                status='Approved'
-            )
-
-            # Send notification
-            Notification.objects.create(
-                user=appointment.hospital.user,
-                message=f"✅ Donor {request.user.username} confirmed the donation on {appointment.appointment_date}."
-            )
-
-            # Optional: mark the notification as read (only if exists)
-            try:
-                notification = Notification.objects.get(appointment=appointment)
-                notification.is_read = True
-                notification.save()
-            except Notification.DoesNotExist:
-                pass
-
-            messages.success(request, "You confirmed your donation date.")
-
-        elif action == 'reschedule':
-            appointment.donor_response = 'Reschedule'
-            appointment.status = 'Pending'
-            appointment.save()
-
-            Notification.objects.create(
-                user=appointment.hospital.user,
-                message=f"🔄 Donor {request.user.username} requested a new donation date."
-            )
-            messages.warning(request, "You requested another date. Admin will update soon.")
-
-        return redirect('donor_dashboard')
-
-    return render(request, 'donor/respond_donation_date.html', {'appointment': appointment})
 
 @login_required
 def respond_to_appointment(request, appointment_id, response):
@@ -1056,19 +1003,16 @@ def respond_to_appointment(request, appointment_id, response):
 
 @login_required
 def respond_to_donation_date(request, appointment_id):
-    # Fetch the appointment associated with the current user (donor)
     appointment = get_object_or_404(Appointment, id=appointment_id, donor=request.user)
 
     if request.method == 'POST':
         action = request.POST.get('action')
 
         if action == 'accept':
-            # Donor accepts the date
-            appointment.status = 'Donor Confirmed'
-            appointment.donor_response = 'Accepted'  # Update donor response
+            appointment.status = 'Approved'
+            appointment.donor_response = 'Accepted'
             appointment.save()
 
-            # Send a notification to the hospital (admin)
             Notification.objects.create(
                 user=appointment.hospital.user,
                 message=f"✅ Donor {request.user.username} confirmed the donation on {appointment.appointment_date}."
@@ -1076,26 +1020,24 @@ def respond_to_donation_date(request, appointment_id):
             messages.success(request, "You confirmed your donation date.")
         
         elif action == 'reschedule':
-            # Donor wants to reschedule the appointment
-            appointment.donor_response = 'Reschedule'  # Mark the response as reschedule
-            appointment.status = 'Pending'  # Set status back to pending as it's being rescheduled
+            appointment.donor_response = 'Reschedule'
+            appointment.status = 'Pending'
             appointment.save()
 
-            # Send a notification to the hospital (admin)
             Notification.objects.create(
                 user=appointment.hospital.user,
                 message=f"🔄 Donor {request.user.username} requested a new donation date."
             )
             messages.warning(request, "You requested another date. Admin will update soon.")
 
-        return redirect('donor_dashboard')  # Redirect to the donor's dashboard after action
+        return redirect('donor_dashboard')
 
     return render(request, 'donor/respond_donation_date.html', {'appointment': appointment})
 
 @login_required
 @user_passes_test(is_admin)
 def mark_donation_completed(request, appointment_id):
-    appointment = get_object_or_404(DonationRequest, id=appointment_id)
+    appointment = get_object_or_404(Appointment, id=appointment_id)
 
     if appointment.status == 'Donor Confirmed':
         # Add to blood stock after date
