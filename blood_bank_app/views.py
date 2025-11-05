@@ -416,35 +416,59 @@ def update_completed_donations():
 
 @login_required
 def check_eligibility(request):
-    form = EligibilityForm(request.POST or None)
+    donor = DonorDetail.objects.filter(user=request.user).first()
     result = None
     status = None
+
+    initial_data = {}
+    if donor:
+        if donor.age:
+            initial_data['age'] = donor.age
+        if donor.weight:
+            initial_data['weight'] = donor.weight
+
+    form = EligibilityForm(request.POST or None, initial=initial_data)
 
     if request.method == 'POST' and form.is_valid():
         age = form.cleaned_data['age']
         weight = form.cleaned_data['weight']
+        first_donation = form.cleaned_data['first_donation']
         last_donation = form.cleaned_data['last_donation_date']
-        hemoglobin = form.cleaned_data['hemoglobin']
 
+        # --- Eligibility logic ---
         if age < 18 or age > 65:
             result = "❌ You are not eligible due to age restrictions."
             status = "danger"
+
         elif weight < 50:
             result = "⚠️ You are not eligible due to low weight."
             status = "warning"
-        elif last_donation and (date.today() - last_donation).days < 90:
-            next_date = last_donation + timedelta(days=90)
-            result = f"🕒 You can donate again after {next_date.strftime('%d %B %Y')}."
-            status = "warning"
-        else:
-            donor, _ = DonorDetail.objects.get_or_create(user=request.user)
+
+        elif first_donation == 'no' and last_donation:
+            # returning donor → check 90-day rule
+            days_since_last = (date.today() - last_donation).days
+            if days_since_last < 90:
+                next_date = last_donation + timedelta(days=90)
+                result = f"🕒 You can donate again after {next_date.strftime('%d %B %Y')}."
+                status = "warning"
+            else:
+                donor.is_eligible = True
+                donor.save()
+                messages.success(request, "✅ You are eligible! You can now request an appointment.")
+                return redirect('request_appoiments')
+
+        elif first_donation == 'yes':
+            # first-time donor
             donor.is_eligible = True
             donor.save()
-
-            messages.success(request, "✅ You are eligible! You can now request an appointment.")
+            messages.success(request, "🎉 You are eligible! This is your first donation — thank you for saving lives!")
             return redirect('request_appoiments')
 
-    return render(request, 'donor/check_eligibility.html', {'form': form, 'result': result, 'status': status})
+        else:
+            result = "⚠️ Please provide valid information to check eligibility."
+            status = "warning"
+
+    return render(request, 'donor/check_eligibility.html', {'form': form, 'result': result, 'status': status, 'donor': donor})
 
 from datetime import date, datetime
 
@@ -745,14 +769,10 @@ def reports(request):
 
 def is_hospital(user):
     return hasattr(user, 'profile') and user.profile.role == 'hospital'
-from pyecharts.charts import Pie
-from pyecharts import options as opts
-from pyecharts.globals import CurrentConfig
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import render
-from pyecharts.charts import Pie
-from pyecharts import options as opts
-from pyecharts.globals import CurrentConfig
+# from pyecharts.charts import Pie
+# from pyecharts import options as opts
+# from pyecharts.globals import CurrentConfig
+
 
 @login_required
 def hospital_dashboard_content(request):

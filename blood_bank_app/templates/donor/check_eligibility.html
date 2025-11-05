@@ -10,6 +10,17 @@
         <p class="text-center subtitle">
             Fill in your details to know if you're eligible to donate blood today.
         </p>
+        <!-- 🩸 Display donor info -->
+        {% if donor %}
+        <div class="donor-info mb-4 p-3 text-center">
+            <p><strong>Age:</strong> {{ donor.age }} years</p>
+            <p><strong>Weight:</strong> {{ donor.weight }} kg</p>
+        </div>
+        {% else %}
+        <div class="alert alert-warning text-center">
+            Please complete your <a href="{% url 'donor_detail' %}">donor profile</a> first.
+        </div>
+        {% endif %}
 
         <form id="eligibility-form" method="POST">
             {% csrf_token %}
@@ -126,5 +137,45 @@ form p select:focus {
     color: #721c24;
     border: 1px solid #f5c6cb;
 }
+
+.donor-info {
+    background: #fff5f5;
+    border: 1px solid #ffc2c2;
+    border-radius: 10px;
+    color: #a30000;
+    font-weight: 500;
+}
+.donor-info p {
+    margin: 5px 0;
+    font-size: 15px;
+}
+.alert-warning {
+    background-color: #fff3cd;
+    border: 1px solid #ffeeba;
+    color: #856404;
+    border-radius: 10px;
+}
 </style>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const firstDonationRadios = document.querySelectorAll('input[name="first_donation"]');
+    const lastDonationField = document.querySelector('input[name="last_donation_date"]').closest('p');
+
+    function toggleLastDonation() {
+        const selected = document.querySelector('input[name="first_donation"]:checked');
+        if (selected && selected.value === 'no') {
+            lastDonationField.style.display = 'block';
+        } else {
+            lastDonationField.style.display = 'none';
+            document.querySelector('input[name="last_donation_date"]').value = "";
+        }
+    }
+
+    firstDonationRadios.forEach(radio => radio.addEventListener('change', toggleLastDonation));
+
+    // Run once on load
+    toggleLastDonation();
+});
+</script>
+
 {% endblock %}

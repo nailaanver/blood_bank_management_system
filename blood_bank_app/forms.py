@@ -58,11 +58,25 @@ class HospitalDetailForm(forms.ModelForm):
         model = HospitalDetail
         fields = ['hospital_name', 'address', 'phone_number', 'hospital_code']
         
+from django import forms
+from datetime import date
+
 class EligibilityForm(forms.Form):
-    age = forms.IntegerField(min_value=18, max_value=65, label='Age')
-    weight = forms.FloatField(min_value=40, label='weight (kg)')
-    last_donation_date = forms.DateField(label = 'Last Donation Date',required=False,widget=forms.DateInput(attrs={'type':'date'}))
-    hemoglobin = forms.FloatField(min_value=12.0, max_value=18.0, label="Hemoglobin Level (g/dL)", required=False)
+    age = forms.IntegerField(label="Age", min_value=18, max_value=65)
+    weight = forms.FloatField(label="Weight (kg)", min_value=0)
+    first_donation = forms.ChoiceField(
+        label="Is this your first donation?",
+        choices=[('yes', 'Yes'), ('no', 'No')],
+        widget=forms.RadioSelect
+    )
+    last_donation_date = forms.DateField(
+        label="Last Donation Date",
+        required=False,
+        widget=forms.DateInput(attrs={'type': 'date'})
+    )
+
+    # (Hemoglobin field removed as per your earlier request)
+
 
 from .models import BloodRequest
 
