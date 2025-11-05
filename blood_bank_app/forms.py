@@ -41,7 +41,11 @@ class DonorDetailForm(forms.ModelForm):
     class Meta:
         model = DonorDetail
         fields = ['blood_group', 'gender', 'date_of_birth', 'age', 'weight', 'address', 'phone_number', 'profile_photo']
-        widgets = {'date_of_birth': forms.DateInput(attrs={'type':'date'})}
+        widgets = {
+            'date_of_birth': forms.DateInput(attrs={'type': 'date'}),
+            'age': forms.NumberInput(attrs={'readonly': 'readonly'}),  # 👈 prevents manual editing
+        }
+
 
 class PatientDetailForm(forms.ModelForm):
     class Meta:

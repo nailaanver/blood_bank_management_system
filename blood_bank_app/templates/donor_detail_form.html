@@ -36,6 +36,66 @@
     </div>
 </div>
 
+<!-- ✅ Auto Calculate Age Script -->
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    // Adjust the field names according to your form field names in Django
+    const dobInput = document.querySelector("#id_dob");  // Django gives id_<fieldname> by default
+    const ageInput = document.querySelector("#id_age");
+
+    if (dobInput && ageInput) {
+        dobInput.addEventListener("change", function() {
+            const dobValue = this.value;
+            if (dobValue) {
+                const dobDate = new Date(dobValue);
+                const today = new Date();
+
+                let age = today.getFullYear() - dobDate.getFullYear();
+                const monthDiff = today.getMonth() - dobDate.getMonth();
+
+                // Adjust if birthday hasn't happened yet this year
+                if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dobDate.getDate())) {
+                    age--;
+                }
+
+                ageInput.value = age >= 0 ? age : '';
+            } else {
+                ageInput.value = '';
+            }
+        });
+    }
+});
+
+document.addEventListener("DOMContentLoaded", function() {
+    const dobInput = document.getElementById("id_date_of_birth");
+    const ageInput = document.getElementById("id_age");
+
+    if (dobInput && ageInput) {
+        dobInput.addEventListener("change", function() {
+            const dobValue = this.value;
+            if (dobValue) {
+                const dobDate = new Date(dobValue);
+                const today = new Date();
+
+                let age = today.getFullYear() - dobDate.getFullYear();
+                const monthDiff = today.getMonth() - dobDate.getMonth();
+
+                // Adjust if birthday hasn't occurred yet this year
+                if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dobDate.getDate())) {
+                    age--;
+                }
+
+                ageInput.value = age >= 0 ? age : '';
+            } else {
+                ageInput.value = '';
+            }
+        });
+    }
+});
+
+
+</script>
+
 <style>
 /* --- Blood Bank Donor Form Styling --- */
 body {
@@ -160,7 +220,34 @@ body {
         font-size: 14px;
     }
 }
-
-
 </style>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const dobInput = document.querySelector("#id_date_of_birth");
+    const ageInput = document.querySelector("#id_age");
+
+    if (dobInput && ageInput) {
+        dobInput.addEventListener("change", function() {
+            const dobValue = this.value;
+            if (dobValue) {
+                const dobDate = new Date(dobValue);
+                const today = new Date();
+
+                let age = today.getFullYear() - dobDate.getFullYear();
+                const monthDiff = today.getMonth() - dobDate.getMonth();
+
+                // Adjust if birthday hasn't occurred yet this year
+                if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dobDate.getDate())) {
+                    age--;
+                }
+
+                ageInput.value = age >= 0 ? age : '';
+            } else {
+                ageInput.value = '';
+            }
+        });
+    }
+});
+</script>
+
 {% endblock %}
