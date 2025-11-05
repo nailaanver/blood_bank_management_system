@@ -27,7 +27,7 @@
 
             {% if "assigned a donation date" in notification.message %}
               {% if notification.appointment %}
-                {% if notification.appointment.status != 'Donor Confirmed' %}
+                {% if notification.appointment.donor_response == 'No Response' %}
                   <div class="action-buttons">
                     <form method="POST" action="{% url 'respond_to_donation_date' notification.appointment.id %}">
                       {% csrf_token %}
@@ -40,8 +40,11 @@
                     </form>
                   </div>
                 {% else %}
-                  <p class="text-success mt-2"><i class="fa-solid fa-circle-check"></i> Your donation date is confirmed.</p>
+                  <p class="text-success mt-2"><i class="fa-solid fa-circle-check"></i> Already responded.</p>
                 {% endif %}
+
+
+ 
               {% else %}
                 <p class="text-muted">No donation date assigned yet.</p>
               {% endif %}

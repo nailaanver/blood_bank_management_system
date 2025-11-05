@@ -471,20 +471,45 @@ def check_eligibility(request):
     return render(request, 'donor/check_eligibility.html', {'form': form, 'result': result, 'status': status, 'donor': donor})
 
 from datetime import date, datetime
+from datetime import date, timedelta
 
+# Eligibility check function
+def is_donor_eligible(donor):
+    """
+    Returns True if donor is eligible based on last completed donation.
+    """
+    last_donation = Appointment.objects.filter(donor=donor, status='Completed').order_by('-donation_date').first()
+    if not last_donation:
+        return True  # First-time donor → eligible
+
+    required_gap = 90  # days
+    next_eligible_date = last_donation.donation_date + timedelta(days=required_gap)
+    return date.today() >= next_eligible_date
 
 def request_appointment(request):
     hospitals = HospitalDetail.objects.all()
     today = date.today().isoformat()
 
+    # Get last donation date
+    last_donation = Appointment.objects.filter(donor=request.user, status='Completed').order_by('-donation_date').first()
+    last_donation_date = last_donation.donation_date if last_donation else None
+    first_time_donor = last_donation is None
+
+    # Check eligibility
+    eligible = is_donor_eligible(request.user)
+
     if request.method == "POST":
+        if not eligible:
+            messages.warning(request, "⚠️ You are not eligible to donate yet. Please check your eligibility.")
+            return redirect('check_eligibility')
+
         hospital_id = request.POST.get("hospital")
         appointment_date = request.POST.get("appointment_date")
         appointment_time = request.POST.get("appointment_time")
         notes = request.POST.get("notes")
 
         try:
-            appointment = Appointment.objects.create(
+            Appointment.objects.create(
                 donor=request.user,
                 hospital_id=hospital_id,
                 appointment_date=appointment_date,
@@ -506,11 +531,19 @@ def request_appointment(request):
             return redirect('donor_dashboard')
 
         except ValidationError as e:
-            # This catches your model validator (past date error)
             messages.error(request, str(e.message))
-            return render(request, 'donor/request_appoiment.html', {'hospitals': hospitals, 'today': today})
 
-    return render(request, 'donor/request_appoiment.html', {'hospitals': hospitals, 'today': today})
+    context = {
+        'hospitals': hospitals,
+        'today': today,
+        'last_donation_date': last_donation_date,
+        'eligible': eligible,
+        'first_time_donor': first_time_donor
+    }
+
+    return render(request, 'donor/request_appoiment.html', context)
+
+
 @login_required
 def patient_detail_form_view(request):
     form = PatientDetailForm(request.POST or None, request.FILES or None, instance=getattr(request.user, 'patientdetail', None))
@@ -1009,16 +1042,37 @@ def respond_to_donation_date(request, appointment_id):
         action = request.POST.get('action')
 
         if action == 'accept':
-            appointment.status = 'Approved'
+            # Donor accepts the date
+            appointment.status = 'Approved'  # ✅ change here
             appointment.donor_response = 'Accepted'
+            appointment.donation_date = appointment.appointment_date  # optional
             appointment.save()
 
+            # ✅ Create a Donation record when appointment is confirmed
+            Appointment.objects.create(
+                donor=request.user,
+                hospital_name=appointment.hospital.hospital_name,
+                date=appointment.appointment_date,
+                units=appointment.blood_units or 1,  # default 1 unit if not set
+                status='Approved'
+            )
+
+            # Send notification
             Notification.objects.create(
                 user=appointment.hospital.user,
                 message=f"✅ Donor {request.user.username} confirmed the donation on {appointment.appointment_date}."
             )
+
+            # Optional: mark the notification as read (only if exists)
+            try:
+                notification = Notification.objects.get(appointment=appointment)
+                notification.is_read = True
+                notification.save()
+            except Notification.DoesNotExist:
+                pass
+
             messages.success(request, "You confirmed your donation date.")
-        
+
         elif action == 'reschedule':
             appointment.donor_response = 'Reschedule'
             appointment.status = 'Pending'
