@@ -388,11 +388,11 @@ from datetime import timedelta
 
 @login_required
 def view_donation_history(request):
-    update_completed_donations()  # ✅ auto-update before showing
+    # ✅ Update completed donations automatically
+    update_completed_donations()
 
     donations = Appointment.objects.filter(
-        donor=request.user,
-        status__in=['Approved', 'Completed']
+        donor=request.user
     ).order_by('-appointment_date')
 
     for d in donations:
@@ -408,14 +408,63 @@ from datetime import date
 
 def update_completed_donations():
     today = timezone.localdate()
+
+    # Find all Approved donations whose date is today or earlier
     past_appointments = Appointment.objects.filter(
         status='Approved',
-        appointment_date__lt=today
+        appointment_date__lte=today
     )
 
     for app in past_appointments:
+        donor = app.donor
+        hospital = app.hospital
+
+        # ✅ Check if donor has details
+        try:
+            donor_detail = DonorDetail.objects.get(user=donor)
+        except DonorDetail.DoesNotExist:
+            print(f"⚠️ Skipping {donor.username}: No donor details found.")
+            continue
+
+        # ✅ Prevent duplicate stock increase (only once per donation)
+        if app.status == 'Completed':
+            continue
+
+        # ✅ Get or create stock record for this hospital & blood group
+        stock, _ = BloodStock.objects.get_or_create(
+            hospital=hospital,
+            blood_group=donor_detail.blood_group,
+            defaults={'units_available': 0}
+        )
+
+        # ✅ Convert donated ml → whole blood units (1 unit ≈ 350 ml)
+        donated_units = int(app.blood_units // 350)  # integer units only
+        if donated_units == 0:
+            donated_units = 1  # ensure at least 1 unit counted
+
+        # ✅ Increase stock
+        stock.units_available += donated_units
+        stock.save()
+
+        # ✅ Mark as completed
         app.status = 'Completed'
+        app.donation_date = app.appointment_date
         app.save()
+
+        # ✅ Send notification (optional)
+        Notification.objects.create(
+            user=donor,
+            message=(
+                f"🎉 Thank you for donating {app.blood_units} ml of blood on {app.appointment_date}! "
+                f"{donated_units} unit(s) added to {hospital.hospital_name}'s blood stock."
+            )
+        )
+
+        print(f"✅ Updated stock for {hospital.hospital_name}: +{donated_units} unit(s)")
+
+
+
+
 @login_required
 def check_eligibility(request):
     donor = DonorDetail.objects.filter(user=request.user).first()
@@ -528,7 +577,13 @@ def request_appointment(request):
         hospital_id = request.POST.get("hospital")
         appointment_date = request.POST.get("appointment_date")
         appointment_time = request.POST.get("appointment_time")
+        blood_units = int(request.POST.get("blood_units"))
         notes = request.POST.get("notes")
+
+        # Validate blood volume
+        if blood_units < 350 or blood_units > 470:
+            messages.error(request, "❌ Blood volume must be between 350ml and 470ml.")
+            return redirect('request_appoiments')
 
         try:
             Appointment.objects.create(
@@ -536,11 +591,11 @@ def request_appointment(request):
                 hospital_id=hospital_id,
                 appointment_date=appointment_date,
                 appointment_time=appointment_time,
+                blood_units=blood_units,
                 notes=notes,
                 status='Pending'
             )
 
-            # Notify admin
             admin_user = User.objects.filter(is_superuser=True).first()
             if admin_user:
                 Notification.objects.create(
@@ -564,7 +619,6 @@ def request_appointment(request):
     }
 
     return render(request, 'donor/request_appoiment.html', context)
-
 
 @login_required
 def patient_detail_form_view(request):
@@ -1065,33 +1119,16 @@ def respond_to_donation_date(request, appointment_id):
 
         if action == 'accept':
             # Donor accepts the date
-            appointment.status = 'Approved'  # ✅ change here
+            appointment.status = 'Approved'
             appointment.donor_response = 'Accepted'
-            appointment.donation_date = appointment.appointment_date  # optional
+            appointment.donation_date = appointment.appointment_date
             appointment.save()
 
-            # ✅ Create a Donation record when appointment is confirmed
-            Appointment.objects.create(
-                donor=request.user,
-                hospital_name=appointment.hospital.hospital_name,
-                date=appointment.appointment_date,
-                units=appointment.blood_units or 1,  # default 1 unit if not set
-                status='Approved'
-            )
-
-            # Send notification
+            # Notify hospital
             Notification.objects.create(
                 user=appointment.hospital.user,
                 message=f"✅ Donor {request.user.username} confirmed the donation on {appointment.appointment_date}."
             )
-
-            # Optional: mark the notification as read (only if exists)
-            try:
-                notification = Notification.objects.get(appointment=appointment)
-                notification.is_read = True
-                notification.save()
-            except Notification.DoesNotExist:
-                pass
 
             messages.success(request, "You confirmed your donation date.")
 
@@ -1104,49 +1141,58 @@ def respond_to_donation_date(request, appointment_id):
                 user=appointment.hospital.user,
                 message=f"🔄 Donor {request.user.username} requested a new donation date."
             )
+
             messages.warning(request, "You requested another date. Admin will update soon.")
 
         return redirect('donor_dashboard')
 
     return render(request, 'donor/respond_donation_date.html', {'appointment': appointment})
 
+
 @login_required
 @user_passes_test(is_admin)
 def mark_donation_completed(request, appointment_id):
     appointment = get_object_or_404(Appointment, id=appointment_id)
 
-    if appointment.status == 'Donor Confirmed':
-        # Add to blood stock after date
-        Donation.objects.create(
-            donor=appointment.donor,
-            hospital=appointment.hospital,
-            date=appointment.appointment_date,
-            blood_group=appointment.donor.donordetail.blood_group,
-            units=1
-        )
+    # Only allow marking if appointment was approved
+    if appointment.status == 'Approved':
+        donor = appointment.donor
+        hospital = appointment.hospital
+        donor_detail = donor.donordetail
 
+        # ✅ Update or create blood stock record
         blood_stock, _ = BloodStock.objects.get_or_create(
-            hospital=appointment.hospital,
-            blood_group=appointment.donor.donordetail.blood_group,
+            hospital=hospital,
+            blood_group=donor_detail.blood_group,
             defaults={'units_available': 0}
         )
-        blood_stock.units_available += 1
+
+        # Convert blood_units (ml) to stock units (1 unit ≈ 350 ml)
+        donated_units = round(appointment.blood_units / 350, 2)
+        blood_stock.units_available += donated_units
         blood_stock.save()
 
+        # ✅ Update the appointment
         appointment.status = 'Completed'
+        appointment.donation_date = timezone.now().date()
         appointment.save()
 
+        # ✅ Send notification to donor
         Notification.objects.create(
-            user=appointment.donor,
-            message=f"🎉 Thank you for donating blood on {appointment.appointment_date}! "
-                    f"Your donation has been recorded."
+            user=donor,
+            message=(
+                f"🎉 Thank you for donating {appointment.blood_units} ml of blood "
+                f"on {appointment.appointment_date}! Your donation has been recorded."
+            )
         )
 
-        messages.success(request, "Donation completed and added to stock.")
+        messages.success(request, "✅ Donation marked as completed and added to blood stock.")
+
     else:
-        messages.error(request, "Cannot mark as completed unless donor confirmed.")
+        messages.error(request, "⚠️ You can only mark as completed if the status is 'Approved'.")
 
     return redirect('manage_requests')
+
 
 def reject_appointment(request, appointment_id):
     appointment = Appointment.objects.get(id=appointment_id)

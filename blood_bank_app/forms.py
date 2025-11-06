@@ -139,6 +139,16 @@ class UserEditForm(forms.ModelForm):
         fields = [  'username', 'email']
         
 class AppointmentForm(forms.ModelForm):
+    blood_units = forms.IntegerField(
+        label="Blood Volume (ml)",
+        min_value=350,
+        max_value=470,
+        widget=forms.NumberInput(attrs={
+            'placeholder': 'Enter between 350 and 470 ml',
+            'class': 'form-control'
+        })
+    )
+
     class Meta:
         model = Appointment
-        fields = ['hospital', 'appointment_date', 'appointment_time', 'notes']
+        fields = ['hospital', 'appointment_date', 'appointment_time', 'blood_units', 'notes']
