@@ -388,6 +388,8 @@ from datetime import timedelta
 
 @login_required
 def view_donation_history(request):
+    update_completed_donations()  # ✅ auto-update before showing
+
     donations = Appointment.objects.filter(
         donor=request.user,
         status__in=['Approved', 'Completed']
@@ -402,18 +404,18 @@ def view_donation_history(request):
     return render(request, 'donor/view_donation_history.html', {'donations': donations})
 
 
-
 from datetime import date
 
 def update_completed_donations():
+    today = timezone.localdate()
     past_appointments = Appointment.objects.filter(
         status='Approved',
-        appointment_date__lt=date.today()
+        appointment_date__lt=today
     )
+
     for app in past_appointments:
         app.status = 'Completed'
         app.save()
-
 @login_required
 def check_eligibility(request):
     donor = DonorDetail.objects.filter(user=request.user).first()
@@ -421,21 +423,36 @@ def check_eligibility(request):
     status = None
 
     initial_data = {}
+
+    # ✅ Prefill from donor profile
     if donor:
         if donor.age:
             initial_data['age'] = donor.age
         if donor.weight:
             initial_data['weight'] = donor.weight
 
+        # ✅ Prefill from last completed donation
+        last_donation = (
+            Appointment.objects.filter(donor=request.user, status='Completed')
+            .order_by('-appointment_date')
+            .first()
+        )
+
+        if last_donation:
+            initial_data['first_donation'] = 'no'
+            initial_data['last_donation_date'] = last_donation.appointment_date
+        else:
+            initial_data['first_donation'] = 'yes'
+
     form = EligibilityForm(request.POST or None, initial=initial_data)
 
+    # ✅ Eligibility logic
     if request.method == 'POST' and form.is_valid():
         age = form.cleaned_data['age']
         weight = form.cleaned_data['weight']
         first_donation = form.cleaned_data['first_donation']
         last_donation = form.cleaned_data['last_donation_date']
 
-        # --- Eligibility logic ---
         if age < 18 or age > 65:
             result = "❌ You are not eligible due to age restrictions."
             status = "danger"
@@ -445,7 +462,6 @@ def check_eligibility(request):
             status = "warning"
 
         elif first_donation == 'no' and last_donation:
-            # returning donor → check 90-day rule
             days_since_last = (date.today() - last_donation).days
             if days_since_last < 90:
                 next_date = last_donation + timedelta(days=90)
@@ -458,17 +474,23 @@ def check_eligibility(request):
                 return redirect('request_appoiments')
 
         elif first_donation == 'yes':
-            # first-time donor
             donor.is_eligible = True
             donor.save()
-            messages.success(request, "🎉 You are eligible! This is your first donation — thank you for saving lives!")
+            messages.success(
+                request,
+                "🎉 You are eligible! This is your first donation — thank you for saving lives!"
+            )
             return redirect('request_appoiments')
 
         else:
             result = "⚠️ Please provide valid information to check eligibility."
             status = "warning"
 
-    return render(request, 'donor/check_eligibility.html', {'form': form, 'result': result, 'status': status, 'donor': donor})
+    return render(
+        request,
+        'donor/check_eligibility.html',
+        {'form': form, 'result': result, 'status': status, 'donor': donor}
+    )
 
 from datetime import date, datetime
 from datetime import date, timedelta

@@ -70,10 +70,11 @@ class EligibilityForm(forms.Form):
         widget=forms.RadioSelect
     )
     last_donation_date = forms.DateField(
-        label="Last Donation Date",
-        required=False,
-        widget=forms.DateInput(attrs={'type': 'date'})
-    )
+    label="Last Donation Date",
+    required=False,
+    widget=forms.DateInput(attrs={'type': 'date', 'readonly': 'readonly'})
+)
+
 
     # (Hemoglobin field removed as per your earlier request)
 

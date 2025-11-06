@@ -12,10 +12,10 @@
         </p>
         <!-- 🩸 Display donor info -->
         {% if donor %}
-        <div class="donor-info mb-4 p-3 text-center">
+        <!-- <div class="donor-info mb-4 p-3 text-center">
             <p><strong>Age:</strong> {{ donor.age }} years</p>
             <p><strong>Weight:</strong> {{ donor.weight }} kg</p>
-        </div>
+        </div> -->
         {% else %}
         <div class="alert alert-warning text-center">
             Please complete your <a href="{% url 'donor_detail' %}">donor profile</a> first.
