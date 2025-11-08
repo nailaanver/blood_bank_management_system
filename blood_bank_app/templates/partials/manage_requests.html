@@ -40,10 +40,19 @@
               <span class="status-badge accepted">Approved</span>
             {% elif appointment.status == 'Pending' %}
               <span class="status-badge pending">Pending</span>
+            {% elif appointment.status == 'Date Sent' %}
+              <span class="status-badge info" style="background-color: #cce5ff; color: #004085;">
+                Date Sent
+              </span>
+            {% elif appointment.status == 'Completed' %}
+              <span class="status-badge accepted" style="background-color: #b3e6b3; color: #155724;">
+                Completed
+              </span>
             {% else %}
               <span class="status-badge rejected">Rejected</span>
             {% endif %}
           </td>
+
           {% for req in blood_requests %}
   <form action="{% url 'approve_request' req.id %}" method="post">
     {% csrf_token %}
@@ -96,14 +105,19 @@
           <td>{{ request.hospital_name }}</td>
           <td>{{ request.required_date }}</td>
           <td>
-            {% if request.status == 'Accepted' %}
-              <span class="status-badge accepted">Accepted</span>
-            {% elif request.status == 'Pending' %}
+            {% if appointment.status == 'Approved' %}
+              <span class="status-badge accepted">Approved</span>
+            {% elif appointment.status == 'Pending' %}
               <span class="status-badge pending">Pending</span>
+            {% elif appointment.status == 'Completed' %}
+              <span class="status-badge accepted" style="background-color: #cce5ff; color: #004085;">
+                Completed
+              </span>
             {% else %}
               <span class="status-badge rejected">Rejected</span>
             {% endif %}
           </td>
+
           <td>
             {% if request.status == 'Pending' %}
               <form action="{% url 'update_patient_status' request.id 'Accepted' %}" method="post" style="display:inline;">
@@ -269,5 +283,10 @@
 .text-muted {
   color: #888 !important;
 }
+.status-badge.info {
+  background-color: #cce5ff;
+  color: #004085;
+}
+
 </style>
 {% endblock %}

@@ -92,13 +92,7 @@ class HospitalDetail(models.Model):
     def __str__(self):
         return self.hospital_name
 
-    # def save(self, *args, **kwargs):
-    #     super().save(*args, **kwargs)
-    #     img = Image.open(self.hospital_photo.path)
-    #     if img.height > 400 or img.width > 400:
-    #         output_size = (400, 400)
-    #         img.thumbnail(output_size)
-    #         img.save(self.hospital_photo.path)
+
     
 class Donation(models.Model):
     donor =  models.ForeignKey(User,on_delete=models.CASCADE)
@@ -127,17 +121,21 @@ class Appointment(models.Model):
     
     STATUS_CHOICES = [
         ('Pending', 'Pending'),
+        ('Date Sent', 'Date Sent'),
         ('Approved', 'Approved'),
         ('Rejected', 'Rejected'),
         ('Completed', 'Completed'),
+        ('Recorded', 'Recorded'),
     ]
+
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending', null=True)
 
     donor_response = models.CharField(
         max_length=20,
-        choices=[('Approved', 'Approved'), ('Reschedule', 'Reschedule'), ('No Response', 'No Response')],
+        choices=[('Accepted', 'Accepted'), ('Reschedule', 'Reschedule'), ('No Response', 'No Response')],
         default='No Response', null=True
     )
+
 
     blood_units = models.IntegerField(default=0, null=True)  # Units donated by donor
 
@@ -284,3 +282,30 @@ class DonationRequest(models.Model):
 
 
 
+# ... your models above ...
+
+def update_completed_donations():
+    from .models import Appointment, DonorDetail, BloodStock
+    from django.utils import timezone
+
+    today = timezone.localdate()
+    appointments = Appointment.objects.filter(status='Approved', appointment_date__lte=today)
+
+    for app in appointments:
+        donor_detail = DonorDetail.objects.filter(user=app.donor).first()
+        if not donor_detail:
+            continue
+
+        blood_group = donor_detail.blood_group
+        hospital = app.hospital
+
+        stock, created = BloodStock.objects.get_or_create(
+            hospital=hospital,
+            blood_group=blood_group,
+            defaults={'units_available': 0}
+        )
+        stock.units_available += 1
+        stock.save()
+
+        app.status = 'Completed'
+        app.save()

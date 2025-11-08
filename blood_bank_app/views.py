@@ -2,7 +2,6 @@ from .models import Profile
 from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib.auth import authenticate, login, logout
 from .models import User
-from .models import Donation
 from django.contrib import messages
 from django.contrib.auth.hashers import make_password
 from .forms import ContactForm,BloodRequest
@@ -20,11 +19,15 @@ from django.core.exceptions import ValidationError
 from pyecharts.charts import Pie
 from pyecharts import options as opts
 from .models import HospitalDetail, HospitalBloodStock
+from .models import update_completed_donations  # ✅ import this at the top of your views file
 
 
 # ✅ Check if logged-in user is a hospital
 def is_hospital(user):
     return hasattr(user, 'profile') and user.profile.role == 'hospital'
+
+def is_admin(user):
+    return hasattr(user, 'profile') and user.profile.role == 'admin'
 
 # Create your views here.
 def login_View(request):
@@ -228,7 +231,12 @@ def contact_view(request):
         form = ContactForm()
     return render(request, 'contact.html', {'form': form})
 
+
 def admin_dashboard_content(request):
+    # ✅ Step 1: Update completed donations before fetching totals
+    update_completed_donations()
+
+    # ✅ Step 2: Calculate statistics for dashboard
     total_donors = DonorDetail.objects.count()
     total_patients = PatientDetail.objects.count()
     total_hospital = HospitalDetail.objects.count()
@@ -245,14 +253,14 @@ def admin_dashboard_content(request):
         'total_hospital': total_hospital,
         'pending_count': pending_count,
     }
+
     return render(request, 'partials/admin_dashboard_content.html', context)
 
 def manage_users(request):
     users = User.objects.all().select_related('profile')  # if you have a Profile model linked to User
     return render(request, 'partials/manage_users.html', {'users': users})
 
-def is_admin(user):
-    return hasattr(user, 'profile') and user.profile.role == 'admin'
+
 
 from django.db.models import Sum, Q
 @login_required
@@ -403,117 +411,57 @@ def view_donation_history(request):
 
     return render(request, 'donor/view_donation_history.html', {'donations': donations})
 
-
-from datetime import date
-
-def update_completed_donations():
-    today = timezone.localdate()
-
-    # Find all Approved donations whose date is today or earlier
-    past_appointments = Appointment.objects.filter(
-        status='Approved',
-        appointment_date__lte=today
-    )
-
-    for app in past_appointments:
-        donor = app.donor
-        hospital = app.hospital
-
-        # ✅ Check if donor has details
-        try:
-            donor_detail = DonorDetail.objects.get(user=donor)
-        except DonorDetail.DoesNotExist:
-            print(f"⚠️ Skipping {donor.username}: No donor details found.")
-            continue
-
-        # ✅ Prevent duplicate stock increase (only once per donation)
-        if app.status == 'Completed':
-            continue
-
-        # ✅ Get or create stock record for this hospital & blood group
-        stock, _ = BloodStock.objects.get_or_create(
-            hospital=hospital,
-            blood_group=donor_detail.blood_group,
-            defaults={'units_available': 0}
-        )
-
-        # ✅ Convert donated ml → whole blood units (1 unit ≈ 350 ml)
-        donated_units = int(app.blood_units // 350)  # integer units only
-        if donated_units == 0:
-            donated_units = 1  # ensure at least 1 unit counted
-
-        # ✅ Increase stock
-        stock.units_available += donated_units
-        stock.save()
-
-        # ✅ Mark as completed
-        app.status = 'Completed'
-        app.donation_date = app.appointment_date
-        app.save()
-
-        # ✅ Send notification (optional)
-        Notification.objects.create(
-            user=donor,
-            message=(
-                f"🎉 Thank you for donating {app.blood_units} ml of blood on {app.appointment_date}! "
-                f"{donated_units} unit(s) added to {hospital.hospital_name}'s blood stock."
-            )
-        )
-
-        print(f"✅ Updated stock for {hospital.hospital_name}: +{donated_units} unit(s)")
-
-
-
-
 @login_required
 def check_eligibility(request):
-    donor = DonorDetail.objects.filter(user=request.user).first()
+    donor = get_object_or_404(DonorDetail, user=request.user)
     result = None
     status = None
 
+    # Prefill form data
     initial_data = {}
+    if donor.age:
+        initial_data['age'] = donor.age
+    if donor.weight:
+        initial_data['weight'] = donor.weight
 
-    # ✅ Prefill from donor profile
-    if donor:
-        if donor.age:
-            initial_data['age'] = donor.age
-        if donor.weight:
-            initial_data['weight'] = donor.weight
+    last_donation = (
+        Appointment.objects.filter(donor=request.user, status='Completed')
+        .order_by('-appointment_date')
+        .first()
+    )
 
-        # ✅ Prefill from last completed donation
-        last_donation = (
-            Appointment.objects.filter(donor=request.user, status='Completed')
-            .order_by('-appointment_date')
-            .first()
-        )
-
-        if last_donation:
-            initial_data['first_donation'] = 'no'
-            initial_data['last_donation_date'] = last_donation.appointment_date
-        else:
-            initial_data['first_donation'] = 'yes'
+    if last_donation:
+        initial_data['first_donation'] = 'no'
+        initial_data['last_donation_date'] = last_donation.appointment_date
+    else:
+        initial_data['first_donation'] = 'yes'
 
     form = EligibilityForm(request.POST or None, initial=initial_data)
 
-    # ✅ Eligibility logic
     if request.method == 'POST' and form.is_valid():
         age = form.cleaned_data['age']
         weight = form.cleaned_data['weight']
         first_donation = form.cleaned_data['first_donation']
-        last_donation = form.cleaned_data['last_donation_date']
+        last_donation_date = form.cleaned_data['last_donation_date']
 
+        # --- Default: Not eligible ---
+        donor.is_eligible = False  
+
+        # Age check
         if age < 18 or age > 65:
             result = "❌ You are not eligible due to age restrictions."
             status = "danger"
 
+        # Weight check
         elif weight < 50:
             result = "⚠️ You are not eligible due to low weight."
             status = "warning"
 
-        elif first_donation == 'no' and last_donation:
-            days_since_last = (date.today() - last_donation).days
+        # Donation gap check
+        elif first_donation == 'no' and last_donation_date:
+            days_since_last = (date.today() - last_donation_date).days
             if days_since_last < 90:
-                next_date = last_donation + timedelta(days=90)
+                next_date = last_donation_date + timedelta(days=90)
                 result = f"🕒 You can donate again after {next_date.strftime('%d %B %Y')}."
                 status = "warning"
             else:
@@ -522,6 +470,7 @@ def check_eligibility(request):
                 messages.success(request, "✅ You are eligible! You can now request an appointment.")
                 return redirect('request_appoiments')
 
+        # First-time donors
         elif first_donation == 'yes':
             donor.is_eligible = True
             donor.save()
@@ -535,11 +484,17 @@ def check_eligibility(request):
             result = "⚠️ Please provide valid information to check eligibility."
             status = "warning"
 
+        # Save updated data
+        donor.age = age
+        donor.weight = weight
+        donor.save()
+
     return render(
         request,
         'donor/check_eligibility.html',
         {'form': form, 'result': result, 'status': status, 'donor': donor}
     )
+
 
 from datetime import date, datetime
 from datetime import date, timedelta
@@ -557,68 +512,6 @@ def is_donor_eligible(donor):
     next_eligible_date = last_donation.donation_date + timedelta(days=required_gap)
     return date.today() >= next_eligible_date
 
-def request_appointment(request):
-    hospitals = HospitalDetail.objects.all()
-    today = date.today().isoformat()
-
-    # Get last donation date
-    last_donation = Appointment.objects.filter(donor=request.user, status='Completed').order_by('-donation_date').first()
-    last_donation_date = last_donation.donation_date if last_donation else None
-    first_time_donor = last_donation is None
-
-    # Check eligibility
-    eligible = is_donor_eligible(request.user)
-
-    if request.method == "POST":
-        if not eligible:
-            messages.warning(request, "⚠️ You are not eligible to donate yet. Please check your eligibility.")
-            return redirect('check_eligibility')
-
-        hospital_id = request.POST.get("hospital")
-        appointment_date = request.POST.get("appointment_date")
-        appointment_time = request.POST.get("appointment_time")
-        blood_units = int(request.POST.get("blood_units"))
-        notes = request.POST.get("notes")
-
-        # Validate blood volume
-        if blood_units < 350 or blood_units > 470:
-            messages.error(request, "❌ Blood volume must be between 350ml and 470ml.")
-            return redirect('request_appoiments')
-
-        try:
-            Appointment.objects.create(
-                donor=request.user,
-                hospital_id=hospital_id,
-                appointment_date=appointment_date,
-                appointment_time=appointment_time,
-                blood_units=blood_units,
-                notes=notes,
-                status='Pending'
-            )
-
-            admin_user = User.objects.filter(is_superuser=True).first()
-            if admin_user:
-                Notification.objects.create(
-                    sender=request.user,
-                    user=admin_user,
-                    message=f"New appointment request from {request.user.username}."
-                )
-
-            messages.success(request, "✅ Appointment request sent successfully!")
-            return redirect('donor_dashboard')
-
-        except ValidationError as e:
-            messages.error(request, str(e.message))
-
-    context = {
-        'hospitals': hospitals,
-        'today': today,
-        'last_donation_date': last_donation_date,
-        'eligible': eligible,
-        'first_time_donor': first_time_donor
-    }
-
-    return render(request, 'donor/request_appoiment.html', context)
 
 @login_required
 def patient_detail_form_view(request):
@@ -674,14 +567,6 @@ def request_status(request):
     
     return render(request, 'patient/request_status.html', {'blood_requests': blood_requests})
 
-def received_history(request):
-    # For now, a placeholder template
-    return render(request, 'patient/received_history.html')
-
-def search_blood(request):
-    # Placeholder page for now
-    return render(request, 'patient/search_blood.html')
-
 @login_required
 def edit_patient_profile(request):
     # Get existing patient details if they exist
@@ -702,8 +587,6 @@ def edit_patient_profile(request):
 
     return render(request, 'patient/edit_patient_profile.html', {'form': form})
 
-def is_admin(user):
-    return hasattr(user, 'profile') and user.profile.role == 'admin'
 
 @user_passes_test(is_admin)
 def admin_manage_requests(request):
@@ -1057,7 +940,7 @@ def approve_appointment(request, appointment_id):
         # Set appointment status to 'Date Sent' and save the donation date and time
         appointment.appointment_date = donation_date
         appointment.appointment_time = donation_time
-        appointment.status = 'Date Sent'
+        appointment.status = 'Approved'
         appointment.save()
 
         # Create a notification for the donor about the scheduled donation date
@@ -1111,98 +994,64 @@ def respond_to_appointment(request, appointment_id, response):
     return redirect('donor_dashboard')
 
 @login_required
-def respond_to_donation_date(request, appointment_id):
-    appointment = get_object_or_404(Appointment, id=appointment_id, donor=request.user)
-
-    if request.method == 'POST':
-        action = request.POST.get('action')
-
-        if action == 'accept':
-            # Donor accepts the date
-            appointment.status = 'Approved'
-            appointment.donor_response = 'Accepted'
-            appointment.donation_date = appointment.appointment_date
-            appointment.save()
-
-            # Notify hospital
-            Notification.objects.create(
-                user=appointment.hospital.user,
-                message=f"✅ Donor {request.user.username} confirmed the donation on {appointment.appointment_date}."
-            )
-
-            messages.success(request, "You confirmed your donation date.")
-
-        elif action == 'reschedule':
-            appointment.donor_response = 'Reschedule'
-            appointment.status = 'Pending'
-            appointment.save()
-
-            Notification.objects.create(
-                user=appointment.hospital.user,
-                message=f"🔄 Donor {request.user.username} requested a new donation date."
-            )
-
-            messages.warning(request, "You requested another date. Admin will update soon.")
-
-        return redirect('donor_dashboard')
-
-    return render(request, 'donor/respond_donation_date.html', {'appointment': appointment})
-
-
-@login_required
 @user_passes_test(is_admin)
 def mark_donation_completed(request, appointment_id):
     appointment = get_object_or_404(Appointment, id=appointment_id)
 
-    # Only allow marking if appointment was approved
+    # ✅ Allow completion only if Approved and scheduled time has passed
     if appointment.status == 'Approved':
-        donor = appointment.donor
-        hospital = appointment.hospital
-        donor_detail = donor.donordetail
-
-        # ✅ Update or create blood stock record
-        blood_stock, _ = BloodStock.objects.get_or_create(
-            hospital=hospital,
-            blood_group=donor_detail.blood_group,
-            defaults={'units_available': 0}
+        now = timezone.localtime()
+        appointment_datetime = datetime.combine(
+            appointment.appointment_date,
+            appointment.appointment_time
         )
+        appointment_datetime = timezone.make_aware(appointment_datetime)
 
-        # Convert blood_units (ml) to stock units (1 unit ≈ 350 ml)
-        donated_units = round(appointment.blood_units / 350, 2)
-        blood_stock.units_available += donated_units
-        blood_stock.save()
+        # ⚠️ Check both date and time
+        if now >= appointment_datetime:
+            donor = appointment.donor
+            hospital = appointment.hospital
+            donor_detail = donor.donordetail
 
-        # ✅ Update the appointment
-        appointment.status = 'Completed'
-        appointment.donation_date = timezone.now().date()
-        appointment.save()
-
-        # ✅ Send notification to donor
-        Notification.objects.create(
-            user=donor,
-            message=(
-                f"🎉 Thank you for donating {appointment.blood_units} ml of blood "
-                f"on {appointment.appointment_date}! Your donation has been recorded."
+            # ✅ Update or create blood stock record
+            blood_stock, _ = BloodStock.objects.get_or_create(
+                hospital=hospital,
+                blood_group=donor_detail.blood_group,
+                defaults={'units_available': 0}
             )
-        )
 
-        messages.success(request, "✅ Donation marked as completed and added to blood stock.")
+            # Convert blood_units (ml) to stock units (1 unit ≈ 350 ml)
+            donated_units = round(appointment.blood_units / 350, 2)
+            blood_stock.units_available += donated_units
+            blood_stock.save()
 
+            # ✅ Update appointment
+            appointment.status = 'Completed'
+            appointment.donation_date = timezone.now().date()
+            appointment.save()
+
+            # ✅ Notify donor
+            Notification.objects.create(
+                user=donor,
+                message=(
+                    f"🎉 Thank you for donating {appointment.blood_units} ml of blood "
+                    f"on {appointment.appointment_date}! Your donation has been recorded."
+                )
+            )
+
+            messages.success(request, "✅ Donation marked as completed and added to blood stock.")
+        else:
+            # If the appointment time hasn't passed yet
+            messages.warning(
+                request,
+                f"⏰ You can only mark this as completed after "
+                f"{appointment.appointment_date} {appointment.appointment_time.strftime('%I:%M %p')}."
+            )
     else:
         messages.error(request, "⚠️ You can only mark as completed if the status is 'Approved'.")
 
     return redirect('manage_requests')
 
-
-def reject_appointment(request, appointment_id):
-    appointment = Appointment.objects.get(id=appointment_id)
-    appointment.status = 'Rejected'
-    appointment.save()
-
-    Notification.objects.create(
-        user=appointment.donor,
-        message=f"❌ Your appointment at {appointment.hospital.hospital_name} has been rejected."
-    )
     
 @login_required
 def manage_hospital_requests(request):
@@ -1222,45 +1071,6 @@ def update_hospital_status(request, request_id, status):
 
     return redirect('manage_hospital_requests')
 
-# views.py
-def assign_donation_date(request, request_id):
-    donation_request = get_object_or_404(Appointment, id=request_id)
-    today = timezone.localdate().strftime('%Y-%m-%d')
-
-    if request.method == 'POST':
-        date = request.POST.get('donation_date')
-        time = request.POST.get('donation_time')
-
-        # Prevent past date selection
-        if date < str(timezone.localdate()):
-            messages.error(request, "You cannot assign a past date.")
-            return render(request, 'partials/assign_donation_date.html', {
-                'donation_request': donation_request,
-                'today': today
-            })
-
-        donation_request.donation_date = date
-        donation_request.appointment_time = time  # update with assigned time if changed
-        donation_request.status = 'Approved'
-        donation_request.save()
-
-        # Notify donor
-        Notification.objects.create(
-            user=donation_request.donor,
-            message=f"You have been assigned a donation date on {date} at {time}.",
-            appointment=donation_request
-        )
-
-        messages.success(request, "Donation date assigned and donor notified.")
-        return redirect('manage_requests')
-
-    return render(request, 'partials/assign_donation_date.html', {
-        'donation_request': donation_request,
-        'today': today,
-        # 👇 Pass these to prefill in template
-        'preferred_date': donation_request.appointment_date,
-        'preferred_time': donation_request.appointment_time,
-    })
 
 def donor_accept_date(request, request_id):
     donor_request = get_object_or_404(DonationRequest, id=request_id)
@@ -1275,19 +1085,6 @@ def donor_reject_date(request, request_id):
     donor_request.save()
     messages.warning(request, "You have requested another date. Admin will update soon.")
     return redirect('donor_dashboard')
-
-def mark_donation_completed(request, donation_id):
-    donation = get_object_or_404(DonationRequest, id=donation_id)
-    if donation.status == "donor_confirmed":
-        # Add blood to stock
-        BloodStock.objects.create(
-            blood_group=donation.blood_group,
-            units=1  # or the number of units donated
-        )
-        donation.status = "completed"
-        donation.save()
-        messages.success(request, "Donation completed and stock updated.")
-    return redirect('manage_requests')
 
 def approve_request(request, request_id):
     if request.method == 'POST':
@@ -1390,3 +1187,181 @@ def hospital_edit_profile(request):
         form = HospitalDetailForm(instance=hospital)
     
     return render(request, 'hospital_detail_form.html', {'form': form})
+
+# new       new            new               new
+
+@login_required
+def request_appointment(request):
+    hospitals = HospitalDetail.objects.all()
+    today = date.today().isoformat()
+
+    donor = DonorDetail.objects.filter(user=request.user).first()
+    eligible = donor.is_eligible if donor else False
+
+    # Fetch last completed donation for returning donors
+    last_donation = (
+        Appointment.objects.filter(donor=request.user, status='Completed')
+        .order_by('-appointment_date')
+        .first()
+    )
+
+    first_time_donor = not bool(last_donation)
+    last_donation_date = last_donation.appointment_date if last_donation else None
+
+    if request.method == "POST":
+        if not eligible:
+            messages.error(request, "❌ You must check your eligibility before requesting an appointment.")
+            return redirect('check_eligibility')
+
+        hospital_id = request.POST.get("hospital")
+        preferred_date = request.POST.get("appointment_date")
+        preferred_time = request.POST.get("appointment_time")
+        blood_units = int(request.POST.get("blood_units"))
+        notes = request.POST.get("notes")
+
+        if blood_units < 350 or blood_units > 470:
+            messages.error(request, "❌ Blood volume must be between 350ml and 470ml.")
+            return redirect('request_appointment')
+
+        # Create appointment
+        appointment = Appointment.objects.create(
+            donor=request.user,
+            hospital_id=hospital_id,
+            appointment_date=preferred_date,
+            appointment_time=preferred_time,
+            blood_units=blood_units,
+            notes=notes,
+            status='Pending'
+        )
+
+        # Notify admin
+        admin_user = User.objects.filter(is_superuser=True).first()
+        if admin_user:
+            Notification.objects.create(
+                sender=request.user,
+                user=admin_user,
+                message=f"🩸 New donation appointment request from {request.user.username}."
+            )
+
+        messages.success(request, "✅ Appointment request sent to admin successfully!")
+        return redirect('donor_dashboard')
+
+    return render(request, 'donor/request_appoiment.html', {
+        'hospitals': hospitals,
+        'today': today,
+        'eligible': eligible,
+        'first_time_donor': first_time_donor,
+        'last_donation_date': last_donation_date,
+    })
+@login_required
+@user_passes_test(is_admin)
+def reject_appointment(request, appointment_id):
+    appointment = get_object_or_404(Appointment, id=appointment_id)
+    appointment.status = 'Rejected'
+    appointment.save()
+
+    Notification.objects.create(
+        user=appointment.donor,
+        message=f"❌ Your appointment at {appointment.hospital.hospital_name} has been rejected by admin."
+    )
+
+    messages.warning(request, "Appointment rejected successfully.")
+    return redirect('manage_requests')
+
+@login_required
+@user_passes_test(is_admin)
+def assign_donation_date(request, appointment_id):
+    appointment = get_object_or_404(Appointment, id=appointment_id)
+    today = date.today().isoformat()  # Keep this safe
+
+    if request.method == 'POST':
+        donation_date = request.POST.get('donation_date')
+        donation_time = request.POST.get('donation_time')
+
+        if not donation_date or not donation_time:
+            messages.error(request, "Please select both date and time.")
+            return redirect('assign_donation_date', appointment_id=appointment.id)
+
+        appointment.appointment_date = donation_date
+        appointment.appointment_time = donation_time
+        appointment.status = 'Date Sent'
+        appointment.save()
+
+        Notification.objects.create(
+            user=appointment.donor,
+            message=f"📅 Admin scheduled your blood donation on {donation_date} at {donation_time}. Please confirm."
+        )
+
+
+        messages.success(request, "Donation date sent to donor successfully!")
+        return redirect('manage_requests')
+
+    return render(request, 'partials/assign_donation_date.html', {
+        'appointment': appointment,
+        'today': today,
+    })
+
+
+    
+@login_required
+def respond_to_donation_date(request, appointment_id):
+    appointment = get_object_or_404(Appointment, id=appointment_id, donor=request.user)
+
+    if request.method == 'POST':
+        action = request.POST.get('action')
+
+        if action == 'accept':
+            appointment.status = 'Approved'
+            appointment.donor_response = 'Accepted'
+            appointment.save()
+
+            Notification.objects.create(
+                user=appointment.hospital.user,
+                message=f"✅ {appointment.donor.username} accepted the donation date."
+            )
+
+        elif action == 'reschedule':
+            appointment.status = 'Pending'
+            appointment.donor_response = 'Reschedule Requested'
+            appointment.save()
+
+            Notification.objects.create(
+                user=appointment.hospital.user,
+                message=f"🔄 {appointment.donor.username} requested to reschedule the donation."
+            )
+
+    return redirect('donor_dashboard')
+
+def update_completed_donations():
+    today = timezone.localdate()
+    past_appointments = Appointment.objects.filter(status='Approved', appointment_date__lte=today)
+
+    for app in past_appointments:
+        if app.status == 'Completed':
+            continue
+
+        donor_detail = DonorDetail.objects.filter(user=app.donor).first()
+        if not donor_detail:
+            continue
+
+        stock, _ = BloodStock.objects.get_or_create(
+            hospital=None,
+            blood_group=donor_detail.blood_group,
+            defaults={'units_available': 0}
+        )
+
+        donated_units = max(1, app.blood_units // 350)
+        stock.units_available += donated_units
+        stock.save()
+
+        app.status = 'Completed'
+        app.save()
+
+        Notification.objects.create(
+            user=app.donor,
+            message=f"🎉 Thank you for donating {app.blood_units} ml on {app.appointment_date}! "
+                    f"{donated_units} unit(s) added to blood stock."
+        )
+
+
+
