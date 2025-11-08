@@ -25,7 +25,7 @@
 
             <p class="message">{{ notification.message }}</p>
 
-            {% if "assigned a donation date" in notification.message %}
+{% if "assigned a donation date" in notification.message or "scheduled your blood donation" in notification.message %}
               {% if notification.appointment %}
                 {% if notification.appointment.donor_response == 'No Response' %}
                   <div class="action-buttons">

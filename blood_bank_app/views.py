@@ -1269,38 +1269,35 @@ def reject_appointment(request, appointment_id):
     return redirect('manage_requests')
 
 @login_required
-@user_passes_test(is_admin)
 def assign_donation_date(request, appointment_id):
     appointment = get_object_or_404(Appointment, id=appointment_id)
-    today = date.today().isoformat()  # Keep this safe
+    today = timezone.localdate().strftime('%Y-%m-%d')
 
     if request.method == 'POST':
-        donation_date = request.POST.get('donation_date')
-        donation_time = request.POST.get('donation_time')
+        date = request.POST.get('donation_date')
+        time = request.POST.get('donation_time')
 
-        if not donation_date or not donation_time:
-            messages.error(request, "Please select both date and time.")
-            return redirect('assign_donation_date', appointment_id=appointment.id)
+        if date < str(timezone.localdate()):
+            messages.error(request, "You cannot assign a past date.")
+            return redirect('assign_donation_date', appointment_id)
 
-        appointment.appointment_date = donation_date
-        appointment.appointment_time = donation_time
+        appointment.appointment_date = date
+        appointment.appointment_time = time
         appointment.status = 'Date Sent'
+        appointment.donor_response = 'No Response'
         appointment.save()
 
         Notification.objects.create(
+            sender=request.user,
             user=appointment.donor,
-            message=f"📅 Admin scheduled your blood donation on {donation_date} at {donation_time}. Please confirm."
+            appointment=appointment,
+            message=f"🗓 Admin scheduled your blood donation on {date} at {time}. Please confirm."
         )
 
-
-        messages.success(request, "Donation date sent to donor successfully!")
+        messages.success(request, "Donation date assigned successfully.")
         return redirect('manage_requests')
 
-    return render(request, 'partials/assign_donation_date.html', {
-        'appointment': appointment,
-        'today': today,
-    })
-
+    return render(request, 'partials/assign_donation_date.html', {'appointment': appointment, 'today': today})
 
     
 @login_required
