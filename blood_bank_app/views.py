@@ -1198,7 +1198,15 @@ def request_appointment(request):
     donor = DonorDetail.objects.filter(user=request.user).first()
     eligible = donor.is_eligible if donor else False
 
-    # Fetch last completed donation for returning donors
+    # 🚫 Restrict if next eligible date is in the future
+    if donor and donor.next_eligible_date and donor.next_eligible_date > date.today():
+        messages.warning(
+            request,
+            f"⏳ You can donate again only after {donor.next_eligible_date}."
+        )
+        return redirect('donor_dashboard')
+
+    # Fetch last completed donation
     last_donation = (
         Appointment.objects.filter(donor=request.user, status='Completed')
         .order_by('-appointment_date')
@@ -1221,10 +1229,9 @@ def request_appointment(request):
 
         if blood_units < 350 or blood_units > 470:
             messages.error(request, "❌ Blood volume must be between 350ml and 470ml.")
-            return redirect('request_appointment')
+            return redirect('request_appoiments')
 
-        # Create appointment
-        appointment = Appointment.objects.create(
+        Appointment.objects.create(
             donor=request.user,
             hospital_id=hospital_id,
             appointment_date=preferred_date,
@@ -1234,7 +1241,6 @@ def request_appointment(request):
             status='Pending'
         )
 
-        # Notify admin
         admin_user = User.objects.filter(is_superuser=True).first()
         if admin_user:
             Notification.objects.create(
@@ -1348,13 +1354,11 @@ def respond_to_donation_date(request, appointment_id):
 
     return redirect('donor_dashboard')
 
-from datetime import datetime
-from django.utils import timezone
+from datetime import timedelta
 
 def update_completed_donations():
-    now = timezone.localtime()  # current time with timezone awareness
+    now = timezone.localtime()
 
-    # 🔹 Get only those whose scheduled datetime has passed
     past_appointments = []
     for app in Appointment.objects.filter(status='Approved'):
         if not app.appointment_date or not app.appointment_time:
@@ -1368,7 +1372,6 @@ def update_completed_donations():
         if appointment_datetime <= now:
             past_appointments.append(app)
 
-    # 🔹 Mark as completed only when time has passed
     for app in past_appointments:
         donor_detail = DonorDetail.objects.filter(user=app.donor).first()
         if not donor_detail:
@@ -1387,8 +1390,15 @@ def update_completed_donations():
         app.status = 'Completed'
         app.save()
 
+        # ✅ Set next eligible date = 90 days after this donation
+        donor_detail.next_eligible_date = app.appointment_date + timedelta(days=90)
+        donor_detail.save()
+
         Notification.objects.create(
             user=app.donor,
-            message=f"🎉 Thank you for donating {app.blood_units} ml on {app.appointment_date} at {app.appointment_time}! "
-                    f"{donated_units} unit(s) added to blood stock."
+            message=(
+                f"🎉 Thank you for donating {app.blood_units} ml on {app.appointment_date} at {app.appointment_time}! "
+                f"You can donate again after {donor_detail.next_eligible_date}."
+            )
         )
+

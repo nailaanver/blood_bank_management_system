@@ -35,8 +35,13 @@ class ContactMessage(models.Model):
         return f"{self.name} ({self.email})"
     
 class DonorDetail(models.Model):
-    BLOOD_GROUPS = [('A+','A+'),('A-','A-'),('B+','B+'),('B-','B-'),('AB+','AB+'),('AB-','AB-'),('O+','O+'),('O-','O-')]
-    GENDER_CHOICES = [('Male','Male'),('Female','Female'),('Other','Other')]
+    BLOOD_GROUPS = [
+        ('A+', 'A+'), ('A-', 'A-'),
+        ('B+', 'B+'), ('B-', 'B-'),
+        ('AB+', 'AB+'), ('AB-', 'AB-'),
+        ('O+', 'O+'), ('O-', 'O-')
+    ]
+    GENDER_CHOICES = [('Male', 'Male'), ('Female', 'Female'), ('Other', 'Other')]
 
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     blood_group = models.CharField(max_length=3, choices=BLOOD_GROUPS)
@@ -48,12 +53,13 @@ class DonorDetail(models.Model):
     phone_number = models.CharField(max_length=15)
     profile_photo = models.ImageField(upload_to='donor_photos/', default='donor_photos/default.jpg')
 
-    # ✅ New field to track eligibility
     is_eligible = models.BooleanField(default=False)
+
+    # 🩸 Add this field
+    next_eligible_date = models.DateField(null=True, blank=True)
 
     def __str__(self):
         return self.user.username
-
 
             
             
