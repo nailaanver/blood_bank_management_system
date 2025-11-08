@@ -1274,31 +1274,50 @@ def assign_donation_date(request, appointment_id):
     today = timezone.localdate().strftime('%Y-%m-%d')
 
     if request.method == 'POST':
-        date = request.POST.get('donation_date')
-        time = request.POST.get('donation_time')
+        date_str = request.POST.get('donation_date')
+        time_str = request.POST.get('donation_time')
 
-        if date < str(timezone.localdate()):
-            messages.error(request, "You cannot assign a past date.")
+        # 🕓 Combine date + time
+        try:
+            selected_date = datetime.strptime(date_str, "%Y-%m-%d").date()
+            selected_time = datetime.strptime(time_str, "%H:%M").time()
+        except ValueError:
+            messages.error(request, "Invalid date or time format.")
             return redirect('assign_donation_date', appointment_id)
 
-        appointment.appointment_date = date
-        appointment.appointment_time = time
+        selected_datetime = datetime.combine(selected_date, selected_time)
+        selected_datetime = timezone.make_aware(selected_datetime)
+        now = timezone.localtime()
+
+        print("DEBUG: selected =", selected_datetime, "now =", now)  # 🧠 check what Django sees
+
+        # 🚫 Validate future datetime
+        if selected_datetime <= now:
+            messages.error(request, "You cannot assign a past date or time.")
+            return redirect('assign_donation_date', appointment_id)
+
+        # ✅ Save valid appointment
+        appointment.appointment_date = selected_date
+        appointment.appointment_time = selected_time
         appointment.status = 'Date Sent'
         appointment.donor_response = 'No Response'
         appointment.save()
 
+        # 🩸 Send notification
         Notification.objects.create(
             sender=request.user,
             user=appointment.donor,
             appointment=appointment,
-            message=f"🗓 Admin scheduled your blood donation on {date} at {time}. Please confirm."
+            message=f"🩸 {appointment.hospital.hospital_name} assigned a donation date: {date_str} at {time_str}."
         )
 
-        messages.success(request, "Donation date assigned successfully.")
+        messages.success(request, "Donation date and time assigned successfully.")
         return redirect('manage_requests')
 
-    return render(request, 'partials/assign_donation_date.html', {'appointment': appointment, 'today': today})
-
+    return render(request, 'partials/assign_donation_date.html', {
+        'appointment': appointment,
+        'today': today
+    })
     
 @login_required
 def respond_to_donation_date(request, appointment_id):
@@ -1329,14 +1348,28 @@ def respond_to_donation_date(request, appointment_id):
 
     return redirect('donor_dashboard')
 
-def update_completed_donations():
-    today = timezone.localdate()
-    past_appointments = Appointment.objects.filter(status='Approved', appointment_date__lte=today)
+from datetime import datetime
+from django.utils import timezone
 
-    for app in past_appointments:
-        if app.status == 'Completed':
+def update_completed_donations():
+    now = timezone.localtime()  # current time with timezone awareness
+
+    # 🔹 Get only those whose scheduled datetime has passed
+    past_appointments = []
+    for app in Appointment.objects.filter(status='Approved'):
+        if not app.appointment_date or not app.appointment_time:
             continue
 
+        appointment_datetime = timezone.make_aware(datetime.combine(
+            app.appointment_date,
+            app.appointment_time
+        ))
+
+        if appointment_datetime <= now:
+            past_appointments.append(app)
+
+    # 🔹 Mark as completed only when time has passed
+    for app in past_appointments:
         donor_detail = DonorDetail.objects.filter(user=app.donor).first()
         if not donor_detail:
             continue
@@ -1356,9 +1389,6 @@ def update_completed_donations():
 
         Notification.objects.create(
             user=app.donor,
-            message=f"🎉 Thank you for donating {app.blood_units} ml on {app.appointment_date}! "
+            message=f"🎉 Thank you for donating {app.blood_units} ml on {app.appointment_date} at {app.appointment_time}! "
                     f"{donated_units} unit(s) added to blood stock."
         )
-
-
-
