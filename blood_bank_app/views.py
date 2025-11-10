@@ -152,7 +152,7 @@ def mark_notifications_read(request):
 def admin_dashboard(request):
     # Get all appointment requests
     appointments = Appointment.objects.all().order_by('-created_at')
-    pending_count = appointments.filter(status='Pending').count()  # or any other logic
+    unread_count = Notification.objects.filter(user=request.user, is_read=False).count()
 
     # Get other dashboard details (optional)
     total_donors = DonorDetail.objects.count()
@@ -161,7 +161,7 @@ def admin_dashboard(request):
     total_requests = appointments.count()
 
     context = {
-        'pending_count': pending_count,
+        'unread_count': unread_count,
         'total_donors': total_donors,
         'total_patients': total_patients,
         'total_hospital': total_hospital,
@@ -533,32 +533,35 @@ def hospital_detail_form_view(request):
         return redirect('hospital_dashboard')
     return render(request, 'hospital_detail_form.html', {'form': form})
 
+from .models import PatientDetail
+
+@login_required
 def request_blood(request):
     if request.method == "POST":
         form = BloodRequestForm(request.POST)
         if form.is_valid():
             blood_request = form.save(commit=False)
             blood_request.user = request.user
+            patient = PatientDetail.objects.get(user=request.user)
+            blood_request.full_name = request.user.get_full_name() or request.user.username
+            blood_request.blood_group = patient.blood_group
             blood_request.status = "Pending"
             blood_request.save()
 
-            # Notify admin
-            admin_user = User.objects.filter(is_superuser=True).first()
-            if admin_user:
+            # Notify all admins/staff
+            admins = User.objects.filter(is_staff=True)
+            for admin in admins:
                 Notification.objects.create(
-                    user=admin_user,
-                    message=f"New blood request from {request.user.username}."
+                    user=admin,
+                    message=f"🩸 New blood request from {request.user.username}."
                 )
 
             messages.success(request, "Your blood request has been submitted successfully!")
             return redirect('patient_dashboard')
     else:
-        form = BloodRequestForm()  # 👈 this handles GET requests
+        form = BloodRequestForm()
 
-    # 👇 Always return an HttpResponse for both GET and POST
     return render(request, 'patient/blood_request.html', {'form': form})
-
-
 
 @login_required
 def request_status(request):
@@ -1139,11 +1142,25 @@ def check_and_add_blood_to_stock():
 from django.contrib.auth.decorators import login_required
 from .models import Notification
 
-login_required
+@login_required
 def notification_admin(request):
-    admin_user = request.user  # logged-in admin
+    admin_user = request.user
     notifications = Notification.objects.filter(user=admin_user).order_by('-created_at')
-    return render(request, 'partials/notification_admin.html', {'notifications': notifications})
+
+    # ✅ Mark all unread notifications as read
+    notifications.filter(is_read=False).update(is_read=True)
+
+    unread_count = 0  # Since we just marked them all read
+
+    return render(
+        request,
+        'partials/notification_admin.html',
+        {
+            'notifications': notifications,
+            'unread_count': unread_count,
+        },
+    )
+
 
 
 
@@ -1159,12 +1176,13 @@ def create_appointment(request):
             appointment.save()
 
             # Create notification for admin
-            admin_users = User.objects.filter(is_staff=True)  # all admin users
-            for admin in admin_users:
+            admins = User.objects.filter(is_staff=True)
+            for admin in admins:
                 Notification.objects.create(
                     user=admin,
-                    message=f"New appointment request from {request.user.username}"
+                    message=f"New blood request from {request.user.username}."
                 )
+
 
             messages.success(request, "Appointment request submitted successfully!")
             return redirect('donor_dashboard')

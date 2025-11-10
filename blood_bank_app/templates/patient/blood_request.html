@@ -12,15 +12,29 @@
         </p>
 
         <form method="POST">
-            {% csrf_token %}
-            <div class="form-section">
-                {{ form.as_p }}
-            </div>
-
-            <button type="submit" class="btn btn-danger w-100 mt-3">
-                Submit Request
-            </button>
-        </form>
+        {% csrf_token %}
+        <div class="mb-3">
+            <label>Hospital Name</label>
+            {{ form.hospital_name }}
+        </div>
+        <div class="mb-3">
+            <label>Units Required</label>
+            {{ form.units_required }}
+        </div>
+        <div class="mb-3">
+            <label>Urgency</label>
+            {{ form.urgency }}
+        </div>
+        <div class="mb-3">
+            <label>Required Date</label>
+            {{ form.required_date }}
+        </div>
+        <div class="mb-3">
+            <label>Medical Condition</label>
+            {{ form.medical_condition }}
+        </div>
+        <button type="submit" class="btn btn-danger w-100">Submit Request</button>
+    </form>
 
         {% if messages %}
             {% for message in messages %}

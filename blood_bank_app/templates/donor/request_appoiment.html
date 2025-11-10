@@ -62,13 +62,13 @@
                 <label for="notes">Notes (Optional)</label>
                 <textarea id="notes" name="notes"></textarea>
             </div>
-            {% if donor.next_eligible_date and donor.next_eligible_date > today %}
+            <!-- {% if donor.next_eligible_date and donor.next_eligible_date > today %}
   <button class="btn btn-secondary" disabled>
     Not eligible until {{ donor.next_eligible_date }}
   </button>
 {% else %}
   <a href="{% url 'request_appoiments' %}" class="btn btn-danger">Request Appointment</a>
-{% endif %}
+{% endif %} -->
 
 
             <button type="submit" class="btn btn-primary">Request Appointment</button>

@@ -97,7 +97,7 @@
           <tr>
             <td>{{ req.required_date|date:"d M, Y" }}</td>
             <td>
-              <span class="badge bg-danger fs-6">{{ req.blood_group }}</span>
+              <span class="badge bg-danger fs-6">{{ req.user.patientdetail.blood_group }}</span>
             </td>
             <td>{{ req.units_required }}</td>
             <td>{{ req.hospital_name }}</td>

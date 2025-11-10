@@ -35,7 +35,7 @@
                         {% for req in blood_requests %}
                         <tr>
                             <td>{{ forloop.counter }}</td>
-                            <td>{{ req.blood_group }}</td>
+                            <td>{{ req.user.patientdetail.blood_group }}</td>
                             <td>{{ req.units_required }}</td>
                             <td>{{ req.hospital_name }}</td>
                             <td>

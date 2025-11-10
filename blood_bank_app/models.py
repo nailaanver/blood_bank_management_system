@@ -68,6 +68,7 @@ class PatientDetail(models.Model):
     GENDER_CHOICES = [('Male','Male'),('Female','Female'),('Other','Other')]
 
     user = models.OneToOneField(User, on_delete=models.CASCADE,null=True)
+    full_name = models.CharField(max_length=100,null=True)
     blood_group = models.CharField(max_length=3, choices=BLOOD_GROUPS)
     gender = models.CharField(max_length=10, choices=GENDER_CHOICES)
     date_of_birth = models.DateField()
@@ -153,17 +154,12 @@ class Appointment(models.Model):
         return f"{self.donor.username} - {self.hospital.hospital_name}"
     
 class BloodRequest(models.Model):
-    BLOOD_GROUPS = [
-        ('A+', 'A+'), ('A-', 'A-'),
-        ('B+', 'B+'), ('B-', 'B-'),
-        ('O+', 'O+'), ('O-', 'O-'),
-        ('AB+', 'AB+'), ('AB-', 'AB-'),
-    ]
     URGENCY_CHOICES = [
         ('Normal', 'Normal'),
         ('Urgent', 'Urgent'),
         ('Emergency', 'Emergency'),
     ]
+
     STATUS_CHOICES = [
         ('Pending', 'Pending'),
         ('Approved', 'Approved'),
@@ -171,19 +167,17 @@ class BloodRequest(models.Model):
     ]
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    full_name = models.CharField(max_length=100)
-    blood_group = models.CharField(max_length=3, choices=BLOOD_GROUPS)
-    units_required = models.PositiveIntegerField()
-    hospital_name = models.CharField(max_length=150)
-    hospital_address = models.TextField()
-    required_date = models.DateField(validators=[validate_future_date])
+    hospital_name = models.CharField(max_length=150,null=True)
+    units_required = models.PositiveIntegerField(null=True)
     urgency = models.CharField(max_length=20, choices=URGENCY_CHOICES)
-    reason = models.TextField(blank=True, null=True)
+    required_date = models.DateField(validators=[validate_future_date])
+    medical_condition = models.TextField(blank=True, null=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending')
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.full_name} - {self.blood_group}"
+        return f"{self.user.username} - {self.hospital_name} ({self.urgency})"
+
     
 class Notification(models.Model):
     sender = models.ForeignKey(

@@ -50,7 +50,7 @@ class DonorDetailForm(forms.ModelForm):
 class PatientDetailForm(forms.ModelForm):
     class Meta:
         model = PatientDetail
-        fields = ['blood_group', 'gender', 'date_of_birth', 'age', 'medical_condition', 'address', 'phone_number', 'profile_photo']
+        fields = ['full_name','blood_group', 'gender', 'date_of_birth', 'age', 'medical_condition', 'address', 'phone_number', 'profile_photo']
         widgets = {'date_of_birth': forms.DateInput(attrs={'type':'date'})}
 
 class HospitalDetailForm(forms.ModelForm):
@@ -80,24 +80,36 @@ class EligibilityForm(forms.Form):
 
 
 from .models import BloodRequest
+from django.utils import timezone
 
 class BloodRequestForm(forms.ModelForm):
     class Meta:
         model = BloodRequest
-        fields = [
-            'blood_group', 'units_required',
-            'hospital_name',  'required_date',
-            'urgency', 'reason'
-        ]
+        fields = ['hospital_name', 'units_required', 'urgency', 'required_date', 'medical_condition']
         widgets = {
-            'blood_group': forms.Select(attrs={'class': 'form-control'}),
-            'units_required': forms.NumberInput(attrs={'class': 'form-control', 'min': '1'}),
-            'hospital_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter hospital name'}),
-            'required_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
-            'urgency': forms.Select(attrs={'class': 'form-control'}),
-            'reason': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Enter reason (optional)'}),
+            'hospital_name': forms.TextInput(attrs={
+                'placeholder': 'Enter hospital name',
+                'class': 'form-control'
+            }),
+            'units_required': forms.NumberInput(attrs={
+                'min': 1,
+                'class': 'form-control',
+                'placeholder': 'Number of blood units required'
+            }),
+            'urgency': forms.Select(attrs={'class': 'form-select'}),
+            'required_date': forms.DateInput(
+                attrs={
+                    'type': 'date',
+                    'min': timezone.localdate().isoformat(),  # prevent past dates
+                    'class': 'form-control'
+                }
+            ),
+            'medical_condition': forms.Textarea(attrs={
+                'rows': 3,
+                'placeholder': 'e.g., Surgery, Accident, Anemia...',
+                'class': 'form-control'
+            }),
         }
-
 # forms.py
 from django import forms
 from .models import BloodStock

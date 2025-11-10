@@ -81,64 +81,63 @@
     </table>
   </div>
 
-  <!-- Patient Blood Requests -->
-  <div class="request-section">
-    <h4 class="section-title">🧬 Patient Blood Requests</h4>
-    <table class="table table-hover align-middle text-center custom-table">
-      <thead>
-        <tr>
-          <th>Hospital Name</th>
-          <th>Blood Group</th>
-          <th>Units Required</th>
-          <th>Hospital</th>
-          <th>Required Date</th>
-          <th>Status</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for request in patient_requests %}
-        <tr>
-          <td>{{ request.hospital_name }}</td>
-          <td>{{ request.blood_group }}</td>
-          <td>{{ request.units_required }}</td>
-          <td>{{ request.hospital_name }}</td>
-          <td>{{ request.required_date }}</td>
-          <td>
-            {% if appointment.status == 'Approved' %}
-              <span class="status-badge accepted">Approved</span>
-            {% elif appointment.status == 'Pending' %}
-              <span class="status-badge pending">Pending</span>
-            {% elif appointment.status == 'Completed' %}
-              <span class="status-badge accepted" style="background-color: #cce5ff; color: #004085;">
-                Completed
-              </span>
-            {% else %}
-              <span class="status-badge rejected">Rejected</span>
-            {% endif %}
-          </td>
+ <!-- Patient Blood Requests -->
+<div class="request-section">
+  <h4 class="section-title">🧬 Patient Blood Requests</h4>
+  <table class="table table-hover align-middle text-center custom-table">
+    <thead>
+      <tr>
+        <th>Full Name</th>
+        <th>Blood Group</th>
+        <th>Hospital Name</th>
+        <th>Units Required</th>
+        <th>Required Date</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for request in patient_requests %}
+      <tr>
+        <td>{{ request.user.patientdetail.full_name }}</td>
+        <td>{{ request.user.patientdetail.blood_group }}</td>
+        <td>{{ request.hospital_name }}</td>
+        <td>{{ request.units_required }}</td>
+        <td>{{ request.required_date }}</td>
+        <td>
+          {% if request.status == 'Approved' %}
+            <span class="status-badge accepted">Approved</span>
+          {% elif request.status == 'Pending' %}
+            <span class="status-badge pending">Pending</span>
+          {% elif request.status == 'Completed' %}
+            <span class="status-badge info">Completed</span>
+          {% else %}
+            <span class="status-badge rejected">Rejected</span>
+          {% endif %}
+        </td>
 
-          <td>
-            {% if request.status == 'Pending' %}
-              <form action="{% url 'update_patient_status' request.id 'Accepted' %}" method="post" style="display:inline;">
-                {% csrf_token %}
-                <button type="submit" class="btn-action accept">Accept</button>
-              </form>
-              <form action="{% url 'update_patient_status' request.id 'Rejected' %}" method="post" style="display:inline;">
-                {% csrf_token %}
-                <button type="submit" class="btn-action reject">Reject</button>
-              </form>
-            {% else %}
-              <span class="text-muted">—</span>
-            {% endif %}
-          </td>
-        </tr>
-        {% empty %}
-        <tr><td colspan="7" class="text-muted">No patient blood requests found</td></tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
+        <td>
+          {% if request.status == 'Pending' %}
+            <form action="{% url 'update_patient_status' request.id 'Approved' %}" method="post" style="display:inline;">
+              {% csrf_token %}
+              <button type="submit" class="btn-action accept">Approve</button>
+            </form>
+            <form action="{% url 'update_patient_status' request.id 'Rejected' %}" method="post" style="display:inline;">
+              {% csrf_token %}
+              <button type="submit" class="btn-action reject">Reject</button>
+            </form>
+          {% else %}
+            <span class="text-muted">—</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="7" class="text-muted">No patient blood requests found</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
 
   <!-- Hospital Blood Requests -->
   <div class="request-section">
