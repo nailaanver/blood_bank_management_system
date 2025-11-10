@@ -899,6 +899,8 @@ def update_appointment_status(request, appointment_id, status):
     messages.success(request, f"Appointment status updated to {status}.")
     return redirect('manage_requests')
 
+from datetime import date
+
 @login_required
 @user_passes_test(is_admin)
 def update_patient_status(request, request_id, status):
@@ -906,25 +908,66 @@ def update_patient_status(request, request_id, status):
     req.status = status
     req.save()
 
-    # ✅ Get blood group from PatientDetail
     blood_group = req.user.patientdetail.blood_group
 
-    # ✅ Create notification for the patient
+    # ✅ When admin approves the request
     if status == 'Approved':
         Notification.objects.create(
-            sender=request.user,  # admin who approved
-            user=req.user,        # patient who made the request
-            message=f"✅ Your blood request (for {blood_group}) has been approved."
+            sender=request.user,
+            user=req.user,
+            message=f"✅ Your blood request ({blood_group}) has been approved."
         )
+
+        # ✅ Check if the required date has already passed
+        if req.required_date <= date.today():
+            # ✅ Decrease only from Admin BloodStock
+            admin_stock = BloodStock.objects.filter(
+                blood_group=blood_group, hospital__isnull=True
+            ).first()
+
+            if admin_stock:
+                if admin_stock.units_available >= req.units_required:
+                    admin_stock.units_available -= req.units_required
+                    admin_stock.save()
+
+                    req.status = 'Completed'
+                    req.save()
+
+                    Notification.objects.create(
+                        sender=request.user,
+                        user=req.user,
+                        message=f"🩸 {req.units_required} units of {blood_group} have been issued to you."
+                    )
+                    messages.success(request, f"{req.units_required} units of {blood_group} issued from admin stock.")
+                else:
+                    req.status = 'Rejected'
+                    req.save()
+                    Notification.objects.create(
+                        sender=request.user,
+                        user=req.user,
+                        message=f"⚠️ Not enough {blood_group} in admin stock."
+                    )
+                    messages.error(request, f"Not enough {blood_group} in admin stock.")
+            else:
+                req.status = 'Rejected'
+                req.save()
+                Notification.objects.create(
+                    sender=request.user,
+                    user=req.user,
+                    message=f"⚠️ {blood_group} not available in admin stock."
+                )
+                messages.error(request, f"No admin stock for {blood_group} found.")
+
     elif status == 'Rejected':
         Notification.objects.create(
             sender=request.user,
             user=req.user,
-            message=f"❌ Your blood request (for {blood_group}) has been rejected."
+            message=f"❌ Your blood request ({blood_group}) has been rejected."
         )
 
-    messages.success(request, f"Patient request marked as {status}.")
+    messages.success(request, f"Request status updated to {status}.")
     return redirect('manage_requests')
+
 
 def update_hospital_status(request, request_id, status):
     req = get_object_or_404(HospitalBloodRequest, id=request_id)
