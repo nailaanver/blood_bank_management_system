@@ -51,7 +51,8 @@ class PatientDetailForm(forms.ModelForm):
     class Meta:
         model = PatientDetail
         fields = ['full_name','blood_group', 'gender', 'date_of_birth', 'age', 'medical_condition', 'address', 'phone_number', 'profile_photo']
-        widgets = {'date_of_birth': forms.DateInput(attrs={'type':'date'})}
+        widgets = {'date_of_birth': forms.DateInput(attrs={'type':'date'}),
+                   'age': forms.NumberInput(attrs={'readonly': 'readonly'}),        }
 
 class HospitalDetailForm(forms.ModelForm):
     class Meta:

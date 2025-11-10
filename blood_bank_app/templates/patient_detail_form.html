@@ -4,6 +4,12 @@
 {% block title %}Patient Details{% endblock %}
 
 {% block content %}
+{% if messages %}
+  {% for message in messages %}
+    <div class="alert alert-success">{{ message }}</div>
+  {% endfor %}
+{% endif %}
+
 <div class="patient-container">
     <div class="patient-card">
         <h2>Complete Your Profile, {{ user.get_full_name|default:user.username|default:"Anonymous" }}</h2>
@@ -12,7 +18,6 @@
         <form method="POST" enctype="multipart/form-data">
             {% csrf_token %}
 
-            <!-- Loop through form fields -->
             {% for field in form %}
                 <div class="form-group mb-3">
                     <label for="{{ field.id_for_label }}">{{ field.label }}</label>
@@ -30,6 +35,36 @@
         </form>
     </div>
 </div>
+
+<!-- ✅ Auto Calculate Age Script -->
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const dobInput = document.querySelector("#id_date_of_birth, #id_dob");
+    const ageInput = document.querySelector("#id_age");
+
+    if (dobInput && ageInput) {
+        dobInput.addEventListener("change", function() {
+            const dobValue = this.value;
+            if (dobValue) {
+                const dobDate = new Date(dobValue);
+                const today = new Date();
+
+                let age = today.getFullYear() - dobDate.getFullYear();
+                const monthDiff = today.getMonth() - dobDate.getMonth();
+
+                // Adjust if birthday hasn't occurred yet this year
+                if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dobDate.getDate())) {
+                    age--;
+                }
+
+                ageInput.value = age >= 0 ? age : '';
+            } else {
+                ageInput.value = '';
+            }
+        });
+    }
+});
+</script>
 
 <style>
 /* --- Blood Bank Patient Form Styling --- */
@@ -122,6 +157,16 @@ body {
 
 .save-btn:hover {
     background-color: #e60000;
+}
+
+/* Messages styling */
+.alert-success {
+    background-color: #ffcccc;
+    color: #b30000;
+    border-radius: 8px;
+    padding: 10px 15px;
+    margin-bottom: 20px;
+    text-align: center;
 }
 
 /* Error styling */

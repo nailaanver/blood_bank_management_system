@@ -109,22 +109,6 @@ def hospital_dashboard(request):
     return render(request, 'hospital_dashboard.html', context)
 
 @login_required
-def update_hospital_status(request, request_id, status):
-    blood_request = HospitalBloodRequest.objects.get(id=request_id)
-    blood_request.status = status
-    blood_request.save()
-
-    # ✅ Only send notification when Approved or Rejected
-    if status in ['Approved', 'Rejected']:
-        message = f"Your hospital blood request for {blood_request.blood_group} has been {status.lower()}."
-        Notification.objects.create(
-            user=blood_request.user,   # hospital user (receiver)
-            sender=request.user,       # admin user (sender)
-            message=message
-        )
-
-    return redirect('manage_hospital_requests')
-@login_required
 def hospital_notifications(request):
     from .models import Notification
 
@@ -968,14 +952,6 @@ def update_patient_status(request, request_id, status):
     messages.success(request, f"Request status updated to {status}.")
     return redirect('manage_requests')
 
-
-def update_hospital_status(request, request_id, status):
-    req = get_object_or_404(HospitalBloodRequest, id=request_id)
-    req.status = status
-    req.save()
-    messages.success(request, f"Hospital request marked as {status}.")
-    return redirect('manage_requests')
-
 @login_required
 @user_passes_test(is_admin)
 def approve_appointment(request, appointment_id):
@@ -1106,18 +1082,7 @@ def manage_hospital_requests(request):
     requests = HospitalBloodRequest.objects.all().order_by('-requested_at')
     return render(request, 'partials/manage_hospital_requests.html', {'requests': requests})
 
-@login_required
-def update_hospital_status(request, request_id, status):
-    blood_request = HospitalBloodRequest.objects.get(id=request_id)
-    blood_request.status = status
-    blood_request.save()
 
-    # ✅ Create notification for hospital
-    from .models import Notification
-    message = f"Your hospital blood request for {blood_request.blood_group} has been {status.lower()}."
-    Notification.objects.create(user=blood_request.user, message=message)
-
-    return redirect('manage_hospital_requests')
 
 
 def donor_accept_date(request, request_id):
@@ -1465,3 +1430,24 @@ def update_completed_donations():
             )
         )
 
+@login_required
+@user_passes_test(lambda u: u.is_staff)  # Only admins
+def update_hospital_status(request, request_id, status):
+    blood_request = get_object_or_404(HospitalBloodRequest, id=request_id)
+    blood_request.status = status
+    blood_request.save()
+
+    # ✅ Send notification only for Approved/Rejected
+    if status in ['Approved', 'Rejected']:
+        Notification.objects.create(
+            user=blood_request.user,
+            sender=request.user,
+            message=f"Your hospital blood request for {blood_request.blood_group} has been {status.lower()}."
+        )
+
+    # ✅ If AJAX request → don’t redirect
+    if request.headers.get("x-requested-with") == "XMLHttpRequest":
+        return JsonResponse({"success": True, "status": status})
+
+    # ✅ Fallback for non-AJAX requests
+    return redirect('manage_requests')

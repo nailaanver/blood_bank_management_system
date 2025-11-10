@@ -4,41 +4,47 @@
 {% block title %}Request Blood{% endblock %}
 
 {% block content %}
-<div class="request-container">
-    <div class="card shadow-lg p-5">
-        <h2 class="text-center mb-4 title">🩸 Request Blood</h2>
-        <p class="text-center subtitle">
-            Fill in the form below to request blood. Our team will contact you shortly.
+<div class="request-wrapper">
+    <div class="request-card">
+        <h2 class="title">🩸 Request Blood</h2>
+        <p class="subtitle">
+            Please provide the required details below. Our medical team will review your request and contact you soon.
         </p>
 
-        <form method="POST">
-        {% csrf_token %}
-        <div class="mb-3">
-            <label>Hospital Name</label>
-            {{ form.hospital_name }}
-        </div>
-        <div class="mb-3">
-            <label>Units Required</label>
-            {{ form.units_required }}
-        </div>
-        <div class="mb-3">
-            <label>Urgency</label>
-            {{ form.urgency }}
-        </div>
-        <div class="mb-3">
-            <label>Required Date</label>
-            {{ form.required_date }}
-        </div>
-        <div class="mb-3">
-            <label>Medical Condition</label>
-            {{ form.medical_condition }}
-        </div>
-        <button type="submit" class="btn btn-danger w-100">Submit Request</button>
-    </form>
+        <form method="POST" class="request-form">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label for="id_hospital_name">🏥 Hospital Name</label>
+                {{ form.hospital_name }}
+            </div>
+
+            <div class="form-group">
+                <label for="id_units_required">💉 Units Required</label>
+                {{ form.units_required }}
+            </div>
+
+            <div class="form-group">
+                <label for="id_urgency">⏱️ Urgency</label>
+                {{ form.urgency }}
+            </div>
+
+            <div class="form-group">
+                <label for="id_required_date">📅 Required Date</label>
+                {{ form.required_date }}
+            </div>
+
+            <div class="form-group">
+                <label for="id_medical_condition">🩺 Medical Condition</label>
+                {{ form.medical_condition }}
+            </div>
+
+            <button type="submit" class="submit-btn">Submit Request</button>
+        </form>
 
         {% if messages %}
             {% for message in messages %}
-                <div class="alert alert-success mt-4 text-center result-box">
+                <div class="alert alert-success mt-4">
                     {{ message }}
                 </div>
             {% endfor %}
@@ -47,103 +53,138 @@
 </div>
 
 <style>
-/* Background setup */
+/* 🌄 Page Background */
 body {
-    background: linear-gradient(135deg, #ffcccc, #ffe6e6);
-    min-height: 100vh;
     font-family: 'Poppins', sans-serif;
-}
-
-/* Container setup */
-.request-container {
+    background: linear-gradient(135deg, #ffe6e6, #fff5f5);
+    min-height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 50px 15px;
 }
 
-/* Card design */
-.card {
-    background-color: #fff;
+/* 🩸 Request Container */
+.request-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    padding: 40px 20px;
+}
+
+/* 🧾 Card Design */
+.request-card {
+    background: #fff;
     border-radius: 20px;
+    box-shadow: 0 10px 25px rgba(200, 35, 51, 0.2);
+    padding: 40px 35px;
     max-width: 600px;
     width: 100%;
-    border: none;
-    padding: 40px;
-    line-height: 1.5;
-    transition: all 0.3s ease;
+    animation: fadeIn 0.6s ease-in-out;
+    transition: 0.3s;
 }
-.card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+.request-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 30px rgba(179, 0, 0, 0.25);
 }
 
-/* Title and subtitle */
+/* ✨ Title & Subtitle */
 .title {
-    color: #c82333;
+    text-align: center;
+    color: #b30000;
     font-weight: 700;
+    margin-bottom: 10px;
 }
 .subtitle {
-    color: #555;
+    text-align: center;
+    color: #666;
     font-size: 0.95rem;
-    margin-bottom: 20px;
+    margin-bottom: 30px;
 }
 
-/* Form styling */
-form p label {
+/* 🧩 Form Styles */
+.request-form {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+.form-group label {
     font-weight: 500;
+    margin-bottom: 6px;
     color: #333;
 }
-form p input,
-form p select,
-form p textarea {
-    width: 100%;
-    padding: 10px;
-    border-radius: 8px;
+
+/* Inputs, Select, Textarea */
+.request-form input,
+.request-form select,
+.request-form textarea {
+    padding: 10px 12px;
     border: 1px solid #ccc;
-    margin-top: 5px;
-    font-size: 0.95rem;
-    transition: all 0.3s ease;
-}
-form p input:focus,
-form p select:focus,
-form p textarea:focus {
-    border-color: #c82333;
-    box-shadow: 0 0 5px rgba(200,35,51,0.3);
-    outline: none;
-}
-
-/* Button styling */
-.btn-danger {
-    background-color: #c82333;
-    border: none;
-    font-weight: 600;
     border-radius: 8px;
-    padding: 12px;
+    font-size: 0.95rem;
+    outline: none;
     transition: all 0.3s ease;
+    background-color: #fff;
 }
-.btn-danger:hover {
-    background-color: #a71d2a;
+.request-form input:focus,
+.request-form select:focus,
+.request-form textarea:focus {
+    border-color: #b30000;
+    box-shadow: 0 0 8px rgba(179, 0, 0, 0.3);
 }
 
-/* Message box */
-.result-box {
-    font-size: 1.05rem;
-    font-weight: 500;
+/* 🧠 Submit Button */
+.submit-btn {
+    background-color: #b30000;
+    color: #fff;
+    font-weight: 600;
+    font-size: 16px;
+    padding: 12px 0;
+    border: none;
     border-radius: 10px;
-    padding: 15px 20px;
-    width: 80%;
-    margin: 0 auto;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: 0.3s;
 }
+.submit-btn:hover {
+    background-color: #e60000;
+    box-shadow: 0 4px 10px rgba(179, 0, 0, 0.3);
+}
+
+/* ✅ Success Message */
 .alert-success {
     background-color: #d4edda;
     color: #155724;
-    border: 1px solid #c3e6cb;
+    border-radius: 10px;
+    padding: 12px 18px;
+    text-align: center;
+    font-weight: 500;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    animation: fadeIn 0.5s ease-in;
 }
-.alert-danger {
-    background-color: #f8d7da;
-    color: #721c24;
-    border: 1px solid #f5c6cb;
+
+/* 🎞️ Animations */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(15px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* 📱 Responsive Design */
+@media (max-width: 600px) {
+    .request-card {
+        padding: 30px 20px;
+    }
+    .title {
+        font-size: 1.4rem;
+    }
+    .submit-btn {
+        font-size: 14px;
+    }
 }
 </style>
 {% endblock %}

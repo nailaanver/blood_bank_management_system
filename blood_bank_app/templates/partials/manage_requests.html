@@ -139,57 +139,52 @@
 </div>
 
 
-  <!-- Hospital Blood Requests -->
-  <div class="request-section">
-    <h4 class="section-title">🏥 Hospital Blood Requests</h4>
-    <table class="table table-hover align-middle text-center custom-table">
-      <thead>
-        <tr>
-          <th>Hospital Name</th>
-          <th>Blood Group</th>
-          <th>Units Required</th>
-          <th>Required Date</th>
-          <th>Status</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for hospital_request in hospital_requests %}
-        <tr>
-          <td>{{ hospital_request.hospital_name }}</td>
-          <td>{{ hospital_request.blood_group }}</td>
-          <td>{{ hospital_request.units_required }}</td>
-          <td>{{ hospital_request.required_date }}</td>
-          <td>
-            {% if hospital_request.status == 'Accepted' %}
-              <span class="status-badge accepted">Accepted</span>
-            {% elif hospital_request.status == 'Pending' %}
-              <span class="status-badge pending">Pending</span>
-            {% else %}
-              <span class="status-badge rejected">Rejected</span>
-            {% endif %}
-          </td>
-          <td>
-            {% if hospital_request.status == 'Pending' %}
-              <form action="{% url 'update_hospital_status' hospital_request.id 'Accepted' %}" method="post" style="display:inline;">
-                {% csrf_token %}
-                <button type="submit" class="btn-action accept">Accept</button>
-              </form>
-              <form action="{% url 'update_hospital_status' hospital_request.id 'Rejected' %}" method="post" style="display:inline;">
-                {% csrf_token %}
-                <button type="submit" class="btn-action reject">Reject</button>
-              </form>
-            {% else %}
-              <span class="text-muted">—</span>
-            {% endif %}
-          </td>
-        </tr>
-        {% empty %}
-        <tr><td colspan="6" class="text-muted">No hospital blood requests found</td></tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
+ <!-- Hospital Blood Requests -->
+<div class="request-section">
+  <h4 class="section-title">🏥 Hospital Blood Requests</h4>
+  <table class="table table-hover align-middle text-center custom-table" id="hospitalRequestsTable">
+    <thead>
+      <tr>
+        <th>Hospital Name</th>
+        <th>Blood Group</th>
+        <th>Units Required</th>
+        <th>Required Date</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for hospital_request in hospital_requests %}
+      <tr data-id="{{ hospital_request.id }}">
+        <td>{{ hospital_request.hospital_name }}</td>
+        <td>{{ hospital_request.blood_group }}</td>
+        <td>{{ hospital_request.units_required }}</td>
+        <td>{{ hospital_request.required_date }}</td>
+        <td class="status-cell">
+          {% if hospital_request.status == 'Accepted' %}
+            <span class="status-badge accepted">Accepted</span>
+          {% elif hospital_request.status == 'Pending' %}
+            <span class="status-badge pending">Pending</span>
+          {% else %}
+            <span class="status-badge rejected">Rejected</span>
+          {% endif %}
+        </td>
+        <td>
+          {% if hospital_request.status == 'Pending' %}
+            <button class="btn-action accept update-status" data-status="Accepted">Accept</button>
+            <button class="btn-action reject update-status" data-status="Rejected">Reject</button>
+          {% else %}
+            <span class="text-muted">—</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="6" class="text-muted">No hospital blood requests found</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
   <div class="text-center mt-4">
   <a href="{% url 'admin_dashboard' %}" class="btn btn-primary btn-sm">Back to Dashboard</a>
 </div>
@@ -288,4 +283,42 @@
 }
 
 </style>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  const buttons = document.querySelectorAll(".update-status");
+
+  buttons.forEach(btn => {
+    btn.addEventListener("click", function() {
+      const row = btn.closest("tr");
+      const requestId = row.dataset.id;
+      const newStatus = btn.dataset.status;
+      const csrfToken = "{{ csrf_token }}";
+
+      fetch(`/update_hospital_status/${requestId}/${newStatus}/`, {
+        method: "POST",
+        headers: {
+          "X-CSRFToken": csrfToken,
+          "X-Requested-With": "XMLHttpRequest",
+        },
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          const statusCell = row.querySelector(".status-cell");
+          if (newStatus === "Accepted") {
+            statusCell.innerHTML = '<span class="status-badge accepted">Accepted</span>';
+          } else {
+            statusCell.innerHTML = '<span class="status-badge rejected">Rejected</span>';
+          }
+          row.querySelectorAll(".update-status").forEach(b => b.remove());
+        } else {
+          alert("Failed to update status.");
+        }
+      })
+      .catch(err => console.error(err));
+    });
+  });
+});
+</script>
 {% endblock %}
