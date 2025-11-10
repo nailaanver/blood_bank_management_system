@@ -906,23 +906,25 @@ def update_patient_status(request, request_id, status):
     req.status = status
     req.save()
 
+    # ✅ Get blood group from PatientDetail
+    blood_group = req.user.patientdetail.blood_group
+
     # ✅ Create notification for the patient
-    if status == 'Accepted':
+    if status == 'Approved':
         Notification.objects.create(
             sender=request.user,  # admin who approved
             user=req.user,        # patient who made the request
-            message=f"✅ Your blood request (for {req.blood_group}) has been approved."
+            message=f"✅ Your blood request (for {blood_group}) has been approved."
         )
     elif status == 'Rejected':
         Notification.objects.create(
             sender=request.user,
             user=req.user,
-            message=f"❌ Your blood request (for {req.blood_group}) has been rejected."
+            message=f"❌ Your blood request (for {blood_group}) has been rejected."
         )
 
     messages.success(request, f"Patient request marked as {status}.")
     return redirect('manage_requests')
-
 
 def update_hospital_status(request, request_id, status):
     req = get_object_or_404(HospitalBloodRequest, id=request_id)
