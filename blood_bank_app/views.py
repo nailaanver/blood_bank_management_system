@@ -1431,23 +1431,61 @@ def update_completed_donations():
         )
 
 @login_required
-@user_passes_test(lambda u: u.is_staff)  # Only admins
+@user_passes_test(lambda u: u.is_staff)
 def update_hospital_status(request, request_id, status):
     blood_request = get_object_or_404(HospitalBloodRequest, id=request_id)
-    blood_request.status = status
-    blood_request.save()
+    blood_request.status = status  # "Approved" or "Rejected"
 
-    # ✅ Send notification only for Approved/Rejected
-    if status in ['Approved', 'Rejected']:
+    if status == 'Approved':
+        print("DEBUG 🩸 Blood request hospital:", blood_request.hospital_name)
+        print("DEBUG 🩸 Blood group:", blood_request.blood_group)
+        print("DEBUG 🩸 Units required:", blood_request.units_required)
+
+        # 🧩 STEP 1: Get BloodStock (Main Bank stock, not hospital)
+        stock = BloodStock.objects.filter(
+            hospital=None,  # main bank (not hospital-specific)
+            blood_group=blood_request.blood_group
+        ).first()
+
+        if stock and stock.units_available >= blood_request.units_required:
+            # 🧩 STEP 2: Reduce main BloodStock
+            stock.units_available -= blood_request.units_required
+            stock.save()
+
+            # 🧩 STEP 3: Add to HospitalBloodStock (create if not exist)
+            hospital_stock, created = HospitalBloodStock.objects.get_or_create(
+                hospital=blood_request.hospital_name,
+                blood_group=blood_request.blood_group,
+                defaults={'units_available': 0}
+            )
+            hospital_stock.units_available += blood_request.units_required
+            hospital_stock.save()
+
+            # 🧩 STEP 4: Send success notification
+            Notification.objects.create(
+                user=blood_request.user,
+                sender=request.user,
+                message=f"✅ Your blood request for {blood_request.blood_group} has been approved and added to your hospital stock."
+            )
+
+            blood_request.status = 'Approved'
+
+        else:
+            # 🧩 STEP 5: Reject if not enough in main stock
+            blood_request.status = 'Rejected'
+            Notification.objects.create(
+                user=blood_request.user,
+                sender=request.user,
+                message=f"❌ Your hospital blood request for {blood_request.blood_group} was rejected due to insufficient blood stock."
+            )
+
+    elif status == 'Rejected':
+        # 🧩 Manual rejection by admin
         Notification.objects.create(
             user=blood_request.user,
             sender=request.user,
-            message=f"Your hospital blood request for {blood_request.blood_group} has been {status.lower()}."
+            message=f"❌ Your hospital blood request for {blood_request.blood_group} has been rejected by admin."
         )
 
-    # ✅ If AJAX request → don’t redirect
-    if request.headers.get("x-requested-with") == "XMLHttpRequest":
-        return JsonResponse({"success": True, "status": status})
-
-    # ✅ Fallback for non-AJAX requests
+    blood_request.save()
     return redirect('manage_requests')
