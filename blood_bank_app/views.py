@@ -246,9 +246,9 @@ def manage_users(request):
 
 
 
-from django.db.models import Sum, Q
+# from django.db.models import Sum, Q
 @login_required
-@user_passes_test(is_admin)
+# @user_passes_test(is_admin)
 def manage_bloodstock(request):
     stock = BloodStock.objects.all()
 
@@ -720,8 +720,18 @@ def hospital_request_blood(request):
         if form.is_valid():
             hospital_request = form.save(commit=False)
             hospital_request.hospital_name = hospital
-            hospital_request.user = request.user  # ✅ link user too
+            hospital_request.user = request.user
             hospital_request.save()
+
+            # ✅ Send notification to all admins
+            admins = User.objects.filter(is_staff=True)
+            for admin in admins:
+                Notification.objects.create(
+                    sender=request.user,
+                    user=admin,
+                    message=f"🏥 {hospital.hospital_name} has requested {hospital_request.units_required} unit(s) of {hospital_request.blood_group} blood."
+                )
+
             messages.success(request, "Blood request sent successfully!")
             return redirect('hospital_dashboard')
         else:
@@ -730,6 +740,7 @@ def hospital_request_blood(request):
         form = HospitalBloodRequestForm()
 
     return render(request, 'hopital/hospital_request_blood.html', {'form': form})
+
 
 @login_required
 def hospital_request_history(request):
